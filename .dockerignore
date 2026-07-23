@@ -1,0 +1,65 @@
+# Version control
+.git
+.gitignore
+.gitattributes
+
+# Dependencies (rebuilt inside Docker)
+node_modules
+vendor
+
+# Environment files (injected at runtime)
+.env
+.env.local
+.env.*.local
+.env.coolify
+
+# IDE / Editor
+.cursor
+.idea
+.vscode
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Testing
+tests
+phpunit.xml
+.phpunit.cache
+coverage
+
+# Documentation
+*.md
+!README.md
+
+# CI/CD
+.github
+.gitlab-ci.yml
+
+# Docker (prevent recursive context)
+docker-compose.yml
+docker-compose.*.yml
+
+# Build artifacts / caches
+storage/logs/*
+storage/framework/cache/*
+storage/framework/sessions/*
+storage/framework/views/*
+bootstrap/cache/*.php
+
+# Local binaries (Docker image provides its own)
+frankenphp
+
+# Dev tooling config
+.prettierrc
+.prettierignore
+.editorconfig
+eslint.config.js
+pint.json
+.npmrc
+
+# Deployment prompt
+DEVOPS_DEPLOYMENT_PROMPT.md
