@@ -1,0 +1,263 @@
+openapi: 3.1.0
+info:
+  title: SteriQore
+  version: 1.0.0
+  description: 'SteriQore sterilization traceability and inventory API. Endpoints under /mock-* namespaces or documented as MOCK have no backing domain tables yet — see docs/erd.md and docs/backlog.md for the real ship date.'
+servers:
+  - url: 'http://localhost:8000/api'
+paths:
+  /v1/cycles:
+    get:
+      operationId: v1.cycles.index
+      tags:
+        - CyclesMock
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data: { type: array, prefixItems: [{ type: object, properties: { id: { type: string, const: 01977a1e-2c3b-7000-8000-000000000020 }, device_id: { type: string, const: 01977a1e-2c3b-7000-8000-000000000030 }, cycle_number: { type: string, const: A-2026-000042 }, status: { type: string, const: released }, result: { type: string, const: compliant }, started_at: { type: string, const: '2026-07-24T08:00:00Z' }, ended_at: { type: string, const: '2026-07-24T08:45:00Z' } }, required: [id, device_id, cycle_number, status, result, started_at, ended_at] }], minItems: 1, maxItems: 1, additionalItems: false }
+                  meta: { type: object, properties: { next_cursor: { type: 'null' } }, required: [next_cursor] }
+                required:
+                  - data
+                  - meta
+        401:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+  '/v1/labels/{code}':
+    get:
+      operationId: v1.labels.show
+      tags:
+        - LabelScanMock
+      parameters:
+        -
+          name: code
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data: { type: object, properties: { label_id: { type: string }, status: { type: string, const: active }, cycle_number: { type: string, const: A-2026-000042 }, device_name: { type: string, const: 'Melag Vacuklav 44 B+' }, sterilized_at: { type: string, const: '2026-07-24T08:45:00Z' }, use_by_date: { type: string, const: '2027-07-24' }, sequence_in_cycle: { type: integer, const: 3 }, site_name: { type: string, const: 'Cabinet Centre-Ville' } }, required: [label_id, status, cycle_number, device_name, sterilized_at, use_by_date, sequence_in_cycle, site_name] }
+                required:
+                  - data
+        401:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+  /v1/auth/login:
+    post:
+      operationId: v1.auth.login
+      description: |-
+        The token authenticates for `tenant_slug` only — a user who belongs to
+        more than one practice logs in once per practice and holds a separate
+        token for each. There is no client-supplied tenant on any other
+        endpoint; every subsequent request resolves its tenant from this token.
+      summary: 'Log in and receive a Sanctum token scoped to one practice'
+      tags:
+        - Login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token: { type: string }
+                  token_type: { type: string, const: Bearer }
+                  user: { $ref: '#/components/schemas/UserData' }
+                  tenant: { $ref: '#/components/schemas/TenantData' }
+                required:
+                  - token
+                  - token_type
+                  - user
+                  - tenant
+        422:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+  /v1/auth/logout:
+    delete:
+      operationId: v1.auth.logout
+      summary: |-
+        Revoke the token used for this request. Other tokens (other devices,
+        other practices) are untouched
+      tags:
+        - Logout
+      responses:
+        204:
+          description: 'No content'
+        401:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+  /v1/me:
+    get:
+      operationId: v1.me
+      summary: 'The authenticated user and the practice this token is scoped to'
+      tags:
+        - Me
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user: { $ref: '#/components/schemas/UserData' }
+                  tenant: { $ref: '#/components/schemas/TenantData' }
+                required:
+                  - user
+                  - tenant
+        401:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+  /v1/products:
+    get:
+      operationId: v1.products.index
+      tags:
+        - ProductsMock
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data: { type: array, prefixItems: [{ type: object, properties: { id: { type: string, const: 01977a1e-2c3b-7000-8000-000000000001 }, name: { type: string, const: 'Sterilization pouch 90x260mm' }, reference: { type: string, const: POU-90260 }, unit: { type: string, const: box_of_200 }, is_sterilizable: { type: boolean }, min_threshold: { type: integer, const: 5 } }, required: [id, name, reference, unit, is_sterilizable, min_threshold] }], minItems: 1, maxItems: 1, additionalItems: false }
+                  meta: { type: object, properties: { next_cursor: { type: 'null' } }, required: [next_cursor] }
+                required:
+                  - data
+                  - meta
+        401:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+  /v1/sites:
+    get:
+      operationId: v1.sites.index
+      summary: |-
+        Sites for the practice the current token is scoped to. Cursor-paginated
+        per the API conventions — never offset pagination
+      tags:
+        - Sites
+      responses:
+        200:
+          description: '`CursorPaginatedDataCollection`'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CursorPaginatedDataCollection'
+        401:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+  /v1/stock-levels:
+    get:
+      operationId: v1.stock-levels.index
+      tags:
+        - StockLevelsMock
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data: { type: array, prefixItems: [{ type: object, properties: { product_id: { type: string, const: 01977a1e-2c3b-7000-8000-000000000001 }, location_id: { type: string, const: 01977a1e-2c3b-7000-8000-000000000010 }, quantity: { type: integer, const: 42 }, nearest_expiry: { type: string, const: '2027-03-01' } }, required: [product_id, location_id, quantity, nearest_expiry] }], minItems: 1, maxItems: 1, additionalItems: false }
+                  meta: { type: object, properties: { next_cursor: { type: 'null' } }, required: [next_cursor] }
+                required:
+                  - data
+                  - meta
+        401:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+components:
+  schemas:
+    ApiErrorEnvelope:
+      type: object
+      properties:
+        error:
+          type: object
+          properties:
+            code:
+              type: string
+            message:
+              type: string
+            details:
+              type: object
+            request_id:
+              type: string
+          required:
+            - code
+            - message
+            - details
+            - request_id
+      required:
+        - error
+      title: ApiErrorEnvelope
+    CursorPaginatedDataCollection:
+      type: object
+      additionalProperties: {}
+      title: CursorPaginatedDataCollection
+    LoginRequest:
+      type: object
+      properties:
+        tenant_slug:
+          type: string
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+      required:
+        - tenant_slug
+        - email
+        - password
+      title: LoginRequest
+    TenantData:
+      type: object
+      additionalProperties: {}
+      title: TenantData
+    UserData:
+      type: object
+      additionalProperties: {}
+      title: UserData
