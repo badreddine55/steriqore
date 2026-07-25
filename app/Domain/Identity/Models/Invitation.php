@@ -24,7 +24,9 @@ class Invitation extends Model
 {
     use HasUuidv7;
 
-    protected $fillable = ['tenant_id', 'email', 'role', 'token', 'invited_by', 'expires_at'];
+    protected $fillable = [
+        'tenant_id', 'email', 'role', 'token', 'invited_by', 'expires_at', 'accepted_at', 'revoked_at',
+    ];
 
     protected $hidden = ['token'];
 

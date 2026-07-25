@@ -5,6 +5,17 @@ question was flagged instead of guessed, per `CLAUDE.md`. Newest on top.
 
 ---
 
+## OQ-4 — Sanctum token lifetime
+**Raised:** S1-ANA-02 (Identity), 2026-07-25
+**Context:** Nothing in the brief specifies how long a mobile session/token
+should last before requiring re-login.
+**Default implemented:** `config('sanctum.expiration')` = 30 days
+(`SANCTUM_TOKEN_EXPIRATION_MINUTES` env override), enforced by Sanctum's
+guard against each token's `created_at`. Revocation (logout, logout-everywhere,
+disabling a membership) is immediate regardless of this TTL.
+**Needs confirmation:** is 30 days right for the pilot, or should it be
+shorter given this is health-adjacent data?
+
 ## OQ-3 — Migrating `users.id` from bigint to uuid touches a completed item
 **Raised:** S0-ANA-02 (ERD), 2026-07-24
 **Context:** S0-ANA-01 (repo skeleton) is marked Completed and shipped a

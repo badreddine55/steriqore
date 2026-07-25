@@ -50,7 +50,10 @@ return [
     |
     */
 
-    'expiration' => null,
+    // DECISION NEEDED: no token TTL is specified anywhere in the brief.
+    // 30 days is a safe default for a mobile app (re-login needed monthly,
+    // not indefinitely) — see docs/open-questions.md.
+    'expiration' => (int) env('SANCTUM_TOKEN_EXPIRATION_MINUTES', 60 * 24 * 30),
 
     /*
     |--------------------------------------------------------------------------

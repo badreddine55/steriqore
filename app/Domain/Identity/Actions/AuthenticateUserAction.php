@@ -6,7 +6,6 @@ use App\Domain\Tenancy\Models\Tenant;
 use App\Models\User;
 use App\Support\Api\ApiException;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Str;
 
 /**
  * Mints a Sanctum token scoped to exactly one tenant, chosen at login (see
@@ -15,6 +14,8 @@ use Illuminate\Support\Str;
  */
 class AuthenticateUserAction
 {
+    public function __construct(private MintTenantTokenAction $mintTenantToken) {}
+
     /**
      * @return array{plain_text_token: string, user: User, tenant: Tenant}
      */
@@ -50,17 +51,8 @@ class AuthenticateUserAction
             throw new ApiException('TENANT_MEMBERSHIP_PENDING', 'This invitation has not been accepted yet.', 403);
         }
 
-        $plainTextToken = Str::random(40);
-
-        $token = $user->tokens()->create([
-            'name' => 'mobile',
-            'token' => hash('sha256', $plainTextToken),
-            'abilities' => ['*'],
-            'tenant_id' => $tenant->id,
-        ]);
-
         return [
-            'plain_text_token' => $token->getKey().'|'.$plainTextToken,
+            'plain_text_token' => $this->mintTenantToken->execute($user, $tenant, 'mobile'),
             'user' => $user,
             'tenant' => $tenant,
         ];

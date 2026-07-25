@@ -6,6 +6,45 @@ info:
 servers:
   - url: 'http://localhost:8000/api'
 paths:
+  /v1/invitations/accept:
+    post:
+      operationId: v1.invitations.accept
+      summary: |-
+        Public — the invitee has no session/token yet. For an email that
+        already belongs to an account, this still requires that account's
+        real password (see AcceptInvitationAction) rather than trusting
+        whoever clicked the link
+      tags:
+        - AcceptInvitation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AcceptInvitationRequest'
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token: { type: string }
+                  token_type: { type: string, const: Bearer }
+                  user: { $ref: '#/components/schemas/UserData' }
+                  tenant: { $ref: '#/components/schemas/TenantData' }
+                required:
+                  - token
+                  - token_type
+                  - user
+                  - tenant
+        422:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
   /v1/cycles:
     get:
       operationId: v1.cycles.index
@@ -24,6 +63,64 @@ paths:
                 required:
                   - data
                   - meta
+        401:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+  /v1/invitations:
+    post:
+      operationId: v1.invitations.store
+      tags:
+        - Invitation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateInvitationRequest'
+      responses:
+        200:
+          description: '`InvitationData`'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InvitationData'
+        401:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+        422:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+  '/v1/invitations/{invitation}':
+    delete:
+      operationId: v1.invitations.destroy
+      tags:
+        - Invitation
+      parameters:
+        -
+          name: invitation
+          in: path
+          required: true
+          description: 'The invitation ID'
+          schema:
+            type: string
+      responses:
+        204:
+          description: 'No content'
+        404:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
         401:
           description: 'SteriQore API error envelope.'
           content:
@@ -107,6 +204,24 @@ paths:
         other practices) are untouched
       tags:
         - Logout
+      responses:
+        204:
+          description: 'No content'
+        401:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+  /v1/auth/tokens:
+    delete:
+      operationId: v1.auth.logout-everywhere
+      summary: |-
+        Revoke every token for this practice — not just the one used for this
+        request. Tokens for other practices the same user belongs to are
+        untouched (a token authenticates for exactly one tenant)
+      tags:
+        - LogoutEverywhere
       responses:
         204:
           description: 'No content'
@@ -214,6 +329,21 @@ paths:
                 $ref: '#/components/schemas/ApiErrorEnvelope'
 components:
   schemas:
+    AcceptInvitationRequest:
+      type: object
+      properties:
+        token:
+          type: string
+        name:
+          type: string
+          maxLength: 255
+        password:
+          type: string
+      required:
+        - token
+        - name
+        - password
+      title: AcceptInvitationRequest
     ApiErrorEnvelope:
       type: object
       properties:
@@ -236,10 +366,26 @@ components:
       required:
         - error
       title: ApiErrorEnvelope
+    CreateInvitationRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+        role:
+          $ref: '#/components/schemas/TenantRole'
+      required:
+        - email
+        - role
+      title: CreateInvitationRequest
     CursorPaginatedDataCollection:
       type: object
       additionalProperties: {}
       title: CursorPaginatedDataCollection
+    InvitationData:
+      type: object
+      additionalProperties: {}
+      title: InvitationData
     LoginRequest:
       type: object
       properties:
@@ -259,6 +405,18 @@ components:
       type: object
       additionalProperties: {}
       title: TenantData
+    TenantRole:
+      type: string
+      description: |
+        The six roles from CLAUDE.md's RBAC section. Not yet wired to spatie/laravel-permission (that's S1-ANA-03) — used for now just to validate the `role` field on an invitation against a fixed, known set.
+      enum:
+        - owner
+        - admin
+        - stock_manager
+        - releaser
+        - practitioner
+        - viewer
+      title: TenantRole
     UserData:
       type: object
       additionalProperties: {}
