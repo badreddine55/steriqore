@@ -21,7 +21,7 @@ php artisan event:cache
 case "${RUN_MIGRATIONS:-true}" in
     [Tt][Rr][Uu][Ee]|1|[Yy][Ee][Ss])
         echo "🗄️  Running database migrations..."
-        php artisan migrate --force --no-interaction
+        php artisan migrate --force --no-interaction --database=pgsql_admin
         ;;
     *)
         echo "⏭️  Skipping migrations (RUN_MIGRATIONS=false)"

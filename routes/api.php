@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Route;
 Route::prefix('v1')->name('api.v1.')->group(function () {
     Route::post('auth/login', LoginController::class)->middleware('idempotent')->name('auth.login');
 
-    Route::middleware('auth:sanctum')->group(function () {
+    Route::middleware(['auth:sanctum', 'tenant'])->group(function () {
         Route::delete('auth/logout', LogoutController::class)->name('auth.logout');
         Route::get('me', MeController::class)->name('me');
 

@@ -23,6 +23,19 @@
         <env name="BCRYPT_ROUNDS" value="4"/>
         <env name="BROADCAST_CONNECTION" value="null"/>
         <env name="CACHE_STORE" value="array"/>
+        <!--
+            The default connection here is intentionally the elevated admin
+            role, not the restricted app role used in dev/docker: Pest's
+            RefreshDatabase trait always migrates via the connection named by
+            config('database.default') (its migrateFreshUsing() can't be
+            overridden through Tests\TestCase — traits take precedence over
+            inherited parent methods in PHP, so a subclass override is
+            silently ignored). The RLS isolation test instead uses
+            `SET LOCAL ROLE steriqore_app` within the same connection/
+            transaction, which changes RLS enforcement without needing a
+            second physical connection (whose uncommitted fixture data
+            wouldn't be visible across sessions anyway).
+        -->
         <env name="DB_CONNECTION" value="pgsql"/>
         <env name="DB_HOST" value="127.0.0.1"/>
         <env name="DB_PORT" value="5455"/>

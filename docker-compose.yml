@@ -78,8 +78,15 @@ services:
       - DB_HOST=postgres
       - DB_PORT=5432
       - DB_DATABASE=saw
-      - DB_USERNAME=saw
-      - DB_PASSWORD=secret
+      # Runtime app connection: a restricted, non-superuser role so Row-Level
+      # Security actually applies (superusers and table owners bypass RLS
+      # unconditionally). See docker/postgres/init/01-create-app-role.sql.
+      - DB_USERNAME=steriqore_app
+      - DB_PASSWORD=steriqore_app_secret
+      # Elevated connection, migrations only (CREATE TABLE/POLICY etc. need
+      # more than steriqore_app's grants). Never used for a normal request.
+      - DB_ADMIN_USERNAME=saw
+      - DB_ADMIN_PASSWORD=secret
       - REDIS_HOST=redis
       - REDIS_PORT=6379
       - CACHE_STORE=redis
@@ -136,6 +143,7 @@ services:
       POSTGRES_PASSWORD: secret
     volumes:
       - postgres-data:/var/lib/postgresql
+      - ./docker/postgres/init:/docker-entrypoint-initdb.d:ro
     networks:
       - steriqore
     healthcheck:

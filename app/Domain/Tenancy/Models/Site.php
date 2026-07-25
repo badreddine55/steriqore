@@ -2,9 +2,9 @@
 
 namespace App\Domain\Tenancy\Models;
 
+use App\Support\Concerns\BelongsToTenant;
 use App\Support\Concerns\HasUuidv7;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
@@ -16,6 +16,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  */
 class Site extends Model
 {
+    use BelongsToTenant;
     use HasUuidv7;
 
     protected $fillable = [
@@ -28,14 +29,6 @@ class Site extends Model
         return [
             'is_primary' => 'boolean',
         ];
-    }
-
-    /**
-     * @return BelongsTo<Tenant, $this>
-     */
-    public function tenant(): BelongsTo
-    {
-        return $this->belongsTo(Tenant::class);
     }
 
     /**

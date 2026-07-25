@@ -169,8 +169,10 @@ paths:
     get:
       operationId: v1.sites.index
       summary: |-
-        Sites for the practice the current token is scoped to. Cursor-paginated
-        per the API conventions — never offset pagination
+        Sites for the practice the current token is scoped to — filtered by
+        Site's TenantScope global scope (bound by the `tenant` middleware),
+        not a manual where() here. Cursor-paginated per the API conventions —
+        never offset pagination
       tags:
         - Sites
       responses:

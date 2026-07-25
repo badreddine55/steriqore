@@ -11,17 +11,16 @@ use Spatie\LaravelData\CursorPaginatedDataCollection;
 class SitesController extends Controller
 {
     /**
-     * Sites for the practice the current token is scoped to. Cursor-paginated
-     * per the API conventions — never offset pagination.
+     * Sites for the practice the current token is scoped to — filtered by
+     * Site's TenantScope global scope (bound by the `tenant` middleware),
+     * not a manual where() here. Cursor-paginated per the API conventions —
+     * never offset pagination.
      *
      * @return CursorPaginatedDataCollection<int, SiteData>
      */
     public function index(Request $request): CursorPaginatedDataCollection
     {
-        $tenantId = $request->user()->currentAccessToken()->tenant_id;
-
-        $sites = Site::where('tenant_id', $tenantId)
-            ->orderBy('name')
+        $sites = Site::orderBy('name')
             ->cursorPaginate(perPage: (int) $request->integer('limit', 20));
 
         return SiteData::collect($sites, CursorPaginatedDataCollection::class);

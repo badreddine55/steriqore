@@ -2,6 +2,7 @@
 
 namespace App\Domain\Tenancy\Models;
 
+use App\Support\Concerns\BelongsToTenant;
 use App\Support\Concerns\HasUuidv7;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -18,17 +19,10 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  */
 class StorageLocation extends Model
 {
+    use BelongsToTenant;
     use HasUuidv7;
 
     protected $fillable = ['tenant_id', 'site_id', 'room_id', 'parent_location_id', 'name', 'kind'];
-
-    /**
-     * @return BelongsTo<Tenant, $this>
-     */
-    public function tenant(): BelongsTo
-    {
-        return $this->belongsTo(Tenant::class);
-    }
 
     /**
      * @return BelongsTo<Site, $this>

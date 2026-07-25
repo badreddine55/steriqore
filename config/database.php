@@ -99,6 +99,27 @@ return [
             'sslmode' => env('DB_SSLMODE', 'prefer'),
         ],
 
+        // Elevated connection for migrations/schema changes (CREATE TABLE,
+        // ENABLE ROW LEVEL SECURITY, CREATE POLICY, ...). In dev/docker the
+        // default `pgsql` connection above is the restricted, non-superuser
+        // app role instead (RLS is bypassed entirely for superusers and
+        // table owners, so the running app must never connect as one) and
+        // this one is used only by migrations. See docs/erd.md section 4
+        // and docker/postgres/init/01-create-app-role.sql.
+        'pgsql_admin' => [
+            'driver' => 'pgsql',
+            'host' => env('DB_HOST', '127.0.0.1'),
+            'port' => env('DB_PORT', '5432'),
+            'database' => env('DB_DATABASE', 'laravel'),
+            'username' => env('DB_ADMIN_USERNAME', 'root'),
+            'password' => env('DB_ADMIN_PASSWORD', ''),
+            'charset' => env('DB_CHARSET', 'utf8'),
+            'prefix' => '',
+            'prefix_indexes' => true,
+            'search_path' => 'public',
+            'sslmode' => env('DB_SSLMODE', 'prefer'),
+        ],
+
         'sqlsrv' => [
             'driver' => 'sqlsrv',
             'url' => env('DB_URL'),

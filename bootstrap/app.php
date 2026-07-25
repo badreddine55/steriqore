@@ -2,6 +2,7 @@
 
 use App\Http\Middleware\Api\AssignRequestId;
 use App\Http\Middleware\Api\EnsureIdempotency;
+use App\Http\Middleware\Api\SetCurrentTenant;
 use App\Http\Middleware\HandleAppearance;
 use App\Http\Middleware\HandleInertiaRequests;
 use App\Support\Api\ApiExceptionRenderer;
@@ -33,6 +34,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->alias([
             'idempotent' => EnsureIdempotency::class,
+            'tenant' => SetCurrentTenant::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
