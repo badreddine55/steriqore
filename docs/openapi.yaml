@@ -664,6 +664,273 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ApiErrorEnvelope'
+  /v1/suppliers:
+    get:
+      operationId: v1.suppliers.index
+      tags:
+        - Supplier
+      responses:
+        200:
+          description: '`CursorPaginatedDataCollection`'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CursorPaginatedDataCollection'
+        403:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+        401:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+    post:
+      operationId: v1.suppliers.store
+      tags:
+        - Supplier
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateSupplierRequest'
+      responses:
+        200:
+          description: '`SupplierData`'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SupplierData'
+        403:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+        401:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+        422:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+  '/v1/suppliers/{supplier}':
+    get:
+      operationId: v1.suppliers.show
+      tags:
+        - Supplier
+      parameters:
+        -
+          name: supplier
+          in: path
+          required: true
+          description: 'The supplier ID'
+          schema:
+            type: string
+      responses:
+        200:
+          description: '`SupplierData`'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SupplierData'
+        403:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+        404:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+        401:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+    patch:
+      operationId: v1.suppliers.update
+      tags:
+        - Supplier
+      parameters:
+        -
+          name: supplier
+          in: path
+          required: true
+          description: 'The supplier ID'
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateSupplierRequest'
+      responses:
+        200:
+          description: '`SupplierData`'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SupplierData'
+        403:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+        404:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+        401:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+        422:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+    delete:
+      operationId: v1.suppliers.destroy
+      tags:
+        - Supplier
+      parameters:
+        -
+          name: supplier
+          in: path
+          required: true
+          description: 'The supplier ID'
+          schema:
+            type: string
+      responses:
+        204:
+          description: 'No content'
+        403:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+        404:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+        401:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+  '/v1/suppliers/{supplier}/products':
+    get:
+      operationId: v1.suppliers.products.index
+      tags:
+        - SupplierProduct
+      parameters:
+        -
+          name: supplier
+          in: path
+          required: true
+          description: 'The supplier ID'
+          schema:
+            type: string
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SupplierProductData'
+        403:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+        404:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+        401:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+    post:
+      operationId: v1.suppliers.products.store
+      tags:
+        - SupplierProduct
+      parameters:
+        -
+          name: supplier
+          in: path
+          required: true
+          description: 'The supplier ID'
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AttachSupplierProductRequest'
+      responses:
+        200:
+          description: '`SupplierProductData`'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SupplierProductData'
+        403:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+        422:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+        404:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+        401:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
 components:
   schemas:
     AcceptInvitationRequest:
@@ -703,6 +970,28 @@ components:
       required:
         - error
       title: ApiErrorEnvelope
+    AttachSupplierProductRequest:
+      type: object
+      properties:
+        product_id:
+          type: string
+          format: uuid
+        supplier_reference:
+          type:
+            - string
+            - 'null'
+          maxLength: 255
+        pack_size:
+          type: integer
+          minimum: 1
+        price:
+          type:
+            - number
+            - 'null'
+          minimum: 0
+      required:
+        - product_id
+      title: AttachSupplierProductRequest
     CreateInvitationRequest:
       type: object
       properties:
@@ -765,6 +1054,31 @@ components:
         - name
         - reference
       title: CreateProductRequest
+    CreateSupplierRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          maxLength: 255
+        email:
+          type:
+            - string
+            - 'null'
+          format: email
+          maxLength: 255
+        phone:
+          type:
+            - string
+            - 'null'
+          maxLength: 50
+        address:
+          type:
+            - string
+            - 'null'
+          maxLength: 1000
+      required:
+        - name
+      title: CreateSupplierRequest
     CursorPaginatedDataCollection:
       type: object
       additionalProperties: {}
@@ -821,6 +1135,14 @@ components:
         - owner_email
         - password
       title: RegisterTenantRequest
+    SupplierData:
+      type: object
+      additionalProperties: {}
+      title: SupplierData
+    SupplierProductData:
+      type: object
+      additionalProperties: {}
+      title: SupplierProductData
     TenantData:
       type: object
       additionalProperties: {}
@@ -870,6 +1192,29 @@ components:
             - 'null'
           format: uuid
       title: UpdateProductRequest
+    UpdateSupplierRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          maxLength: 255
+        email:
+          type:
+            - string
+            - 'null'
+          format: email
+          maxLength: 255
+        phone:
+          type:
+            - string
+            - 'null'
+          maxLength: 50
+        address:
+          type:
+            - string
+            - 'null'
+          maxLength: 1000
+      title: UpdateSupplierRequest
     UserData:
       type: object
       additionalProperties: {}

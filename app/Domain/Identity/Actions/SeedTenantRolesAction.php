@@ -25,6 +25,8 @@ class SeedTenantRolesAction
         'audit.view',
         'products.view',
         'products.manage',
+        'suppliers.view',
+        'suppliers.manage',
     ];
 
     private const array PERMISSIONS_BY_ROLE = [
@@ -32,11 +34,11 @@ class SeedTenantRolesAction
         'admin' => self::PERMISSIONS,
         // "Catalogue, suppliers, orders, receipts, movements, batches,
         // inventories, alerts" (CLAUDE.md) — stock_manager manages the
-        // catalogue, everyone else just reads it.
-        'stock_manager' => ['sites.view', 'products.view', 'products.manage'],
-        'releaser' => ['sites.view', 'products.view'],
-        'practitioner' => ['sites.view', 'products.view'],
-        'viewer' => ['sites.view', 'products.view'],
+        // catalogue and suppliers, everyone else just reads them.
+        'stock_manager' => ['sites.view', 'products.view', 'products.manage', 'suppliers.view', 'suppliers.manage'],
+        'releaser' => ['sites.view', 'products.view', 'suppliers.view'],
+        'practitioner' => ['sites.view', 'products.view', 'suppliers.view'],
+        'viewer' => ['sites.view', 'products.view', 'suppliers.view'],
     ];
 
     public function execute(Tenant $tenant): void

@@ -14,6 +14,8 @@ use App\Http\Controllers\Api\V1\MeController;
 use App\Http\Controllers\Api\V1\Mock\CyclesMockController;
 use App\Http\Controllers\Api\V1\Mock\LabelScanMockController;
 use App\Http\Controllers\Api\V1\Mock\StockLevelsMockController;
+use App\Http\Controllers\Api\V1\Purchasing\SupplierController;
+use App\Http\Controllers\Api\V1\Purchasing\SupplierProductController;
 use App\Http\Controllers\Api\V1\SitesController;
 use Illuminate\Support\Facades\Route;
 
@@ -50,6 +52,19 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
         Route::get('products/{product}', [ProductController::class, 'show'])->name('products.show');
         Route::patch('products/{product}', [ProductController::class, 'update'])->name('products.update');
         Route::delete('products/{product}', [ProductController::class, 'destroy'])->name('products.destroy');
+
+        Route::get('suppliers', [SupplierController::class, 'index'])->name('suppliers.index');
+        Route::post('suppliers', [SupplierController::class, 'store'])
+            ->middleware('idempotent')
+            ->name('suppliers.store');
+        Route::get('suppliers/{supplier}', [SupplierController::class, 'show'])->name('suppliers.show');
+        Route::patch('suppliers/{supplier}', [SupplierController::class, 'update'])->name('suppliers.update');
+        Route::delete('suppliers/{supplier}', [SupplierController::class, 'destroy'])->name('suppliers.destroy');
+
+        Route::get('suppliers/{supplier}/products', [SupplierProductController::class, 'index'])->name('suppliers.products.index');
+        Route::post('suppliers/{supplier}/products', [SupplierProductController::class, 'store'])
+            ->middleware('idempotent')
+            ->name('suppliers.products.store');
 
         // MOCK — no backing tables until S3-S4. See each controller's
         // docblock. Shapes are a first draft; refine when the real domain
