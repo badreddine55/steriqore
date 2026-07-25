@@ -45,6 +45,103 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ApiErrorEnvelope'
+  /v1/alerts:
+    get:
+      operationId: v1.alerts.index
+      tags:
+        - Alert
+      responses:
+        200:
+          description: '`CursorPaginatedDataCollection`'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CursorPaginatedDataCollection'
+        403:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+        401:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+  /v1/alerts/detect:
+    post:
+      operationId: v1.alerts.detect
+      summary: |-
+        Manual trigger — in production this also runs on a schedule
+        (routes/console.php), but a stock manager can run it on demand too
+      tags:
+        - Alert
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  low_stock: { type: integer }
+                  near_expiry: { type: integer }
+                  expired: { type: integer }
+                required:
+                  - low_stock
+                  - near_expiry
+                  - expired
+        403:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+        401:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+  '/v1/alerts/{alert}/resolve':
+    post:
+      operationId: v1.alerts.resolve
+      tags:
+        - Alert
+      parameters:
+        -
+          name: alert
+          in: path
+          required: true
+          description: 'The alert ID'
+          schema:
+            type: string
+      responses:
+        200:
+          description: '`AlertData`'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AlertData'
+        403:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+        404:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+        401:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
   /v1/audit-events:
     get:
       operationId: v1.audit-events.index
@@ -1351,6 +1448,10 @@ components:
         - qty
         - reason
       title: AdjustStockRequest
+    AlertData:
+      type: object
+      additionalProperties: {}
+      title: AlertData
     ApiErrorEnvelope:
       type: object
       properties:

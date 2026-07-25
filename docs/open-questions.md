@@ -5,6 +5,17 @@ question was flagged instead of guessed, per `CLAUDE.md`. Newest on top.
 
 ---
 
+## OQ-6 — Near-expiry alert window
+**Raised:** S2-ANA-05 (Alert engine), 2026-07-28
+**Context:** Nothing in the brief specifies how many days before a batch's
+expiry (DLU-adjacent, but this is the *stock* expiry alert, not the label
+DLU rule) a near-expiry alert should fire.
+**Default implemented:** 30 days (`DetectAlertsAction::NEAR_EXPIRY_DAYS`),
+hardcoded, not yet per-tenant configurable.
+**Needs confirmation:** is 30 days right, and should this eventually be a
+per-tenant setting (packaging/storage-dependent, like the DLU rule table
+CLAUDE.md describes for labels) rather than a single constant?
+
 ## OQ-5 — Audit log "UI viewer" is API-only; the web app has no tenant
 resolution yet
 **Raised:** S1-ANA-04 (Audit log), 2026-07-25

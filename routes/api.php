@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\V1\Identity\AcceptInvitationController;
 use App\Http\Controllers\Api\V1\Identity\InvitationController;
 use App\Http\Controllers\Api\V1\Identity\MemberController;
 use App\Http\Controllers\Api\V1\Identity\RegisterTenantController;
+use App\Http\Controllers\Api\V1\Inventory\AlertController;
 use App\Http\Controllers\Api\V1\Inventory\StockLevelController;
 use App\Http\Controllers\Api\V1\Inventory\StockMovementController;
 use App\Http\Controllers\Api\V1\MeController;
@@ -97,6 +98,14 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
         Route::post('stock-movements/adjust', [StockMovementController::class, 'adjust'])
             ->middleware('idempotent')
             ->name('stock-movements.adjust');
+
+        Route::get('alerts', [AlertController::class, 'index'])->name('alerts.index');
+        Route::post('alerts/detect', [AlertController::class, 'detect'])
+            ->middleware('idempotent')
+            ->name('alerts.detect');
+        Route::post('alerts/{alert}/resolve', [AlertController::class, 'resolve'])
+            ->middleware('idempotent')
+            ->name('alerts.resolve');
 
         // MOCK — no backing tables until S3-S4. See each controller's
         // docblock. Shapes are a first draft; refine when the real domain

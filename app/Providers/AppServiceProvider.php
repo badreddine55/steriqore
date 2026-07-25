@@ -8,11 +8,13 @@ use App\Domain\Compliance\Models\AuditEvent;
 use App\Domain\Identity\Models\Invitation;
 use App\Domain\Identity\Models\PersonalAccessToken;
 use App\Domain\Identity\Models\TenantUser;
+use App\Domain\Inventory\Models\Alert;
 use App\Domain\Inventory\Models\StockLevel;
 use App\Domain\Inventory\Models\StockMovement;
 use App\Domain\Purchasing\Models\PurchaseOrder;
 use App\Domain\Purchasing\Models\Supplier;
 use App\Domain\Tenancy\Models\Site;
+use App\Policies\AlertPolicy;
 use App\Policies\AuditEventPolicy;
 use App\Policies\InvitationPolicy;
 use App\Policies\ProductCategoryPolicy;
@@ -68,6 +70,7 @@ class AppServiceProvider extends ServiceProvider
         Gate::policy(PurchaseOrder::class, PurchaseOrderPolicy::class);
         Gate::policy(StockMovement::class, StockMovementPolicy::class);
         Gate::policy(StockLevel::class, StockLevelPolicy::class);
+        Gate::policy(Alert::class, AlertPolicy::class);
     }
 
     /**
