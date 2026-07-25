@@ -339,21 +339,236 @@ paths:
     get:
       operationId: v1.products.index
       tags:
-        - ProductsMock
+        - Product
+      responses:
+        200:
+          description: '`CursorPaginatedDataCollection`'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CursorPaginatedDataCollection'
+        403:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+        401:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+    post:
+      operationId: v1.products.store
+      tags:
+        - Product
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateProductRequest'
+      responses:
+        200:
+          description: '`ProductData`'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductData'
+        403:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+        401:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+        422:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+  '/v1/products/{product}':
+    get:
+      operationId: v1.products.show
+      tags:
+        - Product
+      parameters:
+        -
+          name: product
+          in: path
+          required: true
+          description: 'The product ID'
+          schema:
+            type: string
+      responses:
+        200:
+          description: '`ProductData`'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductData'
+        403:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+        404:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+        401:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+    patch:
+      operationId: v1.products.update
+      tags:
+        - Product
+      parameters:
+        -
+          name: product
+          in: path
+          required: true
+          description: 'The product ID'
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateProductRequest'
+      responses:
+        200:
+          description: '`ProductData`'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductData'
+        403:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+        404:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+        401:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+        422:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+    delete:
+      operationId: v1.products.destroy
+      tags:
+        - Product
+      parameters:
+        -
+          name: product
+          in: path
+          required: true
+          description: 'The product ID'
+          schema:
+            type: string
+      responses:
+        204:
+          description: 'No content'
+        403:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+        404:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+        401:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+  /v1/product-categories:
+    get:
+      operationId: v1.product-categories.index
+      tags:
+        - ProductCategory
       responses:
         200:
           description: ''
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  data: { type: array, prefixItems: [{ type: object, properties: { id: { type: string, const: 01977a1e-2c3b-7000-8000-000000000001 }, name: { type: string, const: 'Sterilization pouch 90x260mm' }, reference: { type: string, const: POU-90260 }, unit: { type: string, const: box_of_200 }, is_sterilizable: { type: boolean }, min_threshold: { type: integer, const: 5 } }, required: [id, name, reference, unit, is_sterilizable, min_threshold] }], minItems: 1, maxItems: 1, additionalItems: false }
-                  meta: { type: object, properties: { next_cursor: { type: 'null' } }, required: [next_cursor] }
-                required:
-                  - data
-                  - meta
+                type: array
+                items:
+                  $ref: '#/components/schemas/ProductCategoryData'
+        403:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
         401:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+    post:
+      operationId: v1.product-categories.store
+      tags:
+        - ProductCategory
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateProductCategoryRequest'
+      responses:
+        200:
+          description: '`ProductCategoryData`'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductCategoryData'
+        403:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+        401:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+        422:
           description: 'SteriQore API error envelope.'
           content:
             application/json:
@@ -500,6 +715,56 @@ components:
         - email
         - role
       title: CreateInvitationRequest
+    CreateProductCategoryRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          maxLength: 255
+        parent_category_id:
+          type:
+            - string
+            - 'null'
+          format: uuid
+      required:
+        - name
+      title: CreateProductCategoryRequest
+    CreateProductRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          maxLength: 255
+        reference:
+          type: string
+          maxLength: 100
+        unit:
+          type: string
+          maxLength: 50
+        min_threshold:
+          type: integer
+          minimum: 0
+        is_sterilizable:
+          type: boolean
+        barcode:
+          type:
+            - string
+            - 'null'
+          maxLength: 100
+        category_id:
+          type:
+            - string
+            - 'null'
+          format: uuid
+        default_location_id:
+          type:
+            - string
+            - 'null'
+          format: uuid
+      required:
+        - name
+        - reference
+      title: CreateProductRequest
     CursorPaginatedDataCollection:
       type: object
       additionalProperties: {}
@@ -523,6 +788,14 @@ components:
         - email
         - password
       title: LoginRequest
+    ProductCategoryData:
+      type: object
+      additionalProperties: {}
+      title: ProductCategoryData
+    ProductData:
+      type: object
+      additionalProperties: {}
+      title: ProductData
     RegisterTenantRequest:
       type: object
       properties:
@@ -564,6 +837,39 @@ components:
         - practitioner
         - viewer
       title: TenantRole
+    UpdateProductRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          maxLength: 255
+        reference:
+          type: string
+          maxLength: 100
+        unit:
+          type: string
+          maxLength: 50
+        min_threshold:
+          type: integer
+          minimum: 0
+        is_sterilizable:
+          type: boolean
+        barcode:
+          type:
+            - string
+            - 'null'
+          maxLength: 100
+        category_id:
+          type:
+            - string
+            - 'null'
+          format: uuid
+        default_location_id:
+          type:
+            - string
+            - 'null'
+          format: uuid
+      title: UpdateProductRequest
     UserData:
       type: object
       additionalProperties: {}

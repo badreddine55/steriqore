@@ -4,6 +4,8 @@ use App\Http\Controllers\Api\V1\AuditEventController;
 use App\Http\Controllers\Api\V1\Auth\LoginController;
 use App\Http\Controllers\Api\V1\Auth\LogoutController;
 use App\Http\Controllers\Api\V1\Auth\LogoutEverywhereController;
+use App\Http\Controllers\Api\V1\Catalog\ProductCategoryController;
+use App\Http\Controllers\Api\V1\Catalog\ProductController;
 use App\Http\Controllers\Api\V1\Identity\AcceptInvitationController;
 use App\Http\Controllers\Api\V1\Identity\InvitationController;
 use App\Http\Controllers\Api\V1\Identity\MemberController;
@@ -11,7 +13,6 @@ use App\Http\Controllers\Api\V1\Identity\RegisterTenantController;
 use App\Http\Controllers\Api\V1\MeController;
 use App\Http\Controllers\Api\V1\Mock\CyclesMockController;
 use App\Http\Controllers\Api\V1\Mock\LabelScanMockController;
-use App\Http\Controllers\Api\V1\Mock\ProductsMockController;
 use App\Http\Controllers\Api\V1\Mock\StockLevelsMockController;
 use App\Http\Controllers\Api\V1\SitesController;
 use Illuminate\Support\Facades\Route;
@@ -37,10 +38,22 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
 
         Route::get('audit-events', [AuditEventController::class, 'index'])->name('audit-events.index');
 
-        // MOCK — no backing tables until S2-S3-S4. See each controller's
+        Route::get('product-categories', [ProductCategoryController::class, 'index'])->name('product-categories.index');
+        Route::post('product-categories', [ProductCategoryController::class, 'store'])
+            ->middleware('idempotent')
+            ->name('product-categories.store');
+
+        Route::get('products', [ProductController::class, 'index'])->name('products.index');
+        Route::post('products', [ProductController::class, 'store'])
+            ->middleware('idempotent')
+            ->name('products.store');
+        Route::get('products/{product}', [ProductController::class, 'show'])->name('products.show');
+        Route::patch('products/{product}', [ProductController::class, 'update'])->name('products.update');
+        Route::delete('products/{product}', [ProductController::class, 'destroy'])->name('products.destroy');
+
+        // MOCK — no backing tables until S3-S4. See each controller's
         // docblock. Shapes are a first draft; refine when the real domain
         // lands, as a documented OpenAPI change, not a silent one.
-        Route::get('products', [ProductsMockController::class, 'index'])->name('products.index');
         Route::get('stock-levels', [StockLevelsMockController::class, 'index'])->name('stock-levels.index');
         Route::get('cycles', [CyclesMockController::class, 'index'])->name('cycles.index');
         Route::get('labels/{code}', [LabelScanMockController::class, 'show'])->name('labels.show');
