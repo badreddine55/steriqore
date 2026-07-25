@@ -10,6 +10,7 @@ use App\Domain\Tenancy\Models\Tenant;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\V1\Identity\CreateInvitationRequest;
 use App\Support\Api\ApiException;
+use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 
 class InvitationController extends Controller
@@ -28,7 +29,7 @@ class InvitationController extends Controller
         return InvitationData::fromModel($invitation);
     }
 
-    public function destroy(Invitation $invitation, RevokeInvitationAction $action): Response
+    public function destroy(Invitation $invitation, Request $request, RevokeInvitationAction $action): Response
     {
         // Not BelongsToTenant-scoped (see Invitation's docblock) — checked
         // by hand, before authorize(). 404, not 403: a foreign-tenant
@@ -41,7 +42,7 @@ class InvitationController extends Controller
 
         $this->authorize('delete', $invitation);
 
-        $action->execute($invitation);
+        $action->execute($invitation, $request->user());
 
         return response()->noContent();
     }

@@ -2,16 +2,23 @@
 
 namespace App\Domain\Identity\Actions;
 
+use App\Domain\Compliance\Actions\RecordAuditEventAction;
 use App\Domain\Identity\Mail\InvitationMail;
 use App\Domain\Identity\Models\Invitation;
 use App\Domain\Tenancy\Models\Tenant;
 use App\Models\User;
 use App\Support\Api\ApiException;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 
 class CreateInvitationAction
 {
+    public function __construct(
+        private RecordAuditEventAction $recordAuditEvent,
+        private Request $request,
+    ) {}
+
     public function execute(Tenant $tenant, User $invitedBy, string $email, string $role): Invitation
     {
         if ($tenant->users()->where('email', $email)->exists()) {
@@ -36,6 +43,16 @@ class CreateInvitationAction
             'invited_by' => $invitedBy->id,
             'expires_at' => now()->addDays(7),
         ]);
+
+        $this->recordAuditEvent->execute(
+            tenant: $tenant,
+            actor: $invitedBy,
+            action: 'invitation.created',
+            subjectType: Invitation::class,
+            subjectId: $invitation->id,
+            newValues: ['email' => $email, 'role' => $role],
+            request: $this->request,
+        );
 
         Mail::to($email)->queue(new InvitationMail($invitation));
 

@@ -2,10 +2,12 @@
 
 namespace App\Providers;
 
+use App\Domain\Compliance\Models\AuditEvent;
 use App\Domain\Identity\Models\Invitation;
 use App\Domain\Identity\Models\PersonalAccessToken;
 use App\Domain\Identity\Models\TenantUser;
 use App\Domain\Tenancy\Models\Site;
+use App\Policies\AuditEventPolicy;
 use App\Policies\InvitationPolicy;
 use App\Policies\SitePolicy;
 use App\Policies\TenantUserPolicy;
@@ -47,6 +49,7 @@ class AppServiceProvider extends ServiceProvider
         Gate::policy(Site::class, SitePolicy::class);
         Gate::policy(Invitation::class, InvitationPolicy::class);
         Gate::policy(TenantUser::class, TenantUserPolicy::class);
+        Gate::policy(AuditEvent::class, AuditEventPolicy::class);
     }
 
     /**

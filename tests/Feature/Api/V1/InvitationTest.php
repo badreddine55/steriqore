@@ -231,7 +231,7 @@ test('disabling a membership revokes its tokens for that tenant only', function 
     $tokenOther = tokenFor($otherTenant, $user);
 
     $membership = TenantUser::where('tenant_id', $tenant->id)->where('user_id', $user->id)->first();
-    app(DisableTenantMembershipAction::class)->execute($membership);
+    app(DisableTenantMembershipAction::class)->execute($membership, $user);
 
     $this->withToken($tokenA)->getJson('/api/v1/me')->assertStatus(401);
     $this->withToken($tokenOther)->getJson('/api/v1/me')->assertOk();

@@ -2,17 +2,23 @@
 
 namespace App\Domain\Identity\Actions;
 
+use App\Domain\Compliance\Actions\RecordAuditEventAction;
 use App\Domain\Identity\Models\Invitation;
 use App\Domain\Identity\Models\TenantUser;
 use App\Domain\Tenancy\Models\Tenant;
 use App\Models\User;
 use App\Support\Api\ApiException;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Spatie\Permission\PermissionRegistrar;
 
 class AcceptInvitationAction
 {
-    public function __construct(private MintTenantTokenAction $mintTenantToken) {}
+    public function __construct(
+        private MintTenantTokenAction $mintTenantToken,
+        private RecordAuditEventAction $recordAuditEvent,
+        private Request $request,
+    ) {}
 
     /**
      * @return array{plain_text_token: string, user: User, tenant: Tenant}
@@ -79,6 +85,16 @@ class AcceptInvitationAction
         }
 
         $invitation->update(['accepted_at' => now()]);
+
+        $this->recordAuditEvent->execute(
+            tenant: $tenant,
+            actor: $user,
+            action: 'invitation.accepted',
+            subjectType: Invitation::class,
+            subjectId: $invitation->id,
+            newValues: ['role' => $invitation->role],
+            request: $this->request,
+        );
 
         return [
             'plain_text_token' => $this->mintTenantToken->execute($user, $tenant, 'mobile'),

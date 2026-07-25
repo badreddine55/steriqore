@@ -2,11 +2,13 @@
 
 namespace App\Domain\Identity\Actions;
 
+use App\Domain\Compliance\Actions\RecordAuditEventAction;
 use App\Domain\Identity\Enums\TenantRole;
 use App\Domain\Identity\Models\TenantUser;
 use App\Domain\Tenancy\Models\Tenant;
 use App\Models\User;
 use App\Support\Api\ApiException;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Spatie\Permission\PermissionRegistrar;
@@ -21,6 +23,8 @@ class RegisterTenantAction
     public function __construct(
         private SeedTenantRolesAction $seedTenantRoles,
         private MintTenantTokenAction $mintTenantToken,
+        private RecordAuditEventAction $recordAuditEvent,
+        private Request $request,
     ) {}
 
     /**
@@ -71,6 +75,16 @@ class RegisterTenantAction
 
             return [$tenant, $owner];
         });
+
+        $this->recordAuditEvent->execute(
+            tenant: $tenant,
+            actor: $owner,
+            action: 'tenant.registered',
+            subjectType: Tenant::class,
+            subjectId: $tenant->id,
+            newValues: ['name' => $tenantName, 'slug' => $tenantSlug],
+            request: $this->request,
+        );
 
         return [
             'plain_text_token' => $this->mintTenantToken->execute($owner, $tenant, 'mobile'),

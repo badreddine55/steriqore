@@ -5,6 +5,29 @@ question was flagged instead of guessed, per `CLAUDE.md`. Newest on top.
 
 ---
 
+## OQ-5 — Audit log "UI viewer" is API-only; the web app has no tenant
+resolution yet
+**Raised:** S1-ANA-04 (Audit log), 2026-07-25
+**Context:** The backlog item asks for the audit log plus a UI viewer.
+Everything shipped so far — S1-ANA-01 through S1-ANA-04 — is the
+`/api/v1` surface the mobile app (and, indirectly, an Inertia frontend)
+consumes; the token-scoped tenant resolution it relies on
+(`App\Http\Middleware\Api\SetCurrentTenant`, reading the Sanctum token)
+has no web/session equivalent. The web app currently authenticates via
+Fortify exactly as the starter kit shipped it — a single global session
+with no concept of "which practice" at all. NAMING.md's subdomain
+convention (`{slug}.steriqore.<tld>`) implies the web side should resolve
+tenant by subdomain rather than by token, which is a different mechanism
+from the API's and not yet built.
+**Default implemented:** `GET /api/v1/audit-events` — real, tested, permission
+-gated (owner/admin only), tenant-scoped. No Inertia page renders it.
+Building one now, ahead of web-side tenant resolution existing, would mean
+either a page with no real tenant scoping (a security bug) or reinventing
+that resolution ad hoc for one page instead of deciding it properly.
+**Needs confirmation:** should web tenant resolution be subdomain-based (matches
+NAMING.md) — its own backlog item — before any Inertia/React page (audit
+log or otherwise) is built against tenant-scoped data?
+
 ## OQ-4 — Sanctum token lifetime
 **Raised:** S1-ANA-02 (Identity), 2026-07-25
 **Context:** Nothing in the brief specifies how long a mobile session/token

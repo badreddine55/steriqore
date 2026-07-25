@@ -7,6 +7,7 @@ use App\Domain\Identity\Models\TenantUser;
 use App\Domain\Tenancy\Models\Tenant;
 use App\Http\Controllers\Controller;
 use App\Support\Api\ApiException;
+use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 
 class MemberController extends Controller
@@ -17,7 +18,7 @@ class MemberController extends Controller
      * bootstrap reason as Invitation), so the tenant match is checked
      * before authorize(), same IDOR-safe pattern as InvitationController.
      */
-    public function destroy(TenantUser $tenantUser, DisableTenantMembershipAction $action): Response
+    public function destroy(TenantUser $tenantUser, Request $request, DisableTenantMembershipAction $action): Response
     {
         if ($tenantUser->tenant_id !== Tenant::current()->id) {
             throw new ApiException('NOT_FOUND', 'The requested resource was not found.', 404);
@@ -25,7 +26,7 @@ class MemberController extends Controller
 
         $this->authorize('disable', $tenantUser);
 
-        $action->execute($tenantUser);
+        $action->execute($tenantUser, $request->user());
 
         return response()->noContent();
     }

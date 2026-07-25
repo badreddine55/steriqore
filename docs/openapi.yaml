@@ -45,6 +45,34 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ApiErrorEnvelope'
+  /v1/audit-events:
+    get:
+      operationId: v1.audit-events.index
+      summary: |-
+        The append-only trail for the practice the current token is scoped
+        to — filtered by AuditEvent's TenantScope global scope, not a manual
+        where() here. Newest first; cursor-paginated per the API conventions
+      tags:
+        - AuditEvent
+      responses:
+        200:
+          description: '`CursorPaginatedDataCollection`'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CursorPaginatedDataCollection'
+        403:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+        401:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
   /v1/cycles:
     get:
       operationId: v1.cycles.index

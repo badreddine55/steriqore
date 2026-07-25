@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\V1\AuditEventController;
 use App\Http\Controllers\Api\V1\Auth\LoginController;
 use App\Http\Controllers\Api\V1\Auth\LogoutController;
 use App\Http\Controllers\Api\V1\Auth\LogoutEverywhereController;
@@ -33,6 +34,8 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
         Route::delete('invitations/{invitation}', [InvitationController::class, 'destroy'])->name('invitations.destroy');
 
         Route::delete('members/{tenantUser}', [MemberController::class, 'destroy'])->name('members.destroy');
+
+        Route::get('audit-events', [AuditEventController::class, 'index'])->name('audit-events.index');
 
         // MOCK — no backing tables until S2-S3-S4. See each controller's
         // docblock. Shapes are a first draft; refine when the real domain

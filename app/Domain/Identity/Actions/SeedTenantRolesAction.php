@@ -22,6 +22,7 @@ class SeedTenantRolesAction
         'invitations.revoke',
         'memberships.disable',
         'sites.view',
+        'audit.view',
     ];
 
     private const array PERMISSIONS_BY_ROLE = [
