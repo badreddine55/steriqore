@@ -14,6 +14,8 @@ use App\Http\Controllers\Api\V1\MeController;
 use App\Http\Controllers\Api\V1\Mock\CyclesMockController;
 use App\Http\Controllers\Api\V1\Mock\LabelScanMockController;
 use App\Http\Controllers\Api\V1\Mock\StockLevelsMockController;
+use App\Http\Controllers\Api\V1\Purchasing\GoodsReceiptController;
+use App\Http\Controllers\Api\V1\Purchasing\PurchaseOrderController;
 use App\Http\Controllers\Api\V1\Purchasing\SupplierController;
 use App\Http\Controllers\Api\V1\Purchasing\SupplierProductController;
 use App\Http\Controllers\Api\V1\SitesController;
@@ -65,6 +67,21 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
         Route::post('suppliers/{supplier}/products', [SupplierProductController::class, 'store'])
             ->middleware('idempotent')
             ->name('suppliers.products.store');
+
+        Route::get('purchase-orders', [PurchaseOrderController::class, 'index'])->name('purchase-orders.index');
+        Route::post('purchase-orders', [PurchaseOrderController::class, 'store'])
+            ->middleware('idempotent')
+            ->name('purchase-orders.store');
+        Route::get('purchase-orders/{purchaseOrder}', [PurchaseOrderController::class, 'show'])->name('purchase-orders.show');
+        Route::post('purchase-orders/{purchaseOrder}/order', [PurchaseOrderController::class, 'order'])
+            ->middleware('idempotent')
+            ->name('purchase-orders.order');
+        Route::post('purchase-orders/{purchaseOrder}/cancel', [PurchaseOrderController::class, 'cancel'])
+            ->middleware('idempotent')
+            ->name('purchase-orders.cancel');
+        Route::post('purchase-orders/{purchaseOrder}/receipts', [GoodsReceiptController::class, 'store'])
+            ->middleware('idempotent')
+            ->name('purchase-orders.receipts.store');
 
         // MOCK — no backing tables until S3-S4. See each controller's
         // docblock. Shapes are a first draft; refine when the real domain

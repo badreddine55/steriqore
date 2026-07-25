@@ -97,6 +97,56 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ApiErrorEnvelope'
+  '/v1/purchase-orders/{purchaseOrder}/receipts':
+    post:
+      operationId: v1.purchase-orders.receipts.store
+      tags:
+        - GoodsReceipt
+      parameters:
+        -
+          name: purchaseOrder
+          in: path
+          required: true
+          description: 'The purchase order ID'
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReceiveGoodsRequest'
+      responses:
+        200:
+          description: '`GoodsReceiptData`'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GoodsReceiptData'
+        403:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+        404:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+        401:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+        422:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
   /v1/invitations:
     post:
       operationId: v1.invitations.store
@@ -574,6 +624,190 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ApiErrorEnvelope'
+  /v1/purchase-orders:
+    get:
+      operationId: v1.purchase-orders.index
+      tags:
+        - PurchaseOrder
+      responses:
+        200:
+          description: '`CursorPaginatedDataCollection`'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CursorPaginatedDataCollection'
+        403:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+        401:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+    post:
+      operationId: v1.purchase-orders.store
+      tags:
+        - PurchaseOrder
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatePurchaseOrderRequest'
+      responses:
+        200:
+          description: '`PurchaseOrderData`'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PurchaseOrderData'
+        403:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+        401:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+        422:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+  '/v1/purchase-orders/{purchaseOrder}':
+    get:
+      operationId: v1.purchase-orders.show
+      tags:
+        - PurchaseOrder
+      parameters:
+        -
+          name: purchaseOrder
+          in: path
+          required: true
+          description: 'The purchase order ID'
+          schema:
+            type: string
+      responses:
+        200:
+          description: '`PurchaseOrderData`'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PurchaseOrderData'
+        403:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+        404:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+        401:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+  '/v1/purchase-orders/{purchaseOrder}/order':
+    post:
+      operationId: v1.purchase-orders.order
+      tags:
+        - PurchaseOrder
+      parameters:
+        -
+          name: purchaseOrder
+          in: path
+          required: true
+          description: 'The purchase order ID'
+          schema:
+            type: string
+      responses:
+        200:
+          description: '`PurchaseOrderData`'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PurchaseOrderData'
+        403:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+        404:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+        401:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+  '/v1/purchase-orders/{purchaseOrder}/cancel':
+    post:
+      operationId: v1.purchase-orders.cancel
+      tags:
+        - PurchaseOrder
+      parameters:
+        -
+          name: purchaseOrder
+          in: path
+          required: true
+          description: 'The purchase order ID'
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CancelPurchaseOrderRequest'
+      responses:
+        200:
+          description: '`PurchaseOrderData`'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PurchaseOrderData'
+        403:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+        404:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+        401:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+        422:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
   /v1/tenants:
     post:
       operationId: v1.tenants.register
@@ -992,6 +1226,15 @@ components:
       required:
         - product_id
       title: AttachSupplierProductRequest
+    CancelPurchaseOrderRequest:
+      type: object
+      properties:
+        reason:
+          type:
+            - string
+            - 'null'
+          maxLength: 1000
+      title: CancelPurchaseOrderRequest
     CreateInvitationRequest:
       type: object
       properties:
@@ -1054,6 +1297,36 @@ components:
         - name
         - reference
       title: CreateProductRequest
+    CreatePurchaseOrderRequest:
+      type: object
+      properties:
+        supplier_id:
+          type: string
+          format: uuid
+        lines:
+          type: array
+          items:
+            type: object
+            properties:
+              product_id:
+                type: string
+                format: uuid
+              qty_ordered:
+                type: integer
+                minimum: 1
+              unit_price:
+                type:
+                  - number
+                  - 'null'
+                minimum: 0
+            required:
+              - product_id
+              - qty_ordered
+          minItems: 1
+      required:
+        - supplier_id
+        - lines
+      title: CreatePurchaseOrderRequest
     CreateSupplierRequest:
       type: object
       properties:
@@ -1083,6 +1356,10 @@ components:
       type: object
       additionalProperties: {}
       title: CursorPaginatedDataCollection
+    GoodsReceiptData:
+      type: object
+      additionalProperties: {}
+      title: GoodsReceiptData
     InvitationData:
       type: object
       additionalProperties: {}
@@ -1110,6 +1387,45 @@ components:
       type: object
       additionalProperties: {}
       title: ProductData
+    PurchaseOrderData:
+      type: object
+      additionalProperties: {}
+      title: PurchaseOrderData
+    ReceiveGoodsRequest:
+      type: object
+      properties:
+        lines:
+          type: array
+          items:
+            type: object
+            properties:
+              purchase_order_line_id:
+                type: string
+                format: uuid
+              batch_number:
+                type: string
+                maxLength: 255
+              expiry_date:
+                type:
+                  - string
+                  - 'null'
+                format: date-time
+              qty:
+                type: integer
+                minimum: 1
+              discrepancy_reason:
+                type:
+                  - string
+                  - 'null'
+                maxLength: 1000
+            required:
+              - purchase_order_line_id
+              - batch_number
+              - qty
+          minItems: 1
+      required:
+        - lines
+      title: ReceiveGoodsRequest
     RegisterTenantRequest:
       type: object
       properties:
