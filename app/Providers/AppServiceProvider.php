@@ -8,6 +8,8 @@ use App\Domain\Compliance\Models\AuditEvent;
 use App\Domain\Identity\Models\Invitation;
 use App\Domain\Identity\Models\PersonalAccessToken;
 use App\Domain\Identity\Models\TenantUser;
+use App\Domain\Inventory\Models\StockLevel;
+use App\Domain\Inventory\Models\StockMovement;
 use App\Domain\Purchasing\Models\PurchaseOrder;
 use App\Domain\Purchasing\Models\Supplier;
 use App\Domain\Tenancy\Models\Site;
@@ -17,6 +19,8 @@ use App\Policies\ProductCategoryPolicy;
 use App\Policies\ProductPolicy;
 use App\Policies\PurchaseOrderPolicy;
 use App\Policies\SitePolicy;
+use App\Policies\StockLevelPolicy;
+use App\Policies\StockMovementPolicy;
 use App\Policies\SupplierPolicy;
 use App\Policies\TenantUserPolicy;
 use App\Support\Api\ScrambleErrorEnvelope;
@@ -62,6 +66,8 @@ class AppServiceProvider extends ServiceProvider
         Gate::policy(ProductCategory::class, ProductCategoryPolicy::class);
         Gate::policy(Supplier::class, SupplierPolicy::class);
         Gate::policy(PurchaseOrder::class, PurchaseOrderPolicy::class);
+        Gate::policy(StockMovement::class, StockMovementPolicy::class);
+        Gate::policy(StockLevel::class, StockLevelPolicy::class);
     }
 
     /**

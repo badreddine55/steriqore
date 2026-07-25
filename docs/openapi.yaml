@@ -878,7 +878,35 @@ paths:
     get:
       operationId: v1.stock-levels.index
       tags:
-        - StockLevelsMock
+        - StockLevel
+      responses:
+        200:
+          description: '`CursorPaginatedDataCollection`'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CursorPaginatedDataCollection'
+        403:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+        401:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+  /v1/stock-levels/rebuild:
+    post:
+      operationId: v1.stock-levels.rebuild
+      summary: |-
+        Rebuilds this tenant's stock_levels from stock_movements — proves
+        CLAUDE.md invariant #1 (the projection is always rebuildable by
+        replay) as a real, callable capability, not just a design claim
+      tags:
+        - StockLevel
       responses:
         200:
           description: ''
@@ -887,12 +915,130 @@ paths:
               schema:
                 type: object
                 properties:
-                  data: { type: array, prefixItems: [{ type: object, properties: { product_id: { type: string, const: 01977a1e-2c3b-7000-8000-000000000001 }, location_id: { type: string, const: 01977a1e-2c3b-7000-8000-000000000010 }, quantity: { type: integer, const: 42 }, nearest_expiry: { type: string, const: '2027-03-01' } }, required: [product_id, location_id, quantity, nearest_expiry] }], minItems: 1, maxItems: 1, additionalItems: false }
-                  meta: { type: object, properties: { next_cursor: { type: 'null' } }, required: [next_cursor] }
+                  rows_rebuilt: { type: integer }
                 required:
-                  - data
-                  - meta
+                  - rows_rebuilt
+        403:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
         401:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+  /v1/stock-movements/issue:
+    post:
+      operationId: v1.stock-movements.issue
+      tags:
+        - StockMovement
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/IssueStockRequest'
+      responses:
+        200:
+          description: '`StockMovementData`'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StockMovementData'
+        403:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+        401:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+        422:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+  /v1/stock-movements/transfer:
+    post:
+      operationId: v1.stock-movements.transfer
+      tags:
+        - StockMovement
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TransferStockRequest'
+      responses:
+        201:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  debit: { $ref: '#/components/schemas/StockMovementData' }
+                  credit: { $ref: '#/components/schemas/StockMovementData' }
+                required:
+                  - debit
+                  - credit
+        403:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+        401:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+        422:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+  /v1/stock-movements/adjust:
+    post:
+      operationId: v1.stock-movements.adjust
+      tags:
+        - StockMovement
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AdjustStockRequest'
+      responses:
+        200:
+          description: '`StockMovementData`'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StockMovementData'
+        403:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+        401:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+        422:
           description: 'SteriQore API error envelope.'
           content:
             application/json:
@@ -1182,6 +1328,29 @@ components:
         - name
         - password
       title: AcceptInvitationRequest
+    AdjustStockRequest:
+      type: object
+      properties:
+        batch_id:
+          type: string
+          format: uuid
+        location_id:
+          type: string
+          format: uuid
+        qty:
+          type: integer
+        reason:
+          type: string
+          description: |-
+            Mandatory, unlike issue/transfer: an adjustment is a
+            correction with no other evidence behind it.
+          maxLength: 1000
+      required:
+        - batch_id
+        - location_id
+        - qty
+        - reason
+      title: AdjustStockRequest
     ApiErrorEnvelope:
       type: object
       properties:
@@ -1364,6 +1533,28 @@ components:
       type: object
       additionalProperties: {}
       title: InvitationData
+    IssueStockRequest:
+      type: object
+      properties:
+        batch_id:
+          type: string
+          format: uuid
+        location_id:
+          type: string
+          format: uuid
+        qty:
+          type: integer
+          minimum: 1
+        reason:
+          type:
+            - string
+            - 'null'
+          maxLength: 1000
+      required:
+        - batch_id
+        - location_id
+        - qty
+      title: IssueStockRequest
     LoginRequest:
       type: object
       properties:
@@ -1394,6 +1585,9 @@ components:
     ReceiveGoodsRequest:
       type: object
       properties:
+        location_id:
+          type: string
+          format: uuid
         lines:
           type: array
           items:
@@ -1424,6 +1618,7 @@ components:
               - qty
           minItems: 1
       required:
+        - location_id
         - lines
       title: ReceiveGoodsRequest
     RegisterTenantRequest:
@@ -1451,6 +1646,10 @@ components:
         - owner_email
         - password
       title: RegisterTenantRequest
+    StockMovementData:
+      type: object
+      additionalProperties: {}
+      title: StockMovementData
     SupplierData:
       type: object
       additionalProperties: {}
@@ -1475,6 +1674,32 @@ components:
         - practitioner
         - viewer
       title: TenantRole
+    TransferStockRequest:
+      type: object
+      properties:
+        batch_id:
+          type: string
+          format: uuid
+        from_location_id:
+          type: string
+          format: uuid
+        to_location_id:
+          type: string
+          format: uuid
+        qty:
+          type: integer
+          minimum: 1
+        reason:
+          type:
+            - string
+            - 'null'
+          maxLength: 1000
+      required:
+        - batch_id
+        - from_location_id
+        - to_location_id
+        - qty
+      title: TransferStockRequest
     UpdateProductRequest:
       type: object
       properties:

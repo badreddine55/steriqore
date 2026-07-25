@@ -11,6 +11,19 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Spatie\Permission\PermissionRegistrar;
 
+/**
+ * There's no "create a site/location" API endpoint yet (S1-ANA-01 built
+ * the tenancy schema + scoping; management endpoints for sites/rooms/
+ * locations weren't part of that item's scope) — created directly via
+ * Eloquent, same pattern already used for tenants/users in these tests.
+ */
+function createLocationFor(Tenant $tenant): string
+{
+    $site = $tenant->sites()->create(['name' => 'Cabinet Principal']);
+
+    return $site->storageLocations()->create(['tenant_id' => $tenant->id, 'name' => 'Réserve'])->id;
+}
+
 function poTenantWithMember(TenantRole $role = TenantRole::StockManager): array
 {
     $tenant = Tenant::create(['name' => 'Cabinet Test', 'slug' => 'cabinet-'.Str::lower(Str::random(10))]);
@@ -56,6 +69,7 @@ test('a stock manager can create a purchase order, mark it ordered, and fully re
     [$tenant, $user] = poTenantWithMember();
     $token = poTokenFor($tenant, $user);
     [$supplierId, $productId] = createSupplierAndProduct($token);
+    $locationId = createLocationFor($tenant);
 
     $create = $this->withToken($token)->postJson('/api/v1/purchase-orders', [
         'supplier_id' => $supplierId,
@@ -69,6 +83,7 @@ test('a stock manager can create a purchase order, mark it ordered, and fully re
     $order->assertCreated()->assertJsonPath('status', 'ordered');
 
     $receipt = $this->withToken($token)->postJson("/api/v1/purchase-orders/{$poId}/receipts", [
+        'location_id' => $locationId,
         'lines' => [[
             'purchase_order_line_id' => $lineId,
             'batch_number' => 'BATCH-001',
@@ -94,6 +109,7 @@ test('a partial receipt moves the purchase order to partially_received, and a se
     [$tenant, $user] = poTenantWithMember();
     $token = poTokenFor($tenant, $user);
     [$supplierId, $productId] = createSupplierAndProduct($token);
+    $locationId = createLocationFor($tenant);
 
     $create = $this->withToken($token)->postJson('/api/v1/purchase-orders', [
         'supplier_id' => $supplierId,
@@ -105,6 +121,7 @@ test('a partial receipt moves the purchase order to partially_received, and a se
     $this->withToken($token)->postJson("/api/v1/purchase-orders/{$poId}/order", [], ['Idempotency-Key' => (string) Str::uuid()]);
 
     $firstReceipt = $this->withToken($token)->postJson("/api/v1/purchase-orders/{$poId}/receipts", [
+        'location_id' => $locationId,
         'lines' => [['purchase_order_line_id' => $lineId, 'batch_number' => 'B1', 'qty' => 60]],
     ], ['Idempotency-Key' => (string) Str::uuid()]);
     $firstReceipt->assertCreated();
@@ -114,6 +131,7 @@ test('a partial receipt moves the purchase order to partially_received, and a se
         ->assertJsonPath('lines.0.qty_received', 60);
 
     $secondReceipt = $this->withToken($token)->postJson("/api/v1/purchase-orders/{$poId}/receipts", [
+        'location_id' => $locationId,
         'lines' => [['purchase_order_line_id' => $lineId, 'batch_number' => 'B2', 'qty' => 40]],
     ], ['Idempotency-Key' => (string) Str::uuid()]);
     $secondReceipt->assertCreated();
@@ -127,6 +145,7 @@ test('the same receipt request submitted twice with the same Idempotency-Key is 
     [$tenant, $user] = poTenantWithMember();
     $token = poTokenFor($tenant, $user);
     [$supplierId, $productId] = createSupplierAndProduct($token);
+    $locationId = createLocationFor($tenant);
 
     $create = $this->withToken($token)->postJson('/api/v1/purchase-orders', [
         'supplier_id' => $supplierId,
@@ -136,7 +155,7 @@ test('the same receipt request submitted twice with the same Idempotency-Key is 
     $lineId = $create->json('lines.0.id');
     $this->withToken($token)->postJson("/api/v1/purchase-orders/{$poId}/order", [], ['Idempotency-Key' => (string) Str::uuid()]);
 
-    $payload = ['lines' => [['purchase_order_line_id' => $lineId, 'batch_number' => 'B1', 'qty' => 50]]];
+    $payload = ['location_id' => $locationId, 'lines' => [['purchase_order_line_id' => $lineId, 'batch_number' => 'B1', 'qty' => 50]]];
     $idempotencyKey = (string) Str::uuid();
 
     $this->withToken($token)->postJson("/api/v1/purchase-orders/{$poId}/receipts", $payload, ['Idempotency-Key' => $idempotencyKey])
@@ -152,6 +171,7 @@ test('receiving cannot happen while the purchase order is still a draft', functi
     [$tenant, $user] = poTenantWithMember();
     $token = poTokenFor($tenant, $user);
     [$supplierId, $productId] = createSupplierAndProduct($token);
+    $locationId = createLocationFor($tenant);
 
     $create = $this->withToken($token)->postJson('/api/v1/purchase-orders', [
         'supplier_id' => $supplierId,
@@ -161,6 +181,7 @@ test('receiving cannot happen while the purchase order is still a draft', functi
     $lineId = $create->json('lines.0.id');
 
     $response = $this->withToken($token)->postJson("/api/v1/purchase-orders/{$poId}/receipts", [
+        'location_id' => $locationId,
         'lines' => [['purchase_order_line_id' => $lineId, 'batch_number' => 'B1', 'qty' => 50]],
     ], ['Idempotency-Key' => (string) Str::uuid()]);
 

@@ -10,10 +10,11 @@ use App\Http\Controllers\Api\V1\Identity\AcceptInvitationController;
 use App\Http\Controllers\Api\V1\Identity\InvitationController;
 use App\Http\Controllers\Api\V1\Identity\MemberController;
 use App\Http\Controllers\Api\V1\Identity\RegisterTenantController;
+use App\Http\Controllers\Api\V1\Inventory\StockLevelController;
+use App\Http\Controllers\Api\V1\Inventory\StockMovementController;
 use App\Http\Controllers\Api\V1\MeController;
 use App\Http\Controllers\Api\V1\Mock\CyclesMockController;
 use App\Http\Controllers\Api\V1\Mock\LabelScanMockController;
-use App\Http\Controllers\Api\V1\Mock\StockLevelsMockController;
 use App\Http\Controllers\Api\V1\Purchasing\GoodsReceiptController;
 use App\Http\Controllers\Api\V1\Purchasing\PurchaseOrderController;
 use App\Http\Controllers\Api\V1\Purchasing\SupplierController;
@@ -83,10 +84,23 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
             ->middleware('idempotent')
             ->name('purchase-orders.receipts.store');
 
+        Route::get('stock-levels', [StockLevelController::class, 'index'])->name('stock-levels.index');
+        Route::post('stock-levels/rebuild', [StockLevelController::class, 'rebuild'])
+            ->middleware('idempotent')
+            ->name('stock-levels.rebuild');
+        Route::post('stock-movements/issue', [StockMovementController::class, 'issue'])
+            ->middleware('idempotent')
+            ->name('stock-movements.issue');
+        Route::post('stock-movements/transfer', [StockMovementController::class, 'transfer'])
+            ->middleware('idempotent')
+            ->name('stock-movements.transfer');
+        Route::post('stock-movements/adjust', [StockMovementController::class, 'adjust'])
+            ->middleware('idempotent')
+            ->name('stock-movements.adjust');
+
         // MOCK — no backing tables until S3-S4. See each controller's
         // docblock. Shapes are a first draft; refine when the real domain
         // lands, as a documented OpenAPI change, not a silent one.
-        Route::get('stock-levels', [StockLevelsMockController::class, 'index'])->name('stock-levels.index');
         Route::get('cycles', [CyclesMockController::class, 'index'])->name('cycles.index');
         Route::get('labels/{code}', [LabelScanMockController::class, 'show'])->name('labels.show');
     });

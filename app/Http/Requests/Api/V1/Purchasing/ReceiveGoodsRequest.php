@@ -24,6 +24,10 @@ class ReceiveGoodsRequest extends FormRequest
         $purchaseOrderId = $purchaseOrder instanceof PurchaseOrder ? $purchaseOrder->id : null;
 
         return [
+            'location_id' => [
+                'required', 'uuid',
+                Rule::exists('storage_locations', 'id')->where('tenant_id', $tenantId),
+            ],
             'lines' => ['required', 'array', 'min:1'],
             'lines.*.purchase_order_line_id' => [
                 'required', 'uuid',
