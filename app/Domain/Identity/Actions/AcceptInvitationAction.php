@@ -8,6 +8,7 @@ use App\Domain\Tenancy\Models\Tenant;
 use App\Models\User;
 use App\Support\Api\ApiException;
 use Illuminate\Support\Facades\Hash;
+use Spatie\Permission\PermissionRegistrar;
 
 class AcceptInvitationAction
 {
@@ -68,6 +69,14 @@ class AcceptInvitationAction
             ['tenant_id' => $tenant->id, 'user_id' => $user->id],
             ['status' => 'active', 'invited_at' => $invitation->created_at, 'joined_at' => now(), 'disabled_at' => null],
         );
+
+        $registrar = app(PermissionRegistrar::class);
+        $registrar->setPermissionsTeamId($tenant->id);
+        try {
+            $user->syncRoles([$invitation->role]);
+        } finally {
+            $registrar->setPermissionsTeamId(null);
+        }
 
         $invitation->update(['accepted_at' => now()]);
 

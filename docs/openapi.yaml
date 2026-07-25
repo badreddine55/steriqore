@@ -87,6 +87,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InvitationData'
+        403:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
         401:
           description: 'SteriQore API error envelope.'
           content:
@@ -115,6 +121,12 @@ paths:
       responses:
         204:
           description: 'No content'
+        403:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
         404:
           description: 'SteriQore API error envelope.'
           content:
@@ -256,6 +268,45 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ApiErrorEnvelope'
+  '/v1/members/{tenantUser}':
+    delete:
+      operationId: v1.members.destroy
+      summary: |-
+        Disables a member's access to this practice — see
+        DisableTenantMembershipAction. Not BelongsToTenant-scoped (same
+        bootstrap reason as Invitation), so the tenant match is checked
+        before authorize(), same IDOR-safe pattern as InvitationController
+      tags:
+        - Member
+      parameters:
+        -
+          name: tenantUser
+          in: path
+          required: true
+          description: 'The tenant user ID'
+          schema:
+            type: string
+      responses:
+        204:
+          description: 'No content'
+        403:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+        404:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+        401:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
   /v1/products:
     get:
       operationId: v1.products.index
@@ -280,6 +331,43 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ApiErrorEnvelope'
+  /v1/tenants:
+    post:
+      operationId: v1.tenants.register
+      summary: |-
+        Self-serve trial signup. Public — there is no existing account or
+        practice yet. The caller becomes `owner` of the new practice
+      tags:
+        - RegisterTenant
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterTenantRequest'
+      responses:
+        201:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token: { type: string }
+                  token_type: { type: string, const: Bearer }
+                  user: { $ref: '#/components/schemas/UserData' }
+                  tenant: { $ref: '#/components/schemas/TenantData' }
+                required:
+                  - token
+                  - token_type
+                  - user
+                  - tenant
+        422:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
   /v1/sites:
     get:
       operationId: v1.sites.index
@@ -297,6 +385,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/CursorPaginatedDataCollection'
+        403:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
         401:
           description: 'SteriQore API error envelope.'
           content:
@@ -401,6 +495,31 @@ components:
         - email
         - password
       title: LoginRequest
+    RegisterTenantRequest:
+      type: object
+      properties:
+        tenant_name:
+          type: string
+          maxLength: 255
+        tenant_slug:
+          type: string
+          pattern: '^[a-z0-9]+(-[a-z0-9]+)*$'
+          maxLength: 63
+        owner_name:
+          type: string
+          maxLength: 255
+        owner_email:
+          type: string
+          format: email
+        password:
+          type: string
+      required:
+        - tenant_name
+        - tenant_slug
+        - owner_name
+        - owner_email
+        - password
+      title: RegisterTenantRequest
     TenantData:
       type: object
       additionalProperties: {}

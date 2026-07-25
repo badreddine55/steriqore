@@ -1,10 +1,13 @@
 <?php
 
+use App\Domain\Identity\Actions\SeedTenantRolesAction;
+use App\Domain\Identity\Enums\TenantRole;
 use App\Domain\Identity\Models\TenantUser;
 use App\Domain\Tenancy\Models\Tenant;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
+use Spatie\Permission\PermissionRegistrar;
 
 function makeTenantMember(string $status = 'active'): array
 {
@@ -21,6 +24,12 @@ function makeTenantMember(string $status = 'active'): array
         'user_id' => $user->id,
         'status' => $status,
     ]);
+
+    app(SeedTenantRolesAction::class)->execute($tenant);
+    $registrar = app(PermissionRegistrar::class);
+    $registrar->setPermissionsTeamId($tenant->id);
+    $user->assignRole(TenantRole::Owner->value);
+    $registrar->setPermissionsTeamId(null);
 
     return [$tenant, $user];
 }

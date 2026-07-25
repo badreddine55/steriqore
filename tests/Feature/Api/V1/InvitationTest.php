@@ -1,6 +1,8 @@
 <?php
 
 use App\Domain\Identity\Actions\DisableTenantMembershipAction;
+use App\Domain\Identity\Actions\SeedTenantRolesAction;
+use App\Domain\Identity\Enums\TenantRole;
 use App\Domain\Identity\Mail\InvitationMail;
 use App\Domain\Identity\Models\Invitation;
 use App\Domain\Identity\Models\TenantUser;
@@ -9,8 +11,14 @@ use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
+use Spatie\Permission\PermissionRegistrar;
 
-function tenantWithActiveMember(string $password = 'correct-password'): array
+/**
+ * Owner by default: has every permission this file's tests exercise
+ * (invitations.create/revoke). Pass a different role to test the
+ * permission boundary itself.
+ */
+function tenantWithActiveMember(string $password = 'correct-password', TenantRole $role = TenantRole::Owner): array
 {
     $tenant = Tenant::create(['name' => 'Cabinet Test', 'slug' => 'cabinet-'.Str::lower(Str::random(10))]);
 
@@ -21,6 +29,12 @@ function tenantWithActiveMember(string $password = 'correct-password'): array
     ]);
 
     TenantUser::create(['tenant_id' => $tenant->id, 'user_id' => $user->id, 'status' => 'active']);
+
+    app(SeedTenantRolesAction::class)->execute($tenant);
+    $registrar = app(PermissionRegistrar::class);
+    $registrar->setPermissionsTeamId($tenant->id);
+    $user->assignRole($role->value);
+    $registrar->setPermissionsTeamId(null);
 
     return [$tenant, $user];
 }

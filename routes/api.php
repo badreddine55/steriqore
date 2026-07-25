@@ -5,6 +5,8 @@ use App\Http\Controllers\Api\V1\Auth\LogoutController;
 use App\Http\Controllers\Api\V1\Auth\LogoutEverywhereController;
 use App\Http\Controllers\Api\V1\Identity\AcceptInvitationController;
 use App\Http\Controllers\Api\V1\Identity\InvitationController;
+use App\Http\Controllers\Api\V1\Identity\MemberController;
+use App\Http\Controllers\Api\V1\Identity\RegisterTenantController;
 use App\Http\Controllers\Api\V1\MeController;
 use App\Http\Controllers\Api\V1\Mock\CyclesMockController;
 use App\Http\Controllers\Api\V1\Mock\LabelScanMockController;
@@ -14,6 +16,7 @@ use App\Http\Controllers\Api\V1\SitesController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->name('api.v1.')->group(function () {
+    Route::post('tenants', RegisterTenantController::class)->middleware('idempotent')->name('tenants.register');
     Route::post('auth/login', LoginController::class)->middleware('idempotent')->name('auth.login');
     Route::post('invitations/accept', AcceptInvitationController::class)->middleware('idempotent')->name('invitations.accept');
 
@@ -28,6 +31,8 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
             ->middleware('idempotent')
             ->name('invitations.store');
         Route::delete('invitations/{invitation}', [InvitationController::class, 'destroy'])->name('invitations.destroy');
+
+        Route::delete('members/{tenantUser}', [MemberController::class, 'destroy'])->name('members.destroy');
 
         // MOCK — no backing tables until S2-S3-S4. See each controller's
         // docblock. Shapes are a first draft; refine when the real domain

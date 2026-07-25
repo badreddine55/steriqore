@@ -16,6 +16,8 @@ class InvitationController extends Controller
 {
     public function store(CreateInvitationRequest $request, CreateInvitationAction $action): InvitationData
     {
+        $this->authorize('create', Invitation::class);
+
         $invitation = $action->execute(
             tenant: Tenant::current(),
             invitedBy: $request->user(),
@@ -29,11 +31,15 @@ class InvitationController extends Controller
     public function destroy(Invitation $invitation, RevokeInvitationAction $action): Response
     {
         // Not BelongsToTenant-scoped (see Invitation's docblock) — checked
-        // by hand. 404, not 403: a foreign-tenant invitation id must not
-        // even reveal that it exists.
+        // by hand, before authorize(). 404, not 403: a foreign-tenant
+        // invitation id must not even reveal that it exists. The policy
+        // re-checks the same tenant match (defense in depth) plus the
+        // actual permission once we know we're not leaking anything.
         if ($invitation->tenant_id !== Tenant::current()->id) {
             throw new ApiException('NOT_FOUND', 'The requested resource was not found.', 404);
         }
+
+        $this->authorize('delete', $invitation);
 
         $action->execute($invitation);
 

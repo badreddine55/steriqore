@@ -20,6 +20,8 @@ class SitesController extends Controller
      */
     public function index(Request $request): CursorPaginatedDataCollection
     {
+        $this->authorize('viewAny', Site::class);
+
         $sites = Site::orderBy('name')
             ->cursorPaginate(perPage: (int) $request->integer('limit', 20));
 

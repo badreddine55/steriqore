@@ -2,12 +2,19 @@
 
 namespace App\Providers;
 
+use App\Domain\Identity\Models\Invitation;
 use App\Domain\Identity\Models\PersonalAccessToken;
+use App\Domain\Identity\Models\TenantUser;
+use App\Domain\Tenancy\Models\Site;
+use App\Policies\InvitationPolicy;
+use App\Policies\SitePolicy;
+use App\Policies\TenantUserPolicy;
 use App\Support\Api\ScrambleErrorEnvelope;
 use Carbon\CarbonImmutable;
 use Dedoc\Scramble\Scramble;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
@@ -33,6 +40,13 @@ class AppServiceProvider extends ServiceProvider
         Sanctum::usePersonalAccessTokenModel(PersonalAccessToken::class);
 
         Scramble::afterOpenApiGenerated(ScrambleErrorEnvelope::apply(...));
+
+        // Explicit, not relying on Laravel's App\Policies\{Model}Policy
+        // auto-discovery: our models live under App\Domain\..., not
+        // App\Models, so the convention-based guess isn't guaranteed.
+        Gate::policy(Site::class, SitePolicy::class);
+        Gate::policy(Invitation::class, InvitationPolicy::class);
+        Gate::policy(TenantUser::class, TenantUserPolicy::class);
     }
 
     /**

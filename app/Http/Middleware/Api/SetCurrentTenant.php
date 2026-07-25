@@ -7,14 +7,18 @@ use App\Domain\Tenancy\Models\Tenant;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Spatie\Permission\PermissionRegistrar;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
  * Binds the request's tenant — read from the Sanctum token, never a
- * client-supplied parameter (CLAUDE.md's tenancy invariant) — as the
- * "current tenant" (spatie/laravel-multitenancy) and as the Postgres RLS
- * session variable app.tenant_id (App\Support\Tenancy\TenantScope /
- * database/migrations/2026_07_25_000001_add_row_level_security_to_tenant_tables.php).
+ * client-supplied parameter (CLAUDE.md's tenancy invariant) — as:
+ *   - the "current tenant" (spatie/laravel-multitenancy)
+ *   - the Postgres RLS session variable app.tenant_id
+ *     (App\Support\Tenancy\TenantScope / .../add_row_level_security_to_tenant_tables.php)
+ *   - the spatie/laravel-permission "team id" (config/permission.php teams
+ *     mode), so a role check is scoped to this practice, not any practice
+ *     the user happens to hold a role in
  *
  * `SET LOCAL`/`set_config(..., true)` only lasts for the current
  * transaction, and Octane/FrankenPHP keeps the DB connection alive across
@@ -36,6 +40,7 @@ class SetCurrentTenant
         abort_if($tenant === null, 401);
 
         $tenant->makeCurrent();
+        app(PermissionRegistrar::class)->setPermissionsTeamId($tenant->id);
 
         try {
             return DB::transaction(function () use ($tenant, $next, $request) {
@@ -45,6 +50,7 @@ class SetCurrentTenant
             });
         } finally {
             Tenant::forgetCurrent();
+            app(PermissionRegistrar::class)->setPermissionsTeamId(null);
         }
     }
 }
