@@ -12,6 +12,8 @@ use App\Domain\Identity\Models\TenantUser;
 use App\Domain\Inventory\Models\Alert;
 use App\Domain\Inventory\Models\StockLevel;
 use App\Domain\Inventory\Models\StockMovement;
+use App\Domain\Labeling\Models\DluRule;
+use App\Domain\Labeling\Models\Label;
 use App\Domain\Purchasing\Models\PurchaseOrder;
 use App\Domain\Purchasing\Models\Supplier;
 use App\Domain\Sterilization\Models\Cycle;
@@ -20,7 +22,9 @@ use App\Policies\AlertPolicy;
 use App\Policies\AuditEventPolicy;
 use App\Policies\CyclePolicy;
 use App\Policies\DevicePolicy;
+use App\Policies\DluRulePolicy;
 use App\Policies\InvitationPolicy;
+use App\Policies\LabelPolicy;
 use App\Policies\ProductCategoryPolicy;
 use App\Policies\ProductPolicy;
 use App\Policies\PurchaseOrderPolicy;
@@ -77,6 +81,8 @@ class AppServiceProvider extends ServiceProvider
         Gate::policy(Alert::class, AlertPolicy::class);
         Gate::policy(Device::class, DevicePolicy::class);
         Gate::policy(Cycle::class, CyclePolicy::class);
+        Gate::policy(DluRule::class, DluRulePolicy::class);
+        Gate::policy(Label::class, LabelPolicy::class);
     }
 
     /**

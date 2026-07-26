@@ -738,6 +738,95 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ApiErrorEnvelope'
+  '/v1/cycles/{cycle}/labels':
+    get:
+      operationId: v1.cycles.labels.index
+      tags:
+        - CycleLabel
+      parameters:
+        -
+          name: cycle
+          in: path
+          required: true
+          description: 'The cycle ID'
+          schema:
+            type: string
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/LabelData'
+        403:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+        404:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+        401:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+    post:
+      operationId: v1.cycles.labels.store
+      tags:
+        - CycleLabel
+      parameters:
+        -
+          name: cycle
+          in: path
+          required: true
+          description: 'The cycle ID'
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GenerateCycleLabelsRequest'
+      responses:
+        200:
+          description: '`DataCollection`'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DataCollection'
+        403:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+        404:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+        401:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+        422:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
   '/v1/cycles/{cycle}/release':
     get:
       operationId: v1.cycles.release.show
@@ -1188,6 +1277,149 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ApiErrorEnvelope'
+  /v1/dlu-rules:
+    get:
+      operationId: v1.dlu-rules.index
+      tags:
+        - DluRule
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DluRuleData'
+        403:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+        401:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+    post:
+      operationId: v1.dlu-rules.store
+      tags:
+        - DluRule
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateDluRuleRequest'
+      responses:
+        200:
+          description: '`DluRuleData`'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DluRuleData'
+        403:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+        401:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+        422:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+  '/v1/dlu-rules/{rule}':
+    patch:
+      operationId: v1.dlu-rules.update
+      tags:
+        - DluRule
+      parameters:
+        -
+          name: rule
+          in: path
+          required: true
+          description: 'The rule ID'
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateDluRuleRequest'
+      responses:
+        200:
+          description: '`DluRuleData`'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DluRuleData'
+        403:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+        404:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+        401:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+        422:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+    delete:
+      operationId: v1.dlu-rules.destroy
+      tags:
+        - DluRule
+      parameters:
+        -
+          name: rule
+          in: path
+          required: true
+          description: 'The rule ID'
+          schema:
+            type: string
+      responses:
+        204:
+          description: 'No content'
+        403:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+        404:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+        401:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
   '/v1/purchase-orders/{purchaseOrder}/receipts':
     post:
       operationId: v1.purchase-orders.receipts.store
@@ -1290,6 +1522,169 @@ paths:
       responses:
         204:
           description: 'No content'
+        403:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+        404:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+        401:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+  '/v1/labels/{label}/print':
+    post:
+      operationId: v1.labels.print
+      tags:
+        - Label
+      parameters:
+        -
+          name: label
+          in: path
+          required: true
+          description: 'The label ID'
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PrintLabelRequest'
+      responses:
+        200:
+          description: '`LabelData`'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LabelData'
+        403:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+        404:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+        401:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+        422:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+  '/v1/labels/{label}/pdf':
+    get:
+      operationId: v1.labels.pdf
+      tags:
+        - Label
+      parameters:
+        -
+          name: label
+          in: path
+          required: true
+          description: 'The label ID'
+          schema:
+            type: string
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+        403:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+        404:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+        401:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+  '/v1/labels/{label}/qr-code':
+    get:
+      operationId: v1.labels.qr-code
+      tags:
+        - Label
+      parameters:
+        -
+          name: label
+          in: path
+          required: true
+          description: 'The label ID'
+          schema:
+            type: string
+      responses:
+        200:
+          description: ''
+          content:
+            image/svg+xml:
+              schema:
+                type: string
+        403:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+        404:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+        401:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+  '/v1/labels/{label}/datamatrix':
+    get:
+      operationId: v1.labels.datamatrix
+      tags:
+        - Label
+      parameters:
+        -
+          name: label
+          in: path
+          required: true
+          description: 'The label ID'
+          schema:
+            type: string
+      responses:
+        200:
+          description: ''
+          content:
+            image/svg+xml:
+              schema:
+                type: string
         403:
           description: 'SteriQore API error envelope.'
           content:
@@ -2759,6 +3154,23 @@ components:
         - name
         - serial_number
       title: CreateDeviceRequest
+    CreateDluRuleRequest:
+      type: object
+      properties:
+        packaging_type:
+          type: string
+          maxLength: 255
+        storage_condition:
+          type: string
+          maxLength: 255
+        shelf_life_days:
+          type: integer
+          minimum: 1
+      required:
+        - packaging_type
+        - storage_condition
+        - shelf_life_days
+      title: CreateDluRuleRequest
     CreateInvitationRequest:
       type: object
       properties:
@@ -2902,6 +3314,10 @@ components:
         - compliant
         - rejected
       title: CycleReleaseDecision
+    DataCollection:
+      type: object
+      additionalProperties: {}
+      title: DataCollection
     DeviceData:
       type: object
       additionalProperties: {}
@@ -2927,6 +3343,23 @@ components:
         - maintenance
         - decommissioned
       title: DeviceStatus
+    DluRuleData:
+      type: object
+      additionalProperties: {}
+      title: DluRuleData
+    GenerateCycleLabelsRequest:
+      type: object
+      properties:
+        packaging_type:
+          type: string
+          maxLength: 255
+        storage_condition:
+          type: string
+          maxLength: 255
+      required:
+        - packaging_type
+        - storage_condition
+      title: GenerateCycleLabelsRequest
     GoodsReceiptData:
       type: object
       additionalProperties: {}
@@ -2957,6 +3390,10 @@ components:
         - location_id
         - qty
       title: IssueStockRequest
+    LabelData:
+      type: object
+      additionalProperties: {}
+      title: LabelData
     LoginRequest:
       type: object
       properties:
@@ -2983,6 +3420,19 @@ components:
       type: object
       additionalProperties: {}
       title: MaintenanceRecordData
+    PrintLabelRequest:
+      type: object
+      properties:
+        reason:
+          type:
+            - string
+            - 'null'
+          description: |-
+            Required only on a reprint (the label is already Printed) —
+            CLAUDE.md invariant #4. Route model binding has already
+            resolved {label} by the time this runs.
+          maxLength: 2000
+      title: PrintLabelRequest
     ProductCategoryData:
       type: object
       additionalProperties: {}
@@ -3233,6 +3683,19 @@ components:
             - string
             - 'null'
       title: UpdateDeviceRequest
+    UpdateDluRuleRequest:
+      type: object
+      properties:
+        packaging_type:
+          type: string
+          maxLength: 255
+        storage_condition:
+          type: string
+          maxLength: 255
+        shelf_life_days:
+          type: integer
+          minimum: 1
+      title: UpdateDluRuleRequest
     UpdateProductRequest:
       type: object
       properties:

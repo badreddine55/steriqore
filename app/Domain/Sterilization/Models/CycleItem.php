@@ -2,10 +2,12 @@
 
 namespace App\Domain\Sterilization\Models;
 
+use App\Domain\Labeling\Models\Label;
 use App\Support\Concerns\BelongsToTenant;
 use App\Support\Concerns\HasUuidv7;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 /**
  * One row per pouch/package in the load — each will get its own label in
@@ -37,5 +39,13 @@ class CycleItem extends Model
     public function cycle(): BelongsTo
     {
         return $this->belongsTo(Cycle::class);
+    }
+
+    /**
+     * @return HasOne<Label, $this>
+     */
+    public function label(): HasOne
+    {
+        return $this->hasOne(Label::class);
     }
 }

@@ -3,13 +3,16 @@ FROM composer:2 AS deps
 WORKDIR /app
 
 COPY composer.json composer.lock ./
-# composer:2 lacks ext-pcntl/posix (Horizon) and ext-exif (medialibrary's
-# spatie/image, for reading photo orientation) — all three exist in the
-# runtime image.
+# composer:2 lacks ext-pcntl/posix (Horizon), ext-exif (medialibrary's
+# spatie/image, for reading photo orientation), and ext-bcmath/ext-gd
+# (tc-lib-barcode, for DataMatrix generation) — all exist in the runtime
+# image.
 RUN composer install --no-dev --no-scripts --no-autoloader --prefer-dist --no-interaction \
     --ignore-platform-req=ext-pcntl \
     --ignore-platform-req=ext-posix \
-    --ignore-platform-req=ext-exif
+    --ignore-platform-req=ext-exif \
+    --ignore-platform-req=ext-bcmath \
+    --ignore-platform-req=ext-gd
 
 COPY . .
 RUN composer dump-autoload --optimize --no-dev
@@ -55,6 +58,25 @@ ENV APP_ENV=production \
     OCTANE_SERVER=frankenphp \
     LOG_CHANNEL=stderr \
     LOG_LEVEL=info
+
+# Node.js + Chromium for spatie/browsershot (label PDF sheets, S3-ANA-04).
+# The base image ships neither. Chromium comes from apt, not Puppeteer's own
+# download, so puppeteer only needs to be told where to find it
+# (PUPPETEER_SKIP_CHROMIUM_DOWNLOAD) rather than fetching its own copy.
+# Installed to /opt/browsershot, not /app — this app's own package.json
+# (frontend deps) is COPY'd into /app later in this stage and would
+# otherwise collide with the one `npm install` creates here.
+ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true \
+    PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium \
+    LARAVEL_PDF_CHROME_PATH=/usr/bin/chromium \
+    LARAVEL_PDF_NO_SANDBOX=true \
+    LARAVEL_PDF_NODE_MODULES_PATH=/opt/browsershot/node_modules
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    chromium fonts-liberation ca-certificates curl gnupg \
+    && curl -fsSL https://deb.nodesource.com/setup_22.x | bash - \
+    && apt-get install -y --no-install-recommends nodejs \
+    && npm install --prefix /opt/browsershot puppeteer \
+    && rm -rf /var/lib/apt/lists/* /var/cache/apt/*
 
 # Optimized PHP Configuration
 RUN { \

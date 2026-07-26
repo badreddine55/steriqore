@@ -16,6 +16,9 @@ use App\Http\Controllers\Api\V1\Identity\RegisterTenantController;
 use App\Http\Controllers\Api\V1\Inventory\AlertController;
 use App\Http\Controllers\Api\V1\Inventory\StockLevelController;
 use App\Http\Controllers\Api\V1\Inventory\StockMovementController;
+use App\Http\Controllers\Api\V1\Labeling\CycleLabelController;
+use App\Http\Controllers\Api\V1\Labeling\DluRuleController;
+use App\Http\Controllers\Api\V1\Labeling\LabelController;
 use App\Http\Controllers\Api\V1\MeController;
 use App\Http\Controllers\Api\V1\Mock\LabelScanMockController;
 use App\Http\Controllers\Api\V1\Purchasing\GoodsReceiptController;
@@ -171,8 +174,26 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
             ->middleware('idempotent')
             ->name('cycles.release.store');
 
-        // MOCK — the real scan resolution endpoint lands in S3-ANA-05,
-        // which needs labels (S3-ANA-04) first.
+        Route::get('dlu-rules', [DluRuleController::class, 'index'])->name('dlu-rules.index');
+        Route::post('dlu-rules', [DluRuleController::class, 'store'])
+            ->middleware('idempotent')
+            ->name('dlu-rules.store');
+        Route::patch('dlu-rules/{rule}', [DluRuleController::class, 'update'])->name('dlu-rules.update');
+        Route::delete('dlu-rules/{rule}', [DluRuleController::class, 'destroy'])->name('dlu-rules.destroy');
+
+        Route::get('cycles/{cycle}/labels', [CycleLabelController::class, 'index'])->name('cycles.labels.index');
+        Route::post('cycles/{cycle}/labels', [CycleLabelController::class, 'store'])
+            ->middleware('idempotent')
+            ->name('cycles.labels.store');
+
+        Route::post('labels/{label}/print', [LabelController::class, 'print'])
+            ->middleware('idempotent')
+            ->name('labels.print');
+        Route::get('labels/{label}/pdf', [LabelController::class, 'pdf'])->name('labels.pdf');
+        Route::get('labels/{label}/qr-code', [LabelController::class, 'qrCode'])->name('labels.qr-code');
+        Route::get('labels/{label}/datamatrix', [LabelController::class, 'dataMatrix'])->name('labels.datamatrix');
+
+        // MOCK — the real scan resolution endpoint lands in S3-ANA-05.
         Route::get('labels/{code}', [LabelScanMockController::class, 'show'])->name('labels.show');
     });
 });

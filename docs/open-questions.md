@@ -5,6 +5,27 @@ question was flagged instead of guessed, per `CLAUDE.md`. Newest on top.
 
 ---
 
+## OQ-8 — No seeded EN 868 default DLU rules
+**Raised:** S3-ANA-04 (Labels), 2026-07-26
+**Context:** CLAUDE.md says DLU "comes from a per-tenant rule table
+(packaging x storage, EN 868 defaults)." EN 868 doesn't itself mandate a
+single shelf-life number per packaging/storage combination — actual
+practice varies (event-related vs time-related storage, specific pouch
+material, sealed cupboard vs open shelf), and guessing concrete day counts
+here would mean inventing a compliance figure, not implementing a safe
+default.
+**Default implemented:** the `dlu_rules` table + full CRUD
+(`labels.manage`), keyed on `(tenant_id, packaging_type, storage_condition)`
+→ `shelf_life_days`, with **no rows seeded**. Generating labels for a
+released cycle (`POST /cycles/{cycle}/labels`) requires the caller to name
+a packaging_type/storage_condition that already has a matching rule —
+`DLU_RULE_NOT_FOUND` (422) if not, never a silent fallback number. Once
+matched, the rule's shelf_life_days is frozen onto every label it produces,
+so a later edit to the rule never rewrites already-printed evidence.
+**Needs confirmation:** what packaging/storage categories and day counts
+this practice (and, longer-term, a shipped "EN 868 defaults" starter set)
+should actually use.
+
 ## OQ-7 — Control tests: attached to a production cycle, or their own
 daily log?
 **Raised:** S3-ANA-02 (Cycles, loads, control tests), 2026-07-26
