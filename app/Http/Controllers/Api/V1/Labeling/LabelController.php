@@ -13,10 +13,9 @@ use Illuminate\Http\Response;
 use Spatie\LaravelPdf\PdfBuilder;
 
 /**
- * No show() here on purpose — GET /labels/{code} is the scan-resolution
- * endpoint's URI (S3-ANA-05, currently LabelScanMockController). These are
- * the staff-facing management actions, all one level below that path so
- * the two don't collide.
+ * No show() here on purpose — GET /labels/{code} is LabelScanController's
+ * URI (S3-ANA-05). These are the staff-facing management actions, all one
+ * level below that path so the two don't collide.
  */
 class LabelController extends Controller
 {

@@ -1707,7 +1707,7 @@ paths:
     get:
       operationId: v1.labels.show
       tags:
-        - LabelScanMock
+        - LabelScan
       parameters:
         -
           name: code
@@ -1717,49 +1717,17 @@ paths:
             type: string
       responses:
         200:
-          description: ''
+          description: '`LabelScanResultData`'
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  data:
-                    type: object
-                    properties:
-                      label_id:
-                        type: string
-                      status:
-                        type: string
-                        const: active
-                      cycle_number:
-                        type: string
-                        const: A-2026-000042
-                      device_name:
-                        type: string
-                        const: 'Melag Vacuklav 44 B+'
-                      sterilized_at:
-                        type: string
-                        const: '2026-07-24T08:45:00Z'
-                      use_by_date:
-                        type: string
-                        const: '2027-07-24'
-                      sequence_in_cycle:
-                        type: integer
-                        const: 3
-                      site_name:
-                        type: string
-                        const: 'Cabinet Centre-Ville'
-                    required:
-                      - label_id
-                      - status
-                      - cycle_number
-                      - device_name
-                      - sterilized_at
-                      - use_by_date
-                      - sequence_in_cycle
-                      - site_name
-                required:
-                  - data
+                $ref: '#/components/schemas/LabelScanResultData'
+        403:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
         401:
           description: 'SteriQore API error envelope.'
           content:
@@ -3394,6 +3362,10 @@ components:
       type: object
       additionalProperties: {}
       title: LabelData
+    LabelScanResultData:
+      type: object
+      additionalProperties: {}
+      title: LabelScanResultData
     LoginRequest:
       type: object
       properties:

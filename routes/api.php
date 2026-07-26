@@ -19,8 +19,8 @@ use App\Http\Controllers\Api\V1\Inventory\StockMovementController;
 use App\Http\Controllers\Api\V1\Labeling\CycleLabelController;
 use App\Http\Controllers\Api\V1\Labeling\DluRuleController;
 use App\Http\Controllers\Api\V1\Labeling\LabelController;
+use App\Http\Controllers\Api\V1\Labeling\LabelScanController;
 use App\Http\Controllers\Api\V1\MeController;
-use App\Http\Controllers\Api\V1\Mock\LabelScanMockController;
 use App\Http\Controllers\Api\V1\Purchasing\GoodsReceiptController;
 use App\Http\Controllers\Api\V1\Purchasing\PurchaseOrderController;
 use App\Http\Controllers\Api\V1\Purchasing\SupplierController;
@@ -193,7 +193,6 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
         Route::get('labels/{label}/qr-code', [LabelController::class, 'qrCode'])->name('labels.qr-code');
         Route::get('labels/{label}/datamatrix', [LabelController::class, 'dataMatrix'])->name('labels.datamatrix');
 
-        // MOCK — the real scan resolution endpoint lands in S3-ANA-05.
-        Route::get('labels/{code}', [LabelScanMockController::class, 'show'])->name('labels.show');
+        Route::get('labels/{code}', [LabelScanController::class, 'show'])->name('labels.show');
     });
 });
