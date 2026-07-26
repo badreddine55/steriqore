@@ -30,15 +30,10 @@ paths:
               schema:
                 type: object
                 properties:
-                  token:
-                    type: string
-                  token_type:
-                    type: string
-                    const: Bearer
-                  user:
-                    $ref: '#/components/schemas/UserData'
-                  tenant:
-                    $ref: '#/components/schemas/TenantData'
+                  token: { type: string }
+                  token_type: { type: string, const: Bearer }
+                  user: { $ref: '#/components/schemas/UserData' }
+                  tenant: { $ref: '#/components/schemas/TenantData' }
                 required:
                   - token
                   - token_type
@@ -90,12 +85,9 @@ paths:
               schema:
                 type: object
                 properties:
-                  low_stock:
-                    type: integer
-                  near_expiry:
-                    type: integer
-                  expired:
-                    type: integer
+                  low_stock: { type: integer }
+                  near_expiry: { type: integer }
+                  expired: { type: integer }
                 required:
                   - low_stock
                   - near_expiry
@@ -909,6 +901,68 @@ paths:
               schema:
                 $ref: '#/components/schemas/ApiErrorEnvelope'
         422:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+  /v1/data-export-requests:
+    post:
+      operationId: v1.data-export-requests.store
+      tags:
+        - DataExportRequest
+      responses:
+        200:
+          description: '`DataExportRequestData`'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DataExportRequestData'
+        403:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+        401:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+  '/v1/data-export-requests/{dataExportRequest}':
+    get:
+      operationId: v1.data-export-requests.show
+      tags:
+        - DataExportRequest
+      parameters:
+        -
+          name: dataExportRequest
+          in: path
+          required: true
+          description: 'The data export request ID'
+          schema:
+            type: string
+      responses:
+        200:
+          description: '`DataExportRequestData`'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DataExportRequestData'
+        403:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+        404:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+        401:
           description: 'SteriQore API error envelope.'
           content:
             application/json:
@@ -2050,15 +2104,10 @@ paths:
               schema:
                 type: object
                 properties:
-                  token:
-                    type: string
-                  token_type:
-                    type: string
-                    const: Bearer
-                  user:
-                    $ref: '#/components/schemas/UserData'
-                  tenant:
-                    $ref: '#/components/schemas/TenantData'
+                  token: { type: string }
+                  token_type: { type: string, const: Bearer }
+                  user: { $ref: '#/components/schemas/UserData' }
+                  tenant: { $ref: '#/components/schemas/TenantData' }
                 required:
                   - token
                   - token_type
@@ -2208,10 +2257,8 @@ paths:
               schema:
                 type: object
                 properties:
-                  user:
-                    $ref: '#/components/schemas/UserData'
-                  tenant:
-                    $ref: '#/components/schemas/TenantData'
+                  user: { $ref: '#/components/schemas/UserData' }
+                  tenant: { $ref: '#/components/schemas/TenantData' }
                 required:
                   - user
                   - tenant
@@ -2970,15 +3017,10 @@ paths:
               schema:
                 type: object
                 properties:
-                  token:
-                    type: string
-                  token_type:
-                    type: string
-                    const: Bearer
-                  user:
-                    $ref: '#/components/schemas/UserData'
-                  tenant:
-                    $ref: '#/components/schemas/TenantData'
+                  token: { type: string }
+                  token_type: { type: string, const: Bearer }
+                  user: { $ref: '#/components/schemas/UserData' }
+                  tenant: { $ref: '#/components/schemas/TenantData' }
                 required:
                   - token
                   - token_type
@@ -3060,8 +3102,7 @@ paths:
               schema:
                 type: object
                 properties:
-                  rows_rebuilt:
-                    type: integer
+                  rows_rebuilt: { type: integer }
                 required:
                   - rows_rebuilt
         403:
@@ -3131,10 +3172,8 @@ paths:
               schema:
                 type: object
                 properties:
-                  debit:
-                    $ref: '#/components/schemas/StockMovementData'
-                  credit:
-                    $ref: '#/components/schemas/StockMovementData'
+                  debit: { $ref: '#/components/schemas/StockMovementData' }
+                  credit: { $ref: '#/components/schemas/StockMovementData' }
                 required:
                   - debit
                   - credit
@@ -3856,6 +3895,10 @@ components:
       type: object
       additionalProperties: {}
       title: DataCollection
+    DataExportRequestData:
+      type: object
+      additionalProperties: {}
+      title: DataExportRequestData
     DeviceData:
       type: object
       additionalProperties: {}

@@ -47,6 +47,7 @@ class SeedTenantRolesAction
         'exports.manage',
         'non_conformities.view',
         'non_conformities.manage',
+        'data_exports.manage',
     ];
 
     private const array PERMISSIONS_BY_ROLE = [

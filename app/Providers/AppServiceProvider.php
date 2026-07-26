@@ -17,6 +17,7 @@ use App\Domain\Labeling\Models\DluRule;
 use App\Domain\Labeling\Models\Label;
 use App\Domain\Purchasing\Models\PurchaseOrder;
 use App\Domain\Purchasing\Models\Supplier;
+use App\Domain\Reporting\Models\DataExportRequest;
 use App\Domain\Sterilization\Models\Cycle;
 use App\Domain\Tenancy\Models\Site;
 use App\Domain\Traceability\Models\LabelUsage;
@@ -25,6 +26,7 @@ use App\Models\User;
 use App\Policies\AlertPolicy;
 use App\Policies\AuditEventPolicy;
 use App\Policies\CyclePolicy;
+use App\Policies\DataExportRequestPolicy;
 use App\Policies\DevicePolicy;
 use App\Policies\DluRulePolicy;
 use App\Policies\InvitationPolicy;
@@ -97,6 +99,7 @@ class AppServiceProvider extends ServiceProvider
         Gate::policy(Patient::class, PatientPolicy::class);
         Gate::policy(LabelUsage::class, LabelUsagePolicy::class);
         Gate::policy(NonConformity::class, NonConformityPolicy::class);
+        Gate::policy(DataExportRequest::class, DataExportRequestPolicy::class);
     }
 
     /**

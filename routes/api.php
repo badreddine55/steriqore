@@ -26,6 +26,7 @@ use App\Http\Controllers\Api\V1\Purchasing\GoodsReceiptController;
 use App\Http\Controllers\Api\V1\Purchasing\PurchaseOrderController;
 use App\Http\Controllers\Api\V1\Purchasing\SupplierController;
 use App\Http\Controllers\Api\V1\Purchasing\SupplierProductController;
+use App\Http\Controllers\Api\V1\Reporting\DataExportRequestController;
 use App\Http\Controllers\Api\V1\Reporting\EvidenceExportController;
 use App\Http\Controllers\Api\V1\SitesController;
 use App\Http\Controllers\Api\V1\Sterilization\ControlTestController;
@@ -216,6 +217,12 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
 
         Route::get('evidence-search', [EvidenceSearchController::class, 'index'])->name('evidence-search.index');
         Route::get('evidence-search/export', [EvidenceExportController::class, 'index'])->name('evidence-search.export');
+
+        Route::post('data-export-requests', [DataExportRequestController::class, 'store'])
+            ->middleware('idempotent')
+            ->name('data-export-requests.store');
+        Route::get('data-export-requests/{dataExportRequest}', [DataExportRequestController::class, 'show'])
+            ->name('data-export-requests.show');
 
         Route::get('non-conformities', [NonConformityController::class, 'index'])->name('non-conformities.index');
         Route::post('non-conformities', [NonConformityController::class, 'store'])
