@@ -33,6 +33,8 @@ class SeedTenantRolesAction
         'inventory.manage',
         'alerts.view',
         'alerts.manage',
+        'devices.view',
+        'devices.manage',
     ];
 
     private const array PERMISSIONS_BY_ROLE = [
@@ -41,15 +43,18 @@ class SeedTenantRolesAction
         // "Catalogue, suppliers, orders, receipts, movements, batches,
         // inventories, alerts" (CLAUDE.md) — stock_manager manages the
         // catalogue, suppliers, purchase orders, stock, and alerts;
-        // everyone else just reads them.
+        // everyone else just reads them. Equipment (devices/programs/
+        // maintenance) isn't named for a specific role in CLAUDE.md either,
+        // so it follows the same operational-master-data pattern.
         'stock_manager' => [
             'sites.view', 'products.view', 'products.manage',
             'suppliers.view', 'suppliers.manage', 'purchasing.view', 'purchasing.manage',
             'inventory.view', 'inventory.manage', 'alerts.view', 'alerts.manage',
+            'devices.view', 'devices.manage',
         ],
-        'releaser' => ['sites.view', 'products.view', 'suppliers.view', 'purchasing.view', 'inventory.view', 'alerts.view'],
-        'practitioner' => ['sites.view', 'products.view', 'suppliers.view', 'purchasing.view', 'inventory.view', 'alerts.view'],
-        'viewer' => ['sites.view', 'products.view', 'suppliers.view', 'purchasing.view', 'inventory.view', 'alerts.view'],
+        'releaser' => ['sites.view', 'products.view', 'suppliers.view', 'purchasing.view', 'inventory.view', 'alerts.view', 'devices.view'],
+        'practitioner' => ['sites.view', 'products.view', 'suppliers.view', 'purchasing.view', 'inventory.view', 'alerts.view', 'devices.view'],
+        'viewer' => ['sites.view', 'products.view', 'suppliers.view', 'purchasing.view', 'inventory.view', 'alerts.view', 'devices.view'],
     ];
 
     public function execute(Tenant $tenant): void

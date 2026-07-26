@@ -6,6 +6,9 @@ use App\Http\Controllers\Api\V1\Auth\LogoutController;
 use App\Http\Controllers\Api\V1\Auth\LogoutEverywhereController;
 use App\Http\Controllers\Api\V1\Catalog\ProductCategoryController;
 use App\Http\Controllers\Api\V1\Catalog\ProductController;
+use App\Http\Controllers\Api\V1\Equipment\DeviceController;
+use App\Http\Controllers\Api\V1\Equipment\DeviceProgramController;
+use App\Http\Controllers\Api\V1\Equipment\MaintenanceRecordController;
 use App\Http\Controllers\Api\V1\Identity\AcceptInvitationController;
 use App\Http\Controllers\Api\V1\Identity\InvitationController;
 use App\Http\Controllers\Api\V1\Identity\MemberController;
@@ -106,6 +109,26 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
         Route::post('alerts/{alert}/resolve', [AlertController::class, 'resolve'])
             ->middleware('idempotent')
             ->name('alerts.resolve');
+
+        Route::get('devices', [DeviceController::class, 'index'])->name('devices.index');
+        Route::post('devices', [DeviceController::class, 'store'])
+            ->middleware('idempotent')
+            ->name('devices.store');
+        Route::get('devices/{device}', [DeviceController::class, 'show'])->name('devices.show');
+        Route::patch('devices/{device}', [DeviceController::class, 'update'])->name('devices.update');
+        Route::delete('devices/{device}', [DeviceController::class, 'destroy'])->name('devices.destroy');
+
+        Route::get('devices/{device}/programs', [DeviceProgramController::class, 'index'])->name('devices.programs.index');
+        Route::post('devices/{device}/programs', [DeviceProgramController::class, 'store'])
+            ->middleware('idempotent')
+            ->name('devices.programs.store');
+        Route::patch('devices/{device}/programs/{program}', [DeviceProgramController::class, 'update'])->name('devices.programs.update');
+        Route::delete('devices/{device}/programs/{program}', [DeviceProgramController::class, 'destroy'])->name('devices.programs.destroy');
+
+        Route::get('devices/{device}/maintenance-records', [MaintenanceRecordController::class, 'index'])->name('devices.maintenance-records.index');
+        Route::post('devices/{device}/maintenance-records', [MaintenanceRecordController::class, 'store'])
+            ->middleware('idempotent')
+            ->name('devices.maintenance-records.store');
 
         // MOCK — no backing tables until S3-S4. See each controller's
         // docblock. Shapes are a first draft; refine when the real domain

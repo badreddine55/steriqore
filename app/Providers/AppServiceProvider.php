@@ -5,6 +5,7 @@ namespace App\Providers;
 use App\Domain\Catalog\Models\Product;
 use App\Domain\Catalog\Models\ProductCategory;
 use App\Domain\Compliance\Models\AuditEvent;
+use App\Domain\Equipment\Models\Device;
 use App\Domain\Identity\Models\Invitation;
 use App\Domain\Identity\Models\PersonalAccessToken;
 use App\Domain\Identity\Models\TenantUser;
@@ -16,6 +17,7 @@ use App\Domain\Purchasing\Models\Supplier;
 use App\Domain\Tenancy\Models\Site;
 use App\Policies\AlertPolicy;
 use App\Policies\AuditEventPolicy;
+use App\Policies\DevicePolicy;
 use App\Policies\InvitationPolicy;
 use App\Policies\ProductCategoryPolicy;
 use App\Policies\ProductPolicy;
@@ -71,6 +73,7 @@ class AppServiceProvider extends ServiceProvider
         Gate::policy(StockMovement::class, StockMovementPolicy::class);
         Gate::policy(StockLevel::class, StockLevelPolicy::class);
         Gate::policy(Alert::class, AlertPolicy::class);
+        Gate::policy(Device::class, DevicePolicy::class);
     }
 
     /**
