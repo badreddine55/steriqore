@@ -5,6 +5,25 @@ question was flagged instead of guessed, per `CLAUDE.md`. Newest on top.
 
 ---
 
+## OQ-9 — Non-conformities: no un-recall/un-quarantine path, no type taxonomy
+**Raised:** S4-ANA-05 (Non-conformities), 2026-07-26
+**Context:** CLAUDE.md invariant #3 promises "a non_conformity + recall,
+never by UPDATE" but doesn't specify what happens *after* — whether a
+recalled label or quarantined batch can ever be cleared back to normal
+use, and under what authority. It also doesn't give a controlled
+vocabulary for non-conformity types/categories.
+**Default implemented:** raising a non-conformity against a cycle or
+label recalls the affected label(s) (and quarantines any linked batch)
+immediately and irreversibly via this codebase — there is no
+un-recall/un-quarantine action at all yet. `description` is free text,
+no `type` enum. Resolving a non-conformity only records a resolution
+note; it does not reverse the recall/quarantine.
+**Needs confirmation:** should a resolved non-conformity ever be able to
+restore a label/batch to normal use (and if so, requiring what evidence
+— a second sign-off? a lab retest record?), and is a fixed type taxonomy
+needed for reporting (e.g. "equipment failure" vs "release error" vs
+"control test failure")?
+
 ## OQ-8 — No seeded EN 868 default DLU rules
 **Raised:** S3-ANA-04 (Labels), 2026-07-26
 **Context:** CLAUDE.md says DLU "comes from a per-tenant rule table

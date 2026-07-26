@@ -5,6 +5,7 @@ namespace App\Providers;
 use App\Domain\Catalog\Models\Product;
 use App\Domain\Catalog\Models\ProductCategory;
 use App\Domain\Compliance\Models\AuditEvent;
+use App\Domain\Compliance\Models\NonConformity;
 use App\Domain\Equipment\Models\Device;
 use App\Domain\Identity\Models\Invitation;
 use App\Domain\Identity\Models\PersonalAccessToken;
@@ -28,6 +29,7 @@ use App\Policies\DluRulePolicy;
 use App\Policies\InvitationPolicy;
 use App\Policies\LabelPolicy;
 use App\Policies\LabelUsagePolicy;
+use App\Policies\NonConformityPolicy;
 use App\Policies\PatientPolicy;
 use App\Policies\ProductCategoryPolicy;
 use App\Policies\ProductPolicy;
@@ -89,6 +91,7 @@ class AppServiceProvider extends ServiceProvider
         Gate::policy(Label::class, LabelPolicy::class);
         Gate::policy(Patient::class, PatientPolicy::class);
         Gate::policy(LabelUsage::class, LabelUsagePolicy::class);
+        Gate::policy(NonConformity::class, NonConformityPolicy::class);
     }
 
     /**

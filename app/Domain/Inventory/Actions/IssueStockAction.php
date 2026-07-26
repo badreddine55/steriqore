@@ -3,6 +3,7 @@
 namespace App\Domain\Inventory\Actions;
 
 use App\Domain\Compliance\Actions\RecordAuditEventAction;
+use App\Domain\Inventory\Enums\BatchStatus;
 use App\Domain\Inventory\Enums\StockMovementType;
 use App\Domain\Inventory\Models\Batch;
 use App\Domain\Inventory\Models\StockLevel;
@@ -29,6 +30,10 @@ class IssueStockAction
 
     public function execute(Batch $batch, StorageLocation $location, int $qty, User $actor, ?string $reason): StockMovement
     {
+        if ($batch->status === BatchStatus::Quarantined) {
+            throw new ApiException('BATCH_QUARANTINED', 'This batch is quarantined following a non-conformity and cannot be issued.', 409);
+        }
+
         return DB::transaction(function () use ($batch, $location, $qty, $actor, $reason) {
             $level = StockLevel::where('tenant_id', $batch->tenant_id)
                 ->where('batch_id', $batch->id)

@@ -2260,6 +2260,153 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ApiErrorEnvelope'
+  /v1/non-conformities:
+    get:
+      operationId: v1.non-conformities.index
+      tags:
+        - NonConformity
+      responses:
+        200:
+          description: '`CursorPaginatedDataCollection`'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CursorPaginatedDataCollection'
+        403:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+        401:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+    post:
+      operationId: v1.non-conformities.store
+      tags:
+        - NonConformity
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RaiseNonConformityRequest'
+      responses:
+        200:
+          description: '`NonConformityData`'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NonConformityData'
+        403:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+        401:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+        422:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+  '/v1/non-conformities/{nonConformity}':
+    get:
+      operationId: v1.non-conformities.show
+      tags:
+        - NonConformity
+      parameters:
+        -
+          name: nonConformity
+          in: path
+          required: true
+          description: 'The non conformity ID'
+          schema:
+            type: string
+      responses:
+        200:
+          description: '`NonConformityData`'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NonConformityData'
+        403:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+        404:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+        401:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+  '/v1/non-conformities/{nonConformity}/resolve':
+    post:
+      operationId: v1.non-conformities.resolve
+      tags:
+        - NonConformity
+      parameters:
+        -
+          name: nonConformity
+          in: path
+          required: true
+          description: 'The non conformity ID'
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResolveNonConformityRequest'
+      responses:
+        200:
+          description: '`NonConformityData`'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NonConformityData'
+        403:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+        404:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+        401:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+        422:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
   /v1/patients:
     get:
       operationId: v1.patients.index
@@ -3813,6 +3960,10 @@ components:
       type: object
       additionalProperties: {}
       title: MaintenanceRecordData
+    NonConformityData:
+      type: object
+      additionalProperties: {}
+      title: NonConformityData
     PatientData:
       type: object
       additionalProperties: {}
@@ -3842,6 +3993,25 @@ components:
       type: object
       additionalProperties: {}
       title: PurchaseOrderData
+    RaiseNonConformityRequest:
+      type: object
+      properties:
+        subject_type:
+          type: string
+          enum:
+            - cycle
+            - label
+        subject_id:
+          type: string
+          format: uuid
+        description:
+          type: string
+          maxLength: 2000
+      required:
+        - subject_type
+        - subject_id
+        - description
+      title: RaiseNonConformityRequest
     ReceiveGoodsRequest:
       type: object
       properties:
@@ -3998,6 +4168,15 @@ components:
       required:
         - decision
       title: ReleaseCycleRequest
+    ResolveNonConformityRequest:
+      type: object
+      properties:
+        resolution:
+          type: string
+          maxLength: 2000
+      required:
+        - resolution
+      title: ResolveNonConformityRequest
     StockMovementData:
       type: object
       additionalProperties: {}

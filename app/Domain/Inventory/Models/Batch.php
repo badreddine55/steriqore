@@ -3,6 +3,7 @@
 namespace App\Domain\Inventory\Models;
 
 use App\Domain\Catalog\Models\Product;
+use App\Domain\Inventory\Enums\BatchStatus;
 use App\Domain\Purchasing\Models\Supplier;
 use App\Support\Concerns\BelongsToTenant;
 use App\Support\Concerns\HasUuidv7;
@@ -18,7 +19,7 @@ use Illuminate\Support\Carbon;
  * @property string $batch_number
  * @property Carbon|null $expiry_date
  * @property Carbon $received_at
- * @property string $status
+ * @property BatchStatus $status
  */
 class Batch extends Model
 {
@@ -32,6 +33,7 @@ class Batch extends Model
         return [
             'expiry_date' => 'date',
             'received_at' => 'datetime',
+            'status' => BatchStatus::class,
         ];
     }
 

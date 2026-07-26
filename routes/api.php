@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\V1\Auth\LogoutController;
 use App\Http\Controllers\Api\V1\Auth\LogoutEverywhereController;
 use App\Http\Controllers\Api\V1\Catalog\ProductCategoryController;
 use App\Http\Controllers\Api\V1\Catalog\ProductController;
+use App\Http\Controllers\Api\V1\Compliance\NonConformityController;
 use App\Http\Controllers\Api\V1\Equipment\DeviceController;
 use App\Http\Controllers\Api\V1\Equipment\DeviceProgramController;
 use App\Http\Controllers\Api\V1\Equipment\MaintenanceRecordController;
@@ -213,5 +214,14 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
 
         Route::get('evidence-search', [EvidenceSearchController::class, 'index'])->name('evidence-search.index');
         Route::get('evidence-search/export', [EvidenceExportController::class, 'index'])->name('evidence-search.export');
+
+        Route::get('non-conformities', [NonConformityController::class, 'index'])->name('non-conformities.index');
+        Route::post('non-conformities', [NonConformityController::class, 'store'])
+            ->middleware('idempotent')
+            ->name('non-conformities.store');
+        Route::get('non-conformities/{nonConformity}', [NonConformityController::class, 'show'])->name('non-conformities.show');
+        Route::post('non-conformities/{nonConformity}/resolve', [NonConformityController::class, 'resolve'])
+            ->middleware('idempotent')
+            ->name('non-conformities.resolve');
     });
 });

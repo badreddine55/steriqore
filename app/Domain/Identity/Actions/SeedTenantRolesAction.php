@@ -45,6 +45,8 @@ class SeedTenantRolesAction
         'usages.view',
         'usages.manage',
         'exports.manage',
+        'non_conformities.view',
+        'non_conformities.manage',
     ];
 
     private const array PERMISSIONS_BY_ROLE = [
@@ -62,16 +64,19 @@ class SeedTenantRolesAction
             'inventory.view', 'inventory.manage', 'alerts.view', 'alerts.manage',
             'devices.view', 'devices.manage', 'cycles.view', 'cycles.manage',
             'labels.view', 'labels.manage', 'patients.view', 'usages.view',
+            'non_conformities.view',
         ],
         // releaser is the only role besides owner/admin with cycles.release
-        // — running a cycle (cycles.manage) and releasing it are kept
-        // distinct even though the same fixed role list has to cover both.
-        'releaser' => ['sites.view', 'products.view', 'suppliers.view', 'purchasing.view', 'inventory.view', 'alerts.view', 'devices.view', 'cycles.view', 'cycles.release', 'labels.view', 'patients.view', 'usages.view'],
+        // and non_conformities.manage — they're already the compliance
+        // gatekeeper for releasing/rejecting a cycle, so raising/resolving
+        // a non-conformity (the same "is this evidence trustworthy?"
+        // judgment call, after the fact) sits with the same role.
+        'releaser' => ['sites.view', 'products.view', 'suppliers.view', 'purchasing.view', 'inventory.view', 'alerts.view', 'devices.view', 'cycles.view', 'cycles.release', 'labels.view', 'patients.view', 'usages.view', 'non_conformities.view', 'non_conformities.manage'],
         // practitioner is the only non-owner/admin role with patients.manage
         // and usages.manage — they're the one creating a pseudonym and
         // recording label->procedure->patient while treating a patient.
-        'practitioner' => ['sites.view', 'products.view', 'suppliers.view', 'purchasing.view', 'inventory.view', 'alerts.view', 'devices.view', 'cycles.view', 'labels.view', 'patients.view', 'patients.manage', 'usages.view', 'usages.manage'],
-        'viewer' => ['sites.view', 'products.view', 'suppliers.view', 'purchasing.view', 'inventory.view', 'alerts.view', 'devices.view', 'cycles.view', 'labels.view', 'patients.view', 'usages.view'],
+        'practitioner' => ['sites.view', 'products.view', 'suppliers.view', 'purchasing.view', 'inventory.view', 'alerts.view', 'devices.view', 'cycles.view', 'labels.view', 'patients.view', 'patients.manage', 'usages.view', 'usages.manage', 'non_conformities.view'],
+        'viewer' => ['sites.view', 'products.view', 'suppliers.view', 'purchasing.view', 'inventory.view', 'alerts.view', 'devices.view', 'cycles.view', 'labels.view', 'patients.view', 'usages.view', 'non_conformities.view'],
     ];
 
     public function execute(Tenant $tenant): void
