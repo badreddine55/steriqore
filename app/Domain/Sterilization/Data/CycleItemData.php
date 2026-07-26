@@ -10,6 +10,7 @@ class CycleItemData extends Data
     public function __construct(
         public readonly string $id,
         public readonly string $cycle_id,
+        public readonly ?string $batch_id,
         public readonly string $description,
         public readonly int $sequence_in_cycle,
     ) {}
@@ -19,6 +20,7 @@ class CycleItemData extends Data
         return new self(
             $item->id,
             $item->cycle_id,
+            $item->batch_id,
             $item->description,
             $item->sequence_in_cycle,
         );

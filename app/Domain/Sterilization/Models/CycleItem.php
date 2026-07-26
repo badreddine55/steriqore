@@ -2,6 +2,7 @@
 
 namespace App\Domain\Sterilization\Models;
 
+use App\Domain\Inventory\Models\Batch;
 use App\Domain\Labeling\Models\Label;
 use App\Support\Concerns\BelongsToTenant;
 use App\Support\Concerns\HasUuidv7;
@@ -16,6 +17,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
  * @property string $id
  * @property string $tenant_id
  * @property string $cycle_id
+ * @property string|null $batch_id
  * @property string $description
  * @property int $sequence_in_cycle
  */
@@ -24,7 +26,7 @@ class CycleItem extends Model
     use BelongsToTenant;
     use HasUuidv7;
 
-    protected $fillable = ['tenant_id', 'cycle_id', 'description', 'sequence_in_cycle'];
+    protected $fillable = ['tenant_id', 'cycle_id', 'batch_id', 'description', 'sequence_in_cycle'];
 
     protected function casts(): array
     {
@@ -47,5 +49,13 @@ class CycleItem extends Model
     public function label(): HasOne
     {
         return $this->hasOne(Label::class);
+    }
+
+    /**
+     * @return BelongsTo<Batch, $this>
+     */
+    public function batch(): BelongsTo
+    {
+        return $this->belongsTo(Batch::class);
     }
 }

@@ -31,6 +31,7 @@ use App\Http\Controllers\Api\V1\Sterilization\CycleAttachmentController;
 use App\Http\Controllers\Api\V1\Sterilization\CycleController;
 use App\Http\Controllers\Api\V1\Sterilization\CycleItemController;
 use App\Http\Controllers\Api\V1\Sterilization\CycleReleaseController;
+use App\Http\Controllers\Api\V1\Traceability\EvidenceSearchController;
 use App\Http\Controllers\Api\V1\Traceability\LabelUsageController;
 use App\Http\Controllers\Api\V1\Traceability\PatientController;
 use Illuminate\Support\Facades\Route;
@@ -207,5 +208,7 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
             ->name('patients.store');
         Route::get('patients/{patient}', [PatientController::class, 'show'])->name('patients.show');
         Route::delete('patients/{patient}', [PatientController::class, 'destroy'])->name('patients.destroy');
+
+        Route::get('evidence-search', [EvidenceSearchController::class, 'index'])->name('evidence-search.index');
     });
 });

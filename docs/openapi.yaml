@@ -1420,6 +1420,85 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ApiErrorEnvelope'
+  /v1/evidence-search:
+    get:
+      operationId: v1.evidence-search.index
+      tags:
+        - EvidenceSearch
+      parameters:
+        -
+          name: patient_reference
+          in: query
+          schema:
+            type:
+              - string
+              - 'null'
+            maxLength: 255
+        -
+          name: cycle_number
+          in: query
+          schema:
+            type:
+              - integer
+              - 'null'
+            minimum: 1
+        -
+          name: batch_number
+          in: query
+          schema:
+            type:
+              - string
+              - 'null'
+            maxLength: 255
+        -
+          name: device_id
+          in: query
+          schema:
+            type:
+              - string
+              - 'null'
+            format: uuid
+        -
+          name: from
+          in: query
+          schema:
+            type:
+              - string
+              - 'null'
+            format: date-time
+        -
+          name: to
+          in: query
+          schema:
+            type:
+              - string
+              - 'null'
+            format: date-time
+      responses:
+        200:
+          description: '`CursorPaginatedDataCollection`'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CursorPaginatedDataCollection'
+        403:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+        401:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+        422:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
   '/v1/purchase-orders/{purchaseOrder}/receipts':
     post:
       operationId: v1.purchase-orders.receipts.store
@@ -3131,6 +3210,14 @@ components:
         description:
           type: string
           maxLength: 255
+        batch_id:
+          type:
+            - string
+            - 'null'
+          format: uuid
+          description: |-
+            Optional — not every item is a batch-tracked consumable
+            (e.g. reusable instruments with no Inventory batch at all).
       required:
         - description
       title: AddCycleItemRequest

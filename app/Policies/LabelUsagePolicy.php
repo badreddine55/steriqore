@@ -11,6 +11,11 @@ use App\Models\User;
  */
 class LabelUsagePolicy
 {
+    public function viewAny(User $user): bool
+    {
+        return $user->can('usages.view');
+    }
+
     public function view(User $user, LabelUsage $usage): bool
     {
         return $user->can('usages.view');
