@@ -1420,6 +1420,93 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ApiErrorEnvelope'
+  /v1/evidence-search/export:
+    get:
+      operationId: v1.evidence-search.export
+      tags:
+        - EvidenceExport
+      parameters:
+        -
+          name: format
+          in: query
+          schema:
+            type: string
+            enum:
+              - csv
+              - xlsx
+        -
+          name: patient_reference
+          in: query
+          schema:
+            type:
+              - string
+              - 'null'
+            maxLength: 255
+        -
+          name: cycle_number
+          in: query
+          schema:
+            type:
+              - integer
+              - 'null'
+            minimum: 1
+        -
+          name: batch_number
+          in: query
+          schema:
+            type:
+              - string
+              - 'null'
+            maxLength: 255
+        -
+          name: device_id
+          in: query
+          schema:
+            type:
+              - string
+              - 'null'
+            format: uuid
+        -
+          name: from
+          in: query
+          schema:
+            type:
+              - string
+              - 'null'
+            format: date-time
+        -
+          name: to
+          in: query
+          schema:
+            type:
+              - string
+              - 'null'
+            format: date-time
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+        403:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+        422:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+        401:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
   /v1/evidence-search:
     get:
       operationId: v1.evidence-search.index
@@ -1833,13 +1920,13 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/LabelUsageData'
-        404:
+        403:
           description: 'SteriQore API error envelope.'
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ApiErrorEnvelope'
-        403:
+        404:
           description: 'SteriQore API error envelope.'
           content:
             application/json:
@@ -1895,6 +1982,44 @@ paths:
               schema:
                 $ref: '#/components/schemas/ApiErrorEnvelope'
         422:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+  '/v1/labels/{label}/usage/dossier':
+    get:
+      operationId: v1.labels.usage.dossier
+      tags:
+        - LabelUsage
+      parameters:
+        -
+          name: label
+          in: path
+          required: true
+          description: 'The label ID'
+          schema:
+            type: string
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+        403:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+        404:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+        401:
           description: 'SteriQore API error envelope.'
           content:
             application/json:

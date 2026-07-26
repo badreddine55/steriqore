@@ -25,6 +25,7 @@ use App\Http\Controllers\Api\V1\Purchasing\GoodsReceiptController;
 use App\Http\Controllers\Api\V1\Purchasing\PurchaseOrderController;
 use App\Http\Controllers\Api\V1\Purchasing\SupplierController;
 use App\Http\Controllers\Api\V1\Purchasing\SupplierProductController;
+use App\Http\Controllers\Api\V1\Reporting\EvidenceExportController;
 use App\Http\Controllers\Api\V1\SitesController;
 use App\Http\Controllers\Api\V1\Sterilization\ControlTestController;
 use App\Http\Controllers\Api\V1\Sterilization\CycleAttachmentController;
@@ -199,6 +200,7 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
         Route::post('labels/{label}/usage', [LabelUsageController::class, 'store'])
             ->middleware('idempotent')
             ->name('labels.usage.store');
+        Route::get('labels/{label}/usage/dossier', [LabelUsageController::class, 'dossier'])->name('labels.usage.dossier');
 
         Route::get('labels/{code}', [LabelScanController::class, 'show'])->name('labels.show');
 
@@ -210,5 +212,6 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
         Route::delete('patients/{patient}', [PatientController::class, 'destroy'])->name('patients.destroy');
 
         Route::get('evidence-search', [EvidenceSearchController::class, 'index'])->name('evidence-search.index');
+        Route::get('evidence-search/export', [EvidenceExportController::class, 'index'])->name('evidence-search.export');
     });
 });

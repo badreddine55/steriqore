@@ -25,4 +25,14 @@ class LabelUsagePolicy
     {
         return $user->can('usages.manage');
     }
+
+    /**
+     * A bulk export of evidence is more sensitive than viewing one record
+     * — its own permission, not usages.view (REC acceptance: "complete
+     * export controlled by permissions").
+     */
+    public function export(User $user): bool
+    {
+        return $user->can('exports.manage');
+    }
 }

@@ -6,8 +6,12 @@ COPY composer.json composer.lock ./
 # composer:2 lacks ext-pcntl/posix (Horizon), ext-exif (medialibrary's
 # spatie/image, for reading photo orientation), and ext-bcmath/ext-gd
 # (tc-lib-barcode, for DataMatrix generation) — all exist in the runtime
-# image.
+# image. Its own bundled PHP (8.5) is also newer than the runtime's 8.4
+# (CLAUDE.md's stack), which trips phpoffice/phpspreadsheet's <8.5 cap —
+# this stage only resolves/downloads packages, it never executes
+# application code, so the actual runtime PHP version is what matters.
 RUN composer install --no-dev --no-scripts --no-autoloader --prefer-dist --no-interaction \
+    --ignore-platform-req=php \
     --ignore-platform-req=ext-pcntl \
     --ignore-platform-req=ext-posix \
     --ignore-platform-req=ext-exif \

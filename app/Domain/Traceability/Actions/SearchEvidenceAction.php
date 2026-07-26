@@ -4,6 +4,7 @@ namespace App\Domain\Traceability\Actions;
 
 use App\Domain\Traceability\Models\LabelUsage;
 use Illuminate\Contracts\Pagination\CursorPaginator;
+use Illuminate\Database\Eloquent\Builder;
 
 /**
  * REC-09: "search by patient/cycle/batch -> complete result < 2s at pilot
@@ -21,6 +22,19 @@ class SearchEvidenceAction
      * @return CursorPaginator<int, LabelUsage>
      */
     public function execute(array $filters, int $perPage): CursorPaginator
+    {
+        return $this->query($filters)->cursorPaginate(perPage: $perPage);
+    }
+
+    /**
+     * Shared with ExportEvidenceAction (S4-ANA-04) so the export is
+     * exactly "these search results as a file," not a second filter
+     * implementation that could quietly drift from the first.
+     *
+     * @param  array{patient_reference?: string, cycle_number?: int, batch_number?: string, device_id?: string, from?: string, to?: string}  $filters
+     * @return Builder<LabelUsage>
+     */
+    public function query(array $filters): Builder
     {
         return LabelUsage::query()
             ->with(['label.cycleItem.cycle.device.site', 'label.cycleItem.batch', 'patient', 'practitioner'])
@@ -42,7 +56,6 @@ class SearchEvidenceAction
             )
             ->when($filters['from'] ?? null, fn ($query, $value) => $query->where('used_at', '>=', $value))
             ->when($filters['to'] ?? null, fn ($query, $value) => $query->where('used_at', '<=', $value))
-            ->orderByDesc('used_at')
-            ->cursorPaginate(perPage: $perPage);
+            ->orderByDesc('used_at');
     }
 }

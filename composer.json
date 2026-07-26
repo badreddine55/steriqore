@@ -21,6 +21,7 @@
         "laravel/sanctum": "^4.3",
         "laravel/tinker": "^3.0",
         "laravel/wayfinder": "^0.1.14",
+        "maatwebsite/excel": "^3.1",
         "resend/resend-laravel": "^1.4",
         "spatie/browsershot": "^5.4",
         "spatie/laravel-activitylog": "^4.0",

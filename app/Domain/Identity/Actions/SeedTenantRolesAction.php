@@ -44,6 +44,7 @@ class SeedTenantRolesAction
         'patients.manage',
         'usages.view',
         'usages.manage',
+        'exports.manage',
     ];
 
     private const array PERMISSIONS_BY_ROLE = [
