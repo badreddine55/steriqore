@@ -91,12 +91,114 @@ docker compose -f docker-compose.staging.yml --env-file .env.staging up -d --bui
 The entrypoint runs migrations automatically on the first container that
 starts (`RUN_MIGRATIONS=true` by default).
 
-## Rollback
+## Production deploy runbook
 
-Not yet exercised end-to-end (S6). The intended shape, given the current
-setup: the previous image tag stays available (Docker images are
-immutable and tagged), so a rollback is redeploying the prior tag rather
-than rebuilding — combined with `RUN_MIGRATIONS=false` on the rollback
-run if the failed deploy's migration needs a manual down-migration first.
-This needs a real rehearsal against actual staging infrastructure before
-it's a proven procedure, not just a plan.
+**Not yet rehearsed against real infrastructure (S6)** — no production
+host, domain, or orchestrator is decided yet (OQ-10). This runbook is
+written against what actually exists in this repo today (the Dockerfile,
+`docker-compose.staging.yml`'s topology, the entrypoint's migration step,
+the `/up` health endpoint, `spatie/laravel-backup`) so it can be rehearsed
+verbatim the moment a real target exists, rather than invented at deploy
+time under pressure. Treat every step as a checklist, not prose to skim.
+
+### Pre-flight
+
+- [ ] `git log` on the branch being deployed matches what was reviewed —
+      no last-minute unreviewed commits.
+- [ ] Full test suite green: `php artisan test` (or `./vendor/bin/pest`)
+      — same command CI runs.
+- [ ] `./vendor/bin/phpstan analyse --memory-limit=1G` clean (the 3
+      pre-existing errors in `HorizonServiceProvider.php`/
+      `config/horizon.php`/`config/sanctum.php` are tolerated; nothing
+      else).
+- [ ] `docs/openapi.yaml` regenerated and committed if any route changed
+      this release (`tests/Feature/Api/V1/OpenApiContractTest.php` fails
+      if not — that's the drift guard, not a false positive).
+- [ ] A fresh on-demand backup exists and is confirmed present on the
+      `backups` bucket, taken *before* this deploy: `php artisan
+      backup:run --only-db` and `php artisan steriqore:backup-media`. Do
+      not rely solely on last night's scheduled backup — a deploy is
+      exactly the moment a restore point is worth being certain about.
+- [ ] Note the currently-running image tag/digest somewhere retrievable
+      (deploy log, `docker image ls`) — this is what "rollback" reverts
+      to.
+- [ ] Check `database/migrations/` for anything in this release that:
+  - drops a column/table another release still reads from — not safe to
+    run before all replicas are on the new code, or
+  - is not reversible via a `down()` (evidence-table migrations
+    especially — CLAUDE.md invariant #7 means there is deliberately no
+    "undo" for some of these; treat them as one-way and confirm that's
+    intended before this step, not after).
+
+### Deploy
+
+1. Build and tag the image immutably (a content hash or release version,
+   never a mutable tag like `latest` — this tag *is* the rollback
+   target):
+   ```bash
+   docker build -t steriqore-app:<release-tag> --target production .
+   ```
+2. Push the image to wherever the target infrastructure pulls from
+   (registry — not decided yet, OQ-10).
+3. Roll out with `RUN_MIGRATIONS=true` on exactly one instance/replica
+   (the entrypoint runs `php artisan migrate --force --no-interaction
+   --database=pgsql_admin` on start) and `RUN_MIGRATIONS=false` on every
+   other replica, to avoid a concurrent-migration race — see
+   `docker/entrypoint.sh` and the `RUN_MIGRATIONS` env var.
+4. Similarly, `RUN_SCHEDULER=true` on exactly one replica; `false`
+   (`sleep infinity`) on the rest, so `routes/console.php`'s scheduled
+   jobs (backups, alerts, Horizon snapshots) don't run multiple times.
+5. Wait for the new container(s) to report healthy — `GET /up` (wired via
+   `bootstrap/app.php`'s `health: '/up'`, already used as the Docker
+   Compose healthcheck) — before routing any traffic to them.
+
+### Post-deploy verification
+
+- [ ] `GET /up` returns 200 on every replica.
+- [ ] `php artisan horizon:status` reports running; the Horizon dashboard
+      (`/horizon`) shows workers processing, not just idling — a silent
+      queue is easy to miss and easy to mistake for "nothing to do."
+- [ ] One real, low-risk request through the actual API (e.g. `GET
+      /api/v1/me` with a known test token) — confirms the app boots,
+      resolves the tenant, and reaches the database, not just that the
+      process is alive.
+- [ ] Sentry (if `SENTRY_LARAVEL_DSN` is set) shows no new error group
+      immediately after rollout.
+- [ ] `php artisan queue:failed` is empty, or at least not growing —
+      Horizon's own dashboard also surfaces this, but it's worth checking
+      directly for a job that started throwing right after the release.
+
+### Rollback
+
+The previous image tag is the rollback target — because tags are
+immutable per this runbook's build step, "rollback" is redeploying the
+prior tag, not reverting code and rebuilding.
+
+1. Stop routing traffic to the new release (however the load
+   balancer/orchestrator does this — not decided yet, OQ-10).
+2. Redeploy the previous image tag noted in pre-flight, with
+   `RUN_MIGRATIONS=false` — the schema should generally not need to move
+   backward; see the next point.
+3. **If this release's migration is not safely backward-compatible**
+   (the pre-flight check above should have already flagged this): the
+   previous code cannot simply run against the new schema. Restoring the
+   pre-flight backup (see `docs/operations.md`'s "Restoring" section) is
+   the fallback in that case, which loses any writes made between the
+   backup and the restore — this is exactly why the pre-flight backup
+   step isn't optional, and why a migration that isn't safely reversible
+   needs a written decision *before* the deploy, not discovered during an
+   incident.
+4. Re-run the post-deploy verification checklist above against the
+   rolled-back version.
+5. Confirm Horizon's queues drain cleanly — a job serialized against the
+   new release's job class shape can fail deserializing under the old
+   code if the rollback crosses a job signature change.
+
+### What's still genuinely blocked
+
+None of the above has been rehearsed against a real target because none
+exists yet (OQ-10): no hosting decision, no domain, no container
+registry, no load balancer/TLS termination in front of FrankenPHP. This
+runbook is deliberately written so that the first real rehearsal is
+"follow these steps," not "figure out a procedure while also standing up
+infrastructure for the first time."

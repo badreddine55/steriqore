@@ -56,6 +56,12 @@ terminate TLS), a Sentry account/project, and who gets alerted for
 queue/capacity/certificate problems and how (Sentry alerts? something
 else?). `docker-compose.staging.yml`'s header comment lists these
 explicitly.
+**Update (S6):** `docs/deployment.md`'s "Production deploy runbook"
+section is now a full checklist (pre-flight, deploy, post-deploy
+verification, rollback) written against what exists today, so the first
+real rehearsal is "follow these steps" rather than inventing a procedure
+from scratch — but it is still unrehearsed against a real target, since
+none of the infrastructure above exists yet.
 
 ## OQ-9 — Non-conformities: no un-recall/un-quarantine path, no type taxonomy
 **Raised:** S4-ANA-05 (Non-conformities), 2026-07-26
