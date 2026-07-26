@@ -1734,6 +1734,93 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ApiErrorEnvelope'
+  '/v1/labels/{label}/usage':
+    get:
+      operationId: v1.labels.usage.show
+      tags:
+        - LabelUsage
+      parameters:
+        -
+          name: label
+          in: path
+          required: true
+          description: 'The label ID'
+          schema:
+            type: string
+      responses:
+        200:
+          description: '`LabelUsageData`'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LabelUsageData'
+        404:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+        403:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+        401:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+    post:
+      operationId: v1.labels.usage.store
+      tags:
+        - LabelUsage
+      parameters:
+        -
+          name: label
+          in: path
+          required: true
+          description: 'The label ID'
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RecordLabelUsageRequest'
+      responses:
+        200:
+          description: '`LabelUsageData`'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LabelUsageData'
+        403:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+        404:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+        401:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+        422:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
   /v1/auth/login:
     post:
       operationId: v1.auth.login
@@ -3484,6 +3571,10 @@ components:
       type: object
       additionalProperties: {}
       title: LabelScanResultData
+    LabelUsageData:
+      type: object
+      additionalProperties: {}
+      title: LabelUsageData
     LoginRequest:
       type: object
       properties:
@@ -3597,6 +3688,36 @@ components:
         - result
         - performed_at
       title: RecordControlTestRequest
+    RecordLabelUsageRequest:
+      type: object
+      properties:
+        patient_id:
+          type: string
+          format: uuid
+        practitioner_id:
+          type: string
+          format: uuid
+          description: |-
+            users aren't tenant-scoped directly (BelongsToTenant would
+            be wrong for a global identity table) — membership is via
+            tenant_user, so that's what has to be checked here.
+        procedure:
+          type: string
+          maxLength: 255
+        used_at:
+          type:
+            - string
+            - 'null'
+          format: date-time
+        notes:
+          type:
+            - string
+            - 'null'
+      required:
+        - patient_id
+        - practitioner_id
+        - procedure
+      title: RecordLabelUsageRequest
     RecordMaintenanceRequest:
       type: object
       properties:

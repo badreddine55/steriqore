@@ -4,11 +4,13 @@ namespace App\Domain\Labeling\Models;
 
 use App\Domain\Labeling\Enums\LabelStatus;
 use App\Domain\Sterilization\Models\CycleItem;
+use App\Domain\Traceability\Models\LabelUsage;
 use App\Support\Concerns\BelongsToTenant;
 use App\Support\Concerns\HasUuidv7;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Carbon;
 
 /**
@@ -66,5 +68,13 @@ class Label extends Model
     public function prints(): HasMany
     {
         return $this->hasMany(LabelPrint::class);
+    }
+
+    /**
+     * @return HasOne<LabelUsage, $this>
+     */
+    public function usage(): HasOne
+    {
+        return $this->hasOne(LabelUsage::class);
     }
 }

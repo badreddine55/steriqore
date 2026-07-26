@@ -31,6 +31,7 @@ use App\Http\Controllers\Api\V1\Sterilization\CycleAttachmentController;
 use App\Http\Controllers\Api\V1\Sterilization\CycleController;
 use App\Http\Controllers\Api\V1\Sterilization\CycleItemController;
 use App\Http\Controllers\Api\V1\Sterilization\CycleReleaseController;
+use App\Http\Controllers\Api\V1\Traceability\LabelUsageController;
 use App\Http\Controllers\Api\V1\Traceability\PatientController;
 use Illuminate\Support\Facades\Route;
 
@@ -193,6 +194,10 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
         Route::get('labels/{label}/pdf', [LabelController::class, 'pdf'])->name('labels.pdf');
         Route::get('labels/{label}/qr-code', [LabelController::class, 'qrCode'])->name('labels.qr-code');
         Route::get('labels/{label}/datamatrix', [LabelController::class, 'dataMatrix'])->name('labels.datamatrix');
+        Route::get('labels/{label}/usage', [LabelUsageController::class, 'show'])->name('labels.usage.show');
+        Route::post('labels/{label}/usage', [LabelUsageController::class, 'store'])
+            ->middleware('idempotent')
+            ->name('labels.usage.store');
 
         Route::get('labels/{code}', [LabelScanController::class, 'show'])->name('labels.show');
 
