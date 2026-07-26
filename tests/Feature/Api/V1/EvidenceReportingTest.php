@@ -43,3 +43,14 @@ test('a stock manager (who can view usages) cannot export them — a separate pe
 
     $this->withToken($token)->get('/api/v1/evidence-search/export')->assertStatus(403);
 });
+
+test('a practice never reaches another practice evidence dossier, even by guessing a label id (IDOR)', function () {
+    Pdf::fake();
+    [$tenantA, $managerA] = sterilizationTenantWithMember(TenantRole::Owner);
+    [$tenantB, $managerB] = sterilizationTenantWithMember(TenantRole::Owner);
+    $tokenA = sterilizationTokenFor($tenantA, $managerA);
+    $tokenB = sterilizationTokenFor($tenantB, $managerB);
+    $chainB = fullEvidenceChainFor($tokenB, $tenantB, $managerB->id);
+
+    $this->withToken($tokenA)->get("/api/v1/labels/{$chainB['label_id']}/usage/dossier")->assertStatus(404);
+});

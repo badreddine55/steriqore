@@ -21,6 +21,7 @@ use App\Domain\Sterilization\Models\Cycle;
 use App\Domain\Tenancy\Models\Site;
 use App\Domain\Traceability\Models\LabelUsage;
 use App\Domain\Traceability\Models\Patient;
+use App\Models\User;
 use App\Policies\AlertPolicy;
 use App\Policies\AuditEventPolicy;
 use App\Policies\CyclePolicy;
@@ -42,9 +43,12 @@ use App\Policies\TenantUserPolicy;
 use App\Support\Api\ScrambleErrorEnvelope;
 use Carbon\CarbonImmutable;
 use Dedoc\Scramble\Scramble;
+use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
@@ -66,6 +70,7 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->configureDefaults();
+        $this->configureRateLimiting();
 
         Sanctum::usePersonalAccessTokenModel(PersonalAccessToken::class);
 
@@ -118,5 +123,25 @@ class AppServiceProvider extends ServiceProvider
         if ($this->app->isProduction()) {
             URL::forceScheme('https');
         }
+    }
+
+    /**
+     * S5-ANA-01 (security campaign): the whole /api/v1 surface had no rate
+     * limiting at all — Laravel's default 'api' middleware group isn't
+     * used here (routes/api.php is wired directly via ->withRouting()),
+     * so nothing registered one implicitly. 'public-api' is deliberately
+     * stricter than 'api': it covers registration, login, and invitation
+     * acceptance — the three endpoints an unauthenticated caller can hit
+     * to brute-force credentials or spam tenant/account creation.
+     */
+    protected function configureRateLimiting(): void
+    {
+        RateLimiter::for('api', function (Request $request) {
+            $user = $request->user();
+
+            return Limit::perMinute(120)->by($user instanceof User ? $user->id : $request->ip());
+        });
+
+        RateLimiter::for('public-api', fn (Request $request) => Limit::perMinute(10)->by($request->ip()));
     }
 }

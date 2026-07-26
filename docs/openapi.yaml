@@ -3544,6 +3544,12 @@ components:
       title: ApiErrorEnvelope
     AttachCycleFileRequest:
       type: object
+      description: |-
+        mimes: is an allowlist, not just a size cap — a cycle attachment is a
+        photo of a printed ticket or a scanned document, never an arbitrary
+        file type (S5-ANA-01). Medialibrary's own denylist (config/media
+        -library.php's disallowed_extensions) is defense-in-depth on top of
+        this, not a substitute for it.
       properties:
         file:
           type: string

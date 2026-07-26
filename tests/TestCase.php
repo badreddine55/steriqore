@@ -3,11 +3,27 @@
 namespace Tests;
 
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
+use Illuminate\Support\Facades\Cache;
 use Laravel\Fortify\Features;
 use ReflectionClass;
 
 abstract class TestCase extends BaseTestCase
 {
+    /**
+     * The 'array' cache store (phpunit.xml's CACHE_STORE) survives across
+     * every test in the same process — including the request-count keys
+     * S5-ANA-01's 'api'/'public-api' rate limiters write. Without this,
+     * tests would trip each other's throttle after enough shared-IP/no-op
+     * requests accumulate across the suite, not because any single test
+     * actually exceeded a limit.
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        Cache::flush();
+    }
+
     protected function skipUnlessFortifyHas(string $feature, ?string $message = null): void
     {
         if (! Features::enabled($feature)) {

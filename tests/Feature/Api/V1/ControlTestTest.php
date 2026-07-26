@@ -89,3 +89,17 @@ test('recording a passing test does not open a failed_cycle alert', function () 
     $alerts = $this->withToken($token)->getJson('/api/v1/alerts?filter[type]=failed_cycle');
     expect($alerts->json('data'))->toBeEmpty();
 });
+
+test('a practice never reaches another practice cycle control tests, even by guessing a cycle id (IDOR)', function () {
+    [$tenantA, $userA] = sterilizationTenantWithMember();
+    [$tenantB, $userB] = sterilizationTenantWithMember();
+    $tokenA = sterilizationTokenFor($tenantA, $userA);
+    $tokenB = sterilizationTokenFor($tenantB, $userB);
+    $deviceBId = sterilizationDeviceFor($tokenB, $tenantB);
+    $cycleBId = sterilizationRunningCycleFor($tokenB, $deviceBId);
+
+    $this->withToken($tokenA)->getJson("/api/v1/cycles/{$cycleBId}/control-tests")->assertStatus(404);
+    $this->withToken($tokenA)->postJson("/api/v1/cycles/{$cycleBId}/control-tests", [
+        'type' => 'vacuum', 'result' => 'pass', 'performed_at' => now()->toIso8601String(),
+    ], ['Idempotency-Key' => (string) Str::uuid()])->assertStatus(404);
+});

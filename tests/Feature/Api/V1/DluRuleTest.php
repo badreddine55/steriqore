@@ -43,3 +43,19 @@ test('a viewer can read dlu rules but cannot create one (vertical escalation)', 
         'packaging_type' => 'X', 'storage_condition' => 'Y', 'shelf_life_days' => 30,
     ], ['Idempotency-Key' => (string) Str::uuid()])->assertStatus(403);
 });
+
+test('a practice never reaches another practice dlu rule, even by guessing an id (IDOR)', function () {
+    [$tenantA, $userA] = sterilizationTenantWithMember();
+    [$tenantB, $userB] = sterilizationTenantWithMember();
+    $tokenA = sterilizationTokenFor($tenantA, $userA);
+    $tokenB = sterilizationTokenFor($tenantB, $userB);
+
+    $foreignRuleId = $this->withToken($tokenB)->postJson('/api/v1/dlu-rules', [
+        'packaging_type' => 'Sachet', 'storage_condition' => 'Armoire', 'shelf_life_days' => 180,
+    ], ['Idempotency-Key' => (string) Str::uuid()])->json('id');
+
+    $this->withToken($tokenA)->patchJson("/api/v1/dlu-rules/{$foreignRuleId}", ['shelf_life_days' => 1])
+        ->assertStatus(404);
+    $this->withToken($tokenA)->deleteJson("/api/v1/dlu-rules/{$foreignRuleId}")
+        ->assertStatus(404);
+});

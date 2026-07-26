@@ -39,11 +39,13 @@ use App\Http\Controllers\Api\V1\Traceability\PatientController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->name('api.v1.')->group(function () {
-    Route::post('tenants', RegisterTenantController::class)->middleware('idempotent')->name('tenants.register');
-    Route::post('auth/login', LoginController::class)->middleware('idempotent')->name('auth.login');
-    Route::post('invitations/accept', AcceptInvitationController::class)->middleware('idempotent')->name('invitations.accept');
+    Route::middleware('throttle:public-api')->group(function () {
+        Route::post('tenants', RegisterTenantController::class)->middleware('idempotent')->name('tenants.register');
+        Route::post('auth/login', LoginController::class)->middleware('idempotent')->name('auth.login');
+        Route::post('invitations/accept', AcceptInvitationController::class)->middleware('idempotent')->name('invitations.accept');
+    });
 
-    Route::middleware(['auth:sanctum', 'tenant'])->group(function () {
+    Route::middleware(['auth:sanctum', 'tenant', 'throttle:api'])->group(function () {
         Route::delete('auth/logout', LogoutController::class)->name('auth.logout');
         Route::delete('auth/tokens', LogoutEverywhereController::class)->name('auth.logout-everywhere');
         Route::get('me', MeController::class)->name('me');
