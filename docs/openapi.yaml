@@ -178,67 +178,560 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ApiErrorEnvelope'
-  /v1/cycles:
+  '/v1/cycles/{cycle}/control-tests':
     get:
-      operationId: v1.cycles.index
+      operationId: v1.cycles.control-tests.index
       tags:
-        - CyclesMock
+        - ControlTest
+      parameters:
+        -
+          name: cycle
+          in: path
+          required: true
+          description: 'The cycle ID'
+          schema:
+            type: string
       responses:
         200:
           description: ''
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  data:
-                    type: array
-                    prefixItems:
-                      -
-                        type: object
-                        properties:
-                          id:
-                            type: string
-                            const: 01977a1e-2c3b-7000-8000-000000000020
-                          device_id:
-                            type: string
-                            const: 01977a1e-2c3b-7000-8000-000000000030
-                          cycle_number:
-                            type: string
-                            const: A-2026-000042
-                          status:
-                            type: string
-                            const: released
-                          result:
-                            type: string
-                            const: compliant
-                          started_at:
-                            type: string
-                            const: '2026-07-24T08:00:00Z'
-                          ended_at:
-                            type: string
-                            const: '2026-07-24T08:45:00Z'
-                        required:
-                          - id
-                          - device_id
-                          - cycle_number
-                          - status
-                          - result
-                          - started_at
-                          - ended_at
-                    minItems: 1
-                    maxItems: 1
-                    additionalItems: false
-                  meta:
-                    type: object
-                    properties:
-                      next_cursor:
-                        type: 'null'
-                    required:
-                      - next_cursor
-                required:
-                  - data
-                  - meta
+                type: array
+                items:
+                  $ref: '#/components/schemas/ControlTestData'
+        403:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+        404:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+        401:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+    post:
+      operationId: v1.cycles.control-tests.store
+      tags:
+        - ControlTest
+      parameters:
+        -
+          name: cycle
+          in: path
+          required: true
+          description: 'The cycle ID'
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RecordControlTestRequest'
+      responses:
+        200:
+          description: '`ControlTestData`'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ControlTestData'
+        403:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+        404:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+        401:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+        422:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+  /v1/cycles:
+    get:
+      operationId: v1.cycles.index
+      tags:
+        - Cycle
+      responses:
+        200:
+          description: '`CursorPaginatedDataCollection`'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CursorPaginatedDataCollection'
+        403:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+        401:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+    post:
+      operationId: v1.cycles.store
+      tags:
+        - Cycle
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateCycleRequest'
+      responses:
+        200:
+          description: '`CycleData`'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CycleData'
+        403:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+        422:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+        401:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+  '/v1/cycles/{cycle}':
+    get:
+      operationId: v1.cycles.show
+      tags:
+        - Cycle
+      parameters:
+        -
+          name: cycle
+          in: path
+          required: true
+          description: 'The cycle ID'
+          schema:
+            type: string
+      responses:
+        200:
+          description: '`CycleData`'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CycleData'
+        403:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+        404:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+        401:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+  '/v1/cycles/{cycle}/start':
+    post:
+      operationId: v1.cycles.start
+      tags:
+        - Cycle
+      parameters:
+        -
+          name: cycle
+          in: path
+          required: true
+          description: 'The cycle ID'
+          schema:
+            type: string
+      responses:
+        200:
+          description: '`CycleData`'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CycleData'
+        403:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+        404:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+        401:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+  '/v1/cycles/{cycle}/complete':
+    post:
+      operationId: v1.cycles.complete
+      tags:
+        - Cycle
+      parameters:
+        -
+          name: cycle
+          in: path
+          required: true
+          description: 'The cycle ID'
+          schema:
+            type: string
+      responses:
+        200:
+          description: '`CycleData`'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CycleData'
+        403:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+        404:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+        401:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+  '/v1/cycles/{cycle}/submit-for-release':
+    post:
+      operationId: v1.cycles.submit-for-release
+      tags:
+        - Cycle
+      parameters:
+        -
+          name: cycle
+          in: path
+          required: true
+          description: 'The cycle ID'
+          schema:
+            type: string
+      responses:
+        200:
+          description: '`CycleData`'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CycleData'
+        403:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+        404:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+        401:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+  '/v1/cycles/{cycle}/attachments':
+    get:
+      operationId: v1.cycles.attachments.index
+      tags:
+        - CycleAttachment
+      parameters:
+        -
+          name: cycle
+          in: path
+          required: true
+          description: 'The cycle ID'
+          schema:
+            type: string
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CycleAttachmentData'
+        403:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+        404:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+        401:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+    post:
+      operationId: v1.cycles.attachments.store
+      tags:
+        - CycleAttachment
+      parameters:
+        -
+          name: cycle
+          in: path
+          required: true
+          description: 'The cycle ID'
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AttachCycleFileRequest'
+      responses:
+        200:
+          description: '`CycleAttachmentData`'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CycleAttachmentData'
+        422:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+        403:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+        404:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+        401:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+  '/v1/cycles/{cycle}/attachments/{media}':
+    delete:
+      operationId: v1.cycles.attachments.destroy
+      tags:
+        - CycleAttachment
+      parameters:
+        -
+          name: cycle
+          in: path
+          required: true
+          description: 'The cycle ID'
+          schema:
+            type: string
+        -
+          name: media
+          in: path
+          required: true
+          description: 'The media ID'
+          schema:
+            type: integer
+      responses:
+        204:
+          description: 'No content'
+        403:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+        404:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+        401:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+  '/v1/cycles/{cycle}/items':
+    get:
+      operationId: v1.cycles.items.index
+      tags:
+        - CycleItem
+      parameters:
+        -
+          name: cycle
+          in: path
+          required: true
+          description: 'The cycle ID'
+          schema:
+            type: string
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CycleItemData'
+        403:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+        404:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+        401:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+    post:
+      operationId: v1.cycles.items.store
+      tags:
+        - CycleItem
+      parameters:
+        -
+          name: cycle
+          in: path
+          required: true
+          description: 'The cycle ID'
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddCycleItemRequest'
+      responses:
+        200:
+          description: '`CycleItemData`'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CycleItemData'
+        403:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+        404:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+        401:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+        422:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+  '/v1/cycles/{cycle}/items/{item}':
+    delete:
+      operationId: v1.cycles.items.destroy
+      tags:
+        - CycleItem
+      parameters:
+        -
+          name: cycle
+          in: path
+          required: true
+          description: 'The cycle ID'
+          schema:
+            type: string
+        -
+          name: item
+          in: path
+          required: true
+          description: 'The item ID'
+          schema:
+            type: string
+      responses:
+        204:
+          description: 'No content'
+        403:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+        404:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
         401:
           description: 'SteriQore API error envelope.'
           content:
@@ -1977,6 +2470,15 @@ components:
         - name
         - password
       title: AcceptInvitationRequest
+    AddCycleItemRequest:
+      type: object
+      properties:
+        description:
+          type: string
+          maxLength: 255
+      required:
+        - description
+      title: AddCycleItemRequest
     AdjustStockRequest:
       type: object
       properties:
@@ -2026,6 +2528,17 @@ components:
       required:
         - error
       title: ApiErrorEnvelope
+    AttachCycleFileRequest:
+      type: object
+      properties:
+        file:
+          type: string
+          format: binary
+          contentMediaType: application/octet-stream
+          description: 'Maximum file size: 10240 kilobytes.'
+      required:
+        - file
+      title: AttachCycleFileRequest
     AttachSupplierProductRequest:
       type: object
       properties:
@@ -2057,6 +2570,42 @@ components:
             - 'null'
           maxLength: 1000
       title: CancelPurchaseOrderRequest
+    ControlTestData:
+      type: object
+      additionalProperties: {}
+      title: ControlTestData
+    ControlTestResult:
+      type: string
+      enum:
+        - pass
+        - fail
+      title: ControlTestResult
+    ControlTestType:
+      type: string
+      enum:
+        - vacuum
+        - bowie_dick
+        - helix
+        - biological
+      title: ControlTestType
+    CreateCycleRequest:
+      type: object
+      properties:
+        device_id:
+          type: string
+          format: uuid
+        device_program_id:
+          type:
+            - string
+            - 'null'
+          format: uuid
+        notes:
+          type:
+            - string
+            - 'null'
+      required:
+        - device_id
+      title: CreateCycleRequest
     CreateDeviceProgramRequest:
       type: object
       properties:
@@ -2244,6 +2793,18 @@ components:
       type: object
       additionalProperties: {}
       title: CursorPaginatedDataCollection
+    CycleAttachmentData:
+      type: object
+      additionalProperties: {}
+      title: CycleAttachmentData
+    CycleData:
+      type: object
+      additionalProperties: {}
+      title: CycleData
+    CycleItemData:
+      type: object
+      additionalProperties: {}
+      title: CycleItemData
     DeviceData:
       type: object
       additionalProperties: {}
@@ -2376,6 +2937,25 @@ components:
         - location_id
         - lines
       title: ReceiveGoodsRequest
+    RecordControlTestRequest:
+      type: object
+      properties:
+        type:
+          $ref: '#/components/schemas/ControlTestType'
+        result:
+          $ref: '#/components/schemas/ControlTestResult'
+        performed_at:
+          type: string
+          format: date-time
+        notes:
+          type:
+            - string
+            - 'null'
+      required:
+        - type
+        - result
+        - performed_at
+      title: RecordControlTestRequest
     RecordMaintenanceRequest:
       type: object
       properties:

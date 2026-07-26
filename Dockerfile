@@ -3,10 +3,13 @@ FROM composer:2 AS deps
 WORKDIR /app
 
 COPY composer.json composer.lock ./
-# composer:2 lacks ext-pcntl/posix (Horizon needs them); they exist in the runtime image.
+# composer:2 lacks ext-pcntl/posix (Horizon) and ext-exif (medialibrary's
+# spatie/image, for reading photo orientation) — all three exist in the
+# runtime image.
 RUN composer install --no-dev --no-scripts --no-autoloader --prefer-dist --no-interaction \
     --ignore-platform-req=ext-pcntl \
-    --ignore-platform-req=ext-posix
+    --ignore-platform-req=ext-posix \
+    --ignore-platform-req=ext-exif
 
 COPY . .
 RUN composer dump-autoload --optimize --no-dev

@@ -5,6 +5,34 @@ question was flagged instead of guessed, per `CLAUDE.md`. Newest on top.
 
 ---
 
+## OQ-7 — Control tests: attached to a production cycle, or their own
+daily log?
+**Raised:** S3-ANA-02 (Cycles, loads, control tests), 2026-07-26
+**Context:** CLAUDE.md calls for a "control-test logbook
+(vacuum/Bowie-Dick/Helix/biological) with missing-test alerts." In real
+sterilization practice, Bowie-Dick and Helix tests are typically run once
+a day as their *own* dedicated empty-chamber cycle, before any production
+load — not attached to an arbitrary load of instruments. A vacuum test is
+part of every cycle's own program; a biological indicator is usually
+seeded into a production load and read later.
+**Default implemented:** `control_tests` rows always belong to a specific
+`cycle_id` (any type, any cycle) — the simplest model that satisfies "a
+logbook of tests per cycle," recordable any time from `Completed` through
+`AwaitingRelease` (not locked immediately at submission, since a
+biological indicator's result can take 24-48h to incubate and legitimately
+arrives later). A cycle with a `Fail` result immediately opens a
+`failed_cycle` alert (unambiguous — no rule to invent there).
+**Not implemented:** the `missing_test` alert type from CLAUDE.md's alert
+list — flagging "no Bowie-Dick test recorded today" requires deciding
+required test frequency (daily? per device? per tenant?), which is a
+regulatory rule, not a default to guess. `AlertType::MissingTest` doesn't
+exist yet; only `FailedCycle` was added this round.
+**Needs confirmation:** should Bowie-Dick/Helix instead be modeled as a
+standalone daily log independent of any specific production cycle, and
+what the actual required test frequency/type-per-device-kind rules are —
+that second answer is also what `missing_test` needs before it can be
+built without inventing a compliance rule.
+
 ## OQ-6 — Near-expiry alert window
 **Raised:** S2-ANA-05 (Alert engine), 2026-07-28
 **Context:** Nothing in the brief specifies how many days before a batch's

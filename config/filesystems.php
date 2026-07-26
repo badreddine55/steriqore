@@ -60,6 +60,22 @@ return [
             'report' => false,
         ],
 
+        // steriqore-media (NAMING.md) — cycle/label attachments. Private,
+        // presigned URLs only (CLAUDE.md cross-cutting requirement); never
+        // given public read access, unlike the generic 's3' disk above.
+        'media' => [
+            'driver' => 's3',
+            'key' => env('AWS_ACCESS_KEY_ID'),
+            'secret' => env('AWS_SECRET_ACCESS_KEY'),
+            'region' => env('AWS_DEFAULT_REGION'),
+            'bucket' => env('AWS_BUCKET_MEDIA', 'steriqore-media'),
+            'endpoint' => env('AWS_ENDPOINT'),
+            'use_path_style_endpoint' => env('AWS_USE_PATH_STYLE_ENDPOINT', false),
+            'visibility' => 'private',
+            'throw' => false,
+            'report' => false,
+        ],
+
     ],
 
     /*

@@ -17,13 +17,16 @@ use App\Http\Controllers\Api\V1\Inventory\AlertController;
 use App\Http\Controllers\Api\V1\Inventory\StockLevelController;
 use App\Http\Controllers\Api\V1\Inventory\StockMovementController;
 use App\Http\Controllers\Api\V1\MeController;
-use App\Http\Controllers\Api\V1\Mock\CyclesMockController;
 use App\Http\Controllers\Api\V1\Mock\LabelScanMockController;
 use App\Http\Controllers\Api\V1\Purchasing\GoodsReceiptController;
 use App\Http\Controllers\Api\V1\Purchasing\PurchaseOrderController;
 use App\Http\Controllers\Api\V1\Purchasing\SupplierController;
 use App\Http\Controllers\Api\V1\Purchasing\SupplierProductController;
 use App\Http\Controllers\Api\V1\SitesController;
+use App\Http\Controllers\Api\V1\Sterilization\ControlTestController;
+use App\Http\Controllers\Api\V1\Sterilization\CycleAttachmentController;
+use App\Http\Controllers\Api\V1\Sterilization\CycleController;
+use App\Http\Controllers\Api\V1\Sterilization\CycleItemController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->name('api.v1.')->group(function () {
@@ -130,10 +133,40 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
             ->middleware('idempotent')
             ->name('devices.maintenance-records.store');
 
-        // MOCK — no backing tables until S3-S4. See each controller's
-        // docblock. Shapes are a first draft; refine when the real domain
-        // lands, as a documented OpenAPI change, not a silent one.
-        Route::get('cycles', [CyclesMockController::class, 'index'])->name('cycles.index');
+        Route::get('cycles', [CycleController::class, 'index'])->name('cycles.index');
+        Route::post('cycles', [CycleController::class, 'store'])
+            ->middleware('idempotent')
+            ->name('cycles.store');
+        Route::get('cycles/{cycle}', [CycleController::class, 'show'])->name('cycles.show');
+        Route::post('cycles/{cycle}/start', [CycleController::class, 'start'])
+            ->middleware('idempotent')
+            ->name('cycles.start');
+        Route::post('cycles/{cycle}/complete', [CycleController::class, 'complete'])
+            ->middleware('idempotent')
+            ->name('cycles.complete');
+        Route::post('cycles/{cycle}/submit-for-release', [CycleController::class, 'submitForRelease'])
+            ->middleware('idempotent')
+            ->name('cycles.submit-for-release');
+
+        Route::get('cycles/{cycle}/items', [CycleItemController::class, 'index'])->name('cycles.items.index');
+        Route::post('cycles/{cycle}/items', [CycleItemController::class, 'store'])
+            ->middleware('idempotent')
+            ->name('cycles.items.store');
+        Route::delete('cycles/{cycle}/items/{item}', [CycleItemController::class, 'destroy'])->name('cycles.items.destroy');
+
+        Route::get('cycles/{cycle}/control-tests', [ControlTestController::class, 'index'])->name('cycles.control-tests.index');
+        Route::post('cycles/{cycle}/control-tests', [ControlTestController::class, 'store'])
+            ->middleware('idempotent')
+            ->name('cycles.control-tests.store');
+
+        Route::get('cycles/{cycle}/attachments', [CycleAttachmentController::class, 'index'])->name('cycles.attachments.index');
+        Route::post('cycles/{cycle}/attachments', [CycleAttachmentController::class, 'store'])
+            ->middleware('idempotent')
+            ->name('cycles.attachments.store');
+        Route::delete('cycles/{cycle}/attachments/{media}', [CycleAttachmentController::class, 'destroy'])->name('cycles.attachments.destroy');
+
+        // MOCK — the real scan resolution endpoint lands in S3-ANA-05,
+        // which needs labels (S3-ANA-04) first.
         Route::get('labels/{code}', [LabelScanMockController::class, 'show'])->name('labels.show');
     });
 });

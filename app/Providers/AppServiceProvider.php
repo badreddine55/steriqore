@@ -14,9 +14,11 @@ use App\Domain\Inventory\Models\StockLevel;
 use App\Domain\Inventory\Models\StockMovement;
 use App\Domain\Purchasing\Models\PurchaseOrder;
 use App\Domain\Purchasing\Models\Supplier;
+use App\Domain\Sterilization\Models\Cycle;
 use App\Domain\Tenancy\Models\Site;
 use App\Policies\AlertPolicy;
 use App\Policies\AuditEventPolicy;
+use App\Policies\CyclePolicy;
 use App\Policies\DevicePolicy;
 use App\Policies\InvitationPolicy;
 use App\Policies\ProductCategoryPolicy;
@@ -74,6 +76,7 @@ class AppServiceProvider extends ServiceProvider
         Gate::policy(StockLevel::class, StockLevelPolicy::class);
         Gate::policy(Alert::class, AlertPolicy::class);
         Gate::policy(Device::class, DevicePolicy::class);
+        Gate::policy(Cycle::class, CyclePolicy::class);
     }
 
     /**

@@ -101,6 +101,7 @@ services:
       - AWS_SECRET_ACCESS_KEY=minioadmin
       - AWS_DEFAULT_REGION=us-east-1
       - AWS_BUCKET=saw
+      - AWS_BUCKET_MEDIA=steriqore-media
       - AWS_ENDPOINT=http://minio:9000
       - AWS_URL=http://localhost:9023/saw
       - AWS_USE_PATH_STYLE_ENDPOINT=true
@@ -216,7 +217,8 @@ services:
         mc alias set local http://minio:9000 minioadmin minioadmin;
         mc mb local/saw --ignore-existing;
         mc anonymous set public local/saw;
-        echo 'MinIO bucket initialized.';
+        mc mb local/steriqore-media --ignore-existing;
+        echo 'MinIO buckets initialized.';
       "
     networks:
       - steriqore
