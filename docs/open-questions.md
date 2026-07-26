@@ -5,6 +5,30 @@ question was flagged instead of guessed, per `CLAUDE.md`. Newest on top.
 
 ---
 
+## OQ-10 — Staging/monitoring: no infrastructure exists yet
+**Raised:** S5-ANA-02 (Operations), 2026-07-26
+**Context:** the backlog asks for "staging, logs, monitoring, alerts" —
+but no staging host, domain, Sentry project, or (if different from
+MinIO) managed S3/mail account exists yet. None of that is something to
+invent; it needs an actual decision about where this runs.
+**Default implemented:** everything that's pure code/config, so it's
+ready the moment real infrastructure exists: sentry/sentry-laravel wired
+into `bootstrap/app.php` (no-ops with a blank DSN — see `.env.staging
+.example`), the existing `stderr` log channel (already the production
+default since S0, works with any external log collector that tails
+container output), and `docker-compose.staging.yml` — a skeleton mirroring
+local dev's service topology (self-hosted Postgres/Redis/MinIO, no
+Mailpit — real Resend mail) with no host port mappings on the data
+services and no anonymous MinIO access, unlike local dev's convenience
+defaults.
+**Not implemented / needs a decision:** where staging actually runs (a
+single VM? a managed container platform?), TLS termination and the real
+domain (FrankenPHP serves plain HTTP on :8000 — something in front has to
+terminate TLS), a Sentry account/project, and who gets alerted for
+queue/capacity/certificate problems and how (Sentry alerts? something
+else?). `docker-compose.staging.yml`'s header comment lists these
+explicitly.
+
 ## OQ-9 — Non-conformities: no un-recall/un-quarantine path, no type taxonomy
 **Raised:** S4-ANA-05 (Non-conformities), 2026-07-26
 **Context:** CLAUDE.md invariant #3 promises "a non_conformity + recall,

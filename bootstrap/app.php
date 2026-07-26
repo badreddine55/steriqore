@@ -12,6 +12,7 @@ use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Middleware\SubstituteBindings;
+use Sentry\Laravel\Integration;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -54,4 +55,8 @@ return Application::configure(basePath: dirname(__DIR__))
         );
 
         ApiExceptionRenderer::register($exceptions);
+
+        // No-op until SENTRY_LARAVEL_DSN is set (S5-ANA-02) — no staging/
+        // production Sentry project exists yet, see docs/open-questions.md.
+        Integration::handles($exceptions);
     })->create();
