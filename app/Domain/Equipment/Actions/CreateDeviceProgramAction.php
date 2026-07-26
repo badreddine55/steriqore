@@ -26,6 +26,9 @@ class CreateDeviceProgramAction
         }
 
         $program = $device->programs()->create($attributes + ['tenant_id' => $device->tenant_id]);
+        // is_active isn't always in $attributes; the in-memory model won't
+        // see its DB-level default unless re-read (same pitfall as Product).
+        $program->refresh();
 
         $this->recordAuditEvent->execute(
             tenant: $device->tenant,

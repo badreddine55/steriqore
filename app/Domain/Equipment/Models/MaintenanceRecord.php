@@ -2,8 +2,8 @@
 
 namespace App\Domain\Equipment\Models;
 
-use App\Models\User;
 use App\Domain\Equipment\Enums\MaintenanceKind;
+use App\Models\User;
 use App\Support\Concerns\BelongsToTenant;
 use App\Support\Concerns\HasUuidv7;
 use Illuminate\Database\Eloquent\Model;

@@ -30,10 +30,15 @@ paths:
               schema:
                 type: object
                 properties:
-                  token: { type: string }
-                  token_type: { type: string, const: Bearer }
-                  user: { $ref: '#/components/schemas/UserData' }
-                  tenant: { $ref: '#/components/schemas/TenantData' }
+                  token:
+                    type: string
+                  token_type:
+                    type: string
+                    const: Bearer
+                  user:
+                    $ref: '#/components/schemas/UserData'
+                  tenant:
+                    $ref: '#/components/schemas/TenantData'
                 required:
                   - token
                   - token_type
@@ -85,9 +90,12 @@ paths:
               schema:
                 type: object
                 properties:
-                  low_stock: { type: integer }
-                  near_expiry: { type: integer }
-                  expired: { type: integer }
+                  low_stock:
+                    type: integer
+                  near_expiry:
+                    type: integer
+                  expired:
+                    type: integer
                 required:
                   - low_stock
                   - near_expiry
@@ -183,11 +191,417 @@ paths:
               schema:
                 type: object
                 properties:
-                  data: { type: array, prefixItems: [{ type: object, properties: { id: { type: string, const: 01977a1e-2c3b-7000-8000-000000000020 }, device_id: { type: string, const: 01977a1e-2c3b-7000-8000-000000000030 }, cycle_number: { type: string, const: A-2026-000042 }, status: { type: string, const: released }, result: { type: string, const: compliant }, started_at: { type: string, const: '2026-07-24T08:00:00Z' }, ended_at: { type: string, const: '2026-07-24T08:45:00Z' } }, required: [id, device_id, cycle_number, status, result, started_at, ended_at] }], minItems: 1, maxItems: 1, additionalItems: false }
-                  meta: { type: object, properties: { next_cursor: { type: 'null' } }, required: [next_cursor] }
+                  data:
+                    type: array
+                    prefixItems:
+                      -
+                        type: object
+                        properties:
+                          id:
+                            type: string
+                            const: 01977a1e-2c3b-7000-8000-000000000020
+                          device_id:
+                            type: string
+                            const: 01977a1e-2c3b-7000-8000-000000000030
+                          cycle_number:
+                            type: string
+                            const: A-2026-000042
+                          status:
+                            type: string
+                            const: released
+                          result:
+                            type: string
+                            const: compliant
+                          started_at:
+                            type: string
+                            const: '2026-07-24T08:00:00Z'
+                          ended_at:
+                            type: string
+                            const: '2026-07-24T08:45:00Z'
+                        required:
+                          - id
+                          - device_id
+                          - cycle_number
+                          - status
+                          - result
+                          - started_at
+                          - ended_at
+                    minItems: 1
+                    maxItems: 1
+                    additionalItems: false
+                  meta:
+                    type: object
+                    properties:
+                      next_cursor:
+                        type: 'null'
+                    required:
+                      - next_cursor
                 required:
                   - data
                   - meta
+        401:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+  /v1/devices:
+    get:
+      operationId: v1.devices.index
+      tags:
+        - Device
+      responses:
+        200:
+          description: '`CursorPaginatedDataCollection`'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CursorPaginatedDataCollection'
+        403:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+        401:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+    post:
+      operationId: v1.devices.store
+      tags:
+        - Device
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateDeviceRequest'
+      responses:
+        200:
+          description: '`DeviceData`'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeviceData'
+        403:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+        401:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+        422:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+  '/v1/devices/{device}':
+    get:
+      operationId: v1.devices.show
+      tags:
+        - Device
+      parameters:
+        -
+          name: device
+          in: path
+          required: true
+          description: 'The device ID'
+          schema:
+            type: string
+      responses:
+        200:
+          description: '`DeviceData`'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeviceData'
+        403:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+        404:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+        401:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+    patch:
+      operationId: v1.devices.update
+      tags:
+        - Device
+      parameters:
+        -
+          name: device
+          in: path
+          required: true
+          description: 'The device ID'
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateDeviceRequest'
+      responses:
+        200:
+          description: '`DeviceData`'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeviceData'
+        403:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+        404:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+        401:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+        422:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+    delete:
+      operationId: v1.devices.destroy
+      tags:
+        - Device
+      parameters:
+        -
+          name: device
+          in: path
+          required: true
+          description: 'The device ID'
+          schema:
+            type: string
+      responses:
+        204:
+          description: 'No content'
+        403:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+        404:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+        401:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+  '/v1/devices/{device}/programs':
+    get:
+      operationId: v1.devices.programs.index
+      tags:
+        - DeviceProgram
+      parameters:
+        -
+          name: device
+          in: path
+          required: true
+          description: 'The device ID'
+          schema:
+            type: string
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DeviceProgramData'
+        403:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+        404:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+        401:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+    post:
+      operationId: v1.devices.programs.store
+      tags:
+        - DeviceProgram
+      parameters:
+        -
+          name: device
+          in: path
+          required: true
+          description: 'The device ID'
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateDeviceProgramRequest'
+      responses:
+        200:
+          description: '`DeviceProgramData`'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeviceProgramData'
+        403:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+        404:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+        401:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+        422:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+  '/v1/devices/{device}/programs/{program}':
+    patch:
+      operationId: v1.devices.programs.update
+      tags:
+        - DeviceProgram
+      parameters:
+        -
+          name: device
+          in: path
+          required: true
+          description: 'The device ID'
+          schema:
+            type: string
+        -
+          name: program
+          in: path
+          required: true
+          description: 'The program ID'
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateDeviceProgramRequest'
+      responses:
+        200:
+          description: '`DeviceProgramData`'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeviceProgramData'
+        403:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+        404:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+        401:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+        422:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+    delete:
+      operationId: v1.devices.programs.destroy
+      tags:
+        - DeviceProgram
+      parameters:
+        -
+          name: device
+          in: path
+          required: true
+          description: 'The device ID'
+          schema:
+            type: string
+        -
+          name: program
+          in: path
+          required: true
+          description: 'The program ID'
+          schema:
+            type: string
+      responses:
+        204:
+          description: 'No content'
+        403:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+        404:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
         401:
           description: 'SteriQore API error envelope.'
           content:
@@ -334,7 +748,41 @@ paths:
               schema:
                 type: object
                 properties:
-                  data: { type: object, properties: { label_id: { type: string }, status: { type: string, const: active }, cycle_number: { type: string, const: A-2026-000042 }, device_name: { type: string, const: 'Melag Vacuklav 44 B+' }, sterilized_at: { type: string, const: '2026-07-24T08:45:00Z' }, use_by_date: { type: string, const: '2027-07-24' }, sequence_in_cycle: { type: integer, const: 3 }, site_name: { type: string, const: 'Cabinet Centre-Ville' } }, required: [label_id, status, cycle_number, device_name, sterilized_at, use_by_date, sequence_in_cycle, site_name] }
+                  data:
+                    type: object
+                    properties:
+                      label_id:
+                        type: string
+                      status:
+                        type: string
+                        const: active
+                      cycle_number:
+                        type: string
+                        const: A-2026-000042
+                      device_name:
+                        type: string
+                        const: 'Melag Vacuklav 44 B+'
+                      sterilized_at:
+                        type: string
+                        const: '2026-07-24T08:45:00Z'
+                      use_by_date:
+                        type: string
+                        const: '2027-07-24'
+                      sequence_in_cycle:
+                        type: integer
+                        const: 3
+                      site_name:
+                        type: string
+                        const: 'Cabinet Centre-Ville'
+                    required:
+                      - label_id
+                      - status
+                      - cycle_number
+                      - device_name
+                      - sterilized_at
+                      - use_by_date
+                      - sequence_in_cycle
+                      - site_name
                 required:
                   - data
         401:
@@ -368,10 +816,15 @@ paths:
               schema:
                 type: object
                 properties:
-                  token: { type: string }
-                  token_type: { type: string, const: Bearer }
-                  user: { $ref: '#/components/schemas/UserData' }
-                  tenant: { $ref: '#/components/schemas/TenantData' }
+                  token:
+                    type: string
+                  token_type:
+                    type: string
+                    const: Bearer
+                  user:
+                    $ref: '#/components/schemas/UserData'
+                  tenant:
+                    $ref: '#/components/schemas/TenantData'
                 required:
                   - token
                   - token_type
@@ -418,6 +871,95 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ApiErrorEnvelope'
+  '/v1/devices/{device}/maintenance-records':
+    get:
+      operationId: v1.devices.maintenance-records.index
+      tags:
+        - MaintenanceRecord
+      parameters:
+        -
+          name: device
+          in: path
+          required: true
+          description: 'The device ID'
+          schema:
+            type: string
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MaintenanceRecordData'
+        403:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+        404:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+        401:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+    post:
+      operationId: v1.devices.maintenance-records.store
+      tags:
+        - MaintenanceRecord
+      parameters:
+        -
+          name: device
+          in: path
+          required: true
+          description: 'The device ID'
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RecordMaintenanceRequest'
+      responses:
+        200:
+          description: '`MaintenanceRecordData`'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MaintenanceRecordData'
+        403:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+        404:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+        401:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+        422:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
   /v1/me:
     get:
       operationId: v1.me
@@ -432,8 +974,10 @@ paths:
               schema:
                 type: object
                 properties:
-                  user: { $ref: '#/components/schemas/UserData' }
-                  tenant: { $ref: '#/components/schemas/TenantData' }
+                  user:
+                    $ref: '#/components/schemas/UserData'
+                  tenant:
+                    $ref: '#/components/schemas/TenantData'
                 required:
                   - user
                   - tenant
@@ -927,10 +1471,15 @@ paths:
               schema:
                 type: object
                 properties:
-                  token: { type: string }
-                  token_type: { type: string, const: Bearer }
-                  user: { $ref: '#/components/schemas/UserData' }
-                  tenant: { $ref: '#/components/schemas/TenantData' }
+                  token:
+                    type: string
+                  token_type:
+                    type: string
+                    const: Bearer
+                  user:
+                    $ref: '#/components/schemas/UserData'
+                  tenant:
+                    $ref: '#/components/schemas/TenantData'
                 required:
                   - token
                   - token_type
@@ -1012,7 +1561,8 @@ paths:
               schema:
                 type: object
                 properties:
-                  rows_rebuilt: { type: integer }
+                  rows_rebuilt:
+                    type: integer
                 required:
                   - rows_rebuilt
         403:
@@ -1082,8 +1632,10 @@ paths:
               schema:
                 type: object
                 properties:
-                  debit: { $ref: '#/components/schemas/StockMovementData' }
-                  credit: { $ref: '#/components/schemas/StockMovementData' }
+                  debit:
+                    $ref: '#/components/schemas/StockMovementData'
+                  credit:
+                    $ref: '#/components/schemas/StockMovementData'
                 required:
                   - debit
                   - credit
@@ -1505,6 +2057,72 @@ components:
             - 'null'
           maxLength: 1000
       title: CancelPurchaseOrderRequest
+    CreateDeviceProgramRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          maxLength: 255
+        target_temperature_celsius:
+          type: integer
+          minimum: 1
+          maximum: 200
+        plateau_minutes:
+          type: integer
+          minimum: 1
+          maximum: 600
+        is_active:
+          type: boolean
+      required:
+        - name
+        - target_temperature_celsius
+        - plateau_minutes
+      title: CreateDeviceProgramRequest
+    CreateDeviceRequest:
+      type: object
+      properties:
+        site_id:
+          type: string
+          format: uuid
+        name:
+          type: string
+          maxLength: 255
+        serial_number:
+          type: string
+          maxLength: 100
+        kind:
+          $ref: '#/components/schemas/DeviceKind'
+        status:
+          $ref: '#/components/schemas/DeviceStatus'
+        manufacturer:
+          type:
+            - string
+            - 'null'
+          maxLength: 255
+        model:
+          type:
+            - string
+            - 'null'
+          maxLength: 255
+        commissioned_at:
+          type:
+            - string
+            - 'null'
+          format: date-time
+        decommissioned_at:
+          type:
+            - string
+            - 'null'
+          format: date-time
+        notes:
+          type:
+            - string
+            - 'null'
+      required:
+        - site_id
+        - name
+        - serial_number
+      title: CreateDeviceRequest
     CreateInvitationRequest:
       type: object
       properties:
@@ -1626,6 +2244,31 @@ components:
       type: object
       additionalProperties: {}
       title: CursorPaginatedDataCollection
+    DeviceData:
+      type: object
+      additionalProperties: {}
+      title: DeviceData
+    DeviceKind:
+      type: string
+      enum:
+        - autoclave
+        - washer_disinfector
+        - sealer
+        - other
+      title: DeviceKind
+    DeviceProgramData:
+      type: object
+      additionalProperties: {}
+      title: DeviceProgramData
+    DeviceStatus:
+      type: string
+      description: |
+        A device is never deleted while any cycle references it (soft-delete only), but it can be taken out of service without deleting anything — that's what Maintenance/Decommissioned are for. S3-ANA-02 will forbid starting a new cycle on a device that isn't Active.
+      enum:
+        - active
+        - maintenance
+        - decommissioned
+      title: DeviceStatus
     GoodsReceiptData:
       type: object
       additionalProperties: {}
@@ -1671,6 +2314,17 @@ components:
         - email
         - password
       title: LoginRequest
+    MaintenanceKind:
+      type: string
+      enum:
+        - preventive
+        - corrective
+        - calibration
+      title: MaintenanceKind
+    MaintenanceRecordData:
+      type: object
+      additionalProperties: {}
+      title: MaintenanceRecordData
     ProductCategoryData:
       type: object
       additionalProperties: {}
@@ -1722,6 +2376,32 @@ components:
         - location_id
         - lines
       title: ReceiveGoodsRequest
+    RecordMaintenanceRequest:
+      type: object
+      properties:
+        kind:
+          $ref: '#/components/schemas/MaintenanceKind'
+        technician:
+          type:
+            - string
+            - 'null'
+          maxLength: 255
+        performed_at:
+          type: string
+          format: date-time
+        next_due_at:
+          type:
+            - string
+            - 'null'
+          format: date-time
+        description:
+          type:
+            - string
+            - 'null'
+      required:
+        - kind
+        - performed_at
+      title: RecordMaintenanceRequest
     RegisterTenantRequest:
       type: object
       properties:
@@ -1801,6 +2481,64 @@ components:
         - to_location_id
         - qty
       title: TransferStockRequest
+    UpdateDeviceProgramRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          maxLength: 255
+        target_temperature_celsius:
+          type: integer
+          minimum: 1
+          maximum: 200
+        plateau_minutes:
+          type: integer
+          minimum: 1
+          maximum: 600
+        is_active:
+          type: boolean
+      title: UpdateDeviceProgramRequest
+    UpdateDeviceRequest:
+      type: object
+      properties:
+        site_id:
+          type: string
+          format: uuid
+        name:
+          type: string
+          maxLength: 255
+        serial_number:
+          type: string
+          maxLength: 100
+        kind:
+          $ref: '#/components/schemas/DeviceKind'
+        status:
+          $ref: '#/components/schemas/DeviceStatus'
+        manufacturer:
+          type:
+            - string
+            - 'null'
+          maxLength: 255
+        model:
+          type:
+            - string
+            - 'null'
+          maxLength: 255
+        commissioned_at:
+          type:
+            - string
+            - 'null'
+          format: date-time
+        decommissioned_at:
+          type:
+            - string
+            - 'null'
+          format: date-time
+        notes:
+          type:
+            - string
+            - 'null'
+      title: UpdateDeviceRequest
     UpdateProductRequest:
       type: object
       properties:

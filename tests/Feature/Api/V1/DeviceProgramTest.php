@@ -81,12 +81,11 @@ test('a viewer can read programs but cannot create one (vertical escalation)', f
         'site_id' => $siteId, 'name' => 'Autoclave 1', 'serial_number' => 'SN-001',
     ], ['Idempotency-Key' => (string) Str::uuid()])->json('id');
 
-    [$tenant, $viewer] = equipmentTenantWithMember(TenantRole::Viewer);
-    // Re-seed the viewer inside the SAME tenant as the device, so this is a
-    // permission check, not a tenant-isolation check.
-    $viewer = \App\Models\User::create(['name' => 'V', 'email' => 'v-'.Str::lower(Str::random(8)).'@example.com', 'password' => Illuminate\Support\Facades\Hash::make('correct-password')]);
-    \App\Domain\Identity\Models\TenantUser::create(['tenant_id' => $managerTenant->id, 'user_id' => $viewer->id, 'status' => 'active']);
-    $registrar = app(Spatie\Permission\PermissionRegistrar::class);
+    // The viewer must be a member of the SAME tenant as the device, so this
+    // is a permission check, not a tenant-isolation check.
+    $viewer = User::create(['name' => 'V', 'email' => 'v-'.Str::lower(Str::random(8)).'@example.com', 'password' => Hash::make('correct-password')]);
+    TenantUser::create(['tenant_id' => $managerTenant->id, 'user_id' => $viewer->id, 'status' => 'active']);
+    $registrar = app(PermissionRegistrar::class);
     $registrar->setPermissionsTeamId($managerTenant->id);
     $viewer->assignRole(TenantRole::Viewer->value);
     $registrar->setPermissionsTeamId(null);
