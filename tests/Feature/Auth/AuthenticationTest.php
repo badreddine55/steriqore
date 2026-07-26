@@ -53,6 +53,18 @@ test('users can not authenticate with invalid password', function () {
     $this->assertGuest();
 });
 
+test('a soft-disabled user cannot authenticate even with the correct password', function () {
+    $user = User::factory()->create(['disabled_at' => now()]);
+
+    $response = $this->post(route('login.store'), [
+        'email' => $user->email,
+        'password' => 'password',
+    ]);
+
+    $this->assertGuest();
+    $response->assertSessionHasErrors();
+});
+
 test('users can logout', function () {
     $user = User::factory()->create();
 

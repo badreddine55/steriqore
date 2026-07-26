@@ -13,6 +13,17 @@
         'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol',
         'Noto Color Emoji';
 
+    /*
+     * Every identifier and quantity (cycle numbers, batch numbers, label
+     * UUIDs, DLU dates, stock counts) renders in this face so digits are
+     * fixed-width and a mis-keyed number is visible at a glance — a
+     * system stack, not a webfont, since fixed-width digits are all that's
+     * actually required here (see components/mono.tsx).
+     */
+    --font-mono:
+        ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono',
+        monospace;
+
     --radius-lg: var(--radius);
     --radius-md: calc(var(--radius) - 2px);
     --radius-sm: calc(var(--radius) - 4px);
@@ -59,6 +70,31 @@
     --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
     --color-sidebar-border: var(--sidebar-border);
     --color-sidebar-ring: var(--sidebar-ring);
+
+    /*
+     * The ONLY place saturated color is allowed to appear (see
+     * resources/js/lib/status.ts, the single place that maps every
+     * domain enum onto one of these six tones — never introduce a new hue
+     * anywhere else). Each tone is a background/foreground pair for
+     * badges, plus a plain "-fg" for using the color on its own (an icon
+     * next to plain text, for instance). "In-progress" states (a running
+     * cycle, a printed-not-yet-used label) intentionally use the neutral
+     * --color-accent/--color-primary instead of a 7th status hue — they
+     * aren't one of the six compliance-critical states this palette
+     * exists to make legible at a glance.
+     */
+    --color-status-draft-bg: var(--status-draft-bg);
+    --color-status-draft-fg: var(--status-draft-fg);
+    --color-status-pending-bg: var(--status-pending-bg);
+    --color-status-pending-fg: var(--status-pending-fg);
+    --color-status-success-bg: var(--status-success-bg);
+    --color-status-success-fg: var(--status-success-fg);
+    --color-status-danger-bg: var(--status-danger-bg);
+    --color-status-danger-fg: var(--status-danger-fg);
+    --color-status-contained-bg: var(--status-contained-bg);
+    --color-status-contained-fg: var(--status-contained-fg);
+    --color-status-expired-bg: var(--status-expired-bg);
+    --color-status-expired-fg: var(--status-expired-fg);
 }
 
 :root {
@@ -68,7 +104,10 @@
     --card-foreground: oklch(0.145 0 0);
     --popover: oklch(1 0 0);
     --popover-foreground: oklch(0.145 0 0);
-    --primary: oklch(0.205 0 0);
+    /* The one restrained institutional accent — a desaturated clinical
+       blue, used only for interactive elements (links, primary buttons,
+       focus rings, the active nav item). Never used for status. */
+    --primary: oklch(0.45 0.08 235);
     --primary-foreground: oklch(0.985 0 0);
     --secondary: oklch(0.97 0 0);
     --secondary-foreground: oklch(0.205 0 0);
@@ -80,21 +119,36 @@
     --destructive-foreground: oklch(0.577 0.245 27.325);
     --border: oklch(0.922 0 0);
     --input: oklch(0.922 0 0);
-    --ring: oklch(0.87 0 0);
+    --ring: oklch(0.45 0.08 235);
     --chart-1: oklch(0.646 0.222 41.116);
     --chart-2: oklch(0.6 0.118 184.704);
     --chart-3: oklch(0.398 0.07 227.392);
     --chart-4: oklch(0.828 0.189 84.429);
     --chart-5: oklch(0.769 0.188 70.08);
     --radius: 0.625rem;
-    --sidebar: oklch(0.985 0 0);
+    --sidebar: oklch(0.99 0 0);
     --sidebar-foreground: oklch(0.145 0 0);
-    --sidebar-primary: oklch(0.205 0 0);
+    --sidebar-primary: oklch(0.45 0.08 235);
     --sidebar-primary-foreground: oklch(0.985 0 0);
     --sidebar-accent: oklch(0.97 0 0);
     --sidebar-accent-foreground: oklch(0.205 0 0);
     --sidebar-border: oklch(0.922 0 0);
-    --sidebar-ring: oklch(0.87 0 0);
+    --sidebar-ring: oklch(0.45 0.08 235);
+
+    /* Status palette — light mode: a light tint background + a dark,
+       readable foreground, the same shape shadcn Badge already uses. */
+    --status-draft-bg: oklch(0.96 0 0);
+    --status-draft-fg: oklch(0.4 0 0);
+    --status-pending-bg: oklch(0.96 0.05 85);
+    --status-pending-fg: oklch(0.47 0.13 68);
+    --status-success-bg: oklch(0.95 0.05 160);
+    --status-success-fg: oklch(0.43 0.13 160);
+    --status-danger-bg: oklch(0.95 0.04 25);
+    --status-danger-fg: oklch(0.5 0.21 27);
+    --status-contained-bg: oklch(0.95 0.035 300);
+    --status-contained-fg: oklch(0.45 0.2 293);
+    --status-expired-bg: oklch(0.94 0.03 55);
+    --status-expired-fg: oklch(0.42 0.1 45);
 }
 
 .dark {
@@ -104,8 +158,8 @@
     --card-foreground: oklch(0.985 0 0);
     --popover: oklch(0.145 0 0);
     --popover-foreground: oklch(0.985 0 0);
-    --primary: oklch(0.985 0 0);
-    --primary-foreground: oklch(0.205 0 0);
+    --primary: oklch(0.75 0.1 235);
+    --primary-foreground: oklch(0.145 0 0);
     --secondary: oklch(0.269 0 0);
     --secondary-foreground: oklch(0.985 0 0);
     --muted: oklch(0.269 0 0);
@@ -116,20 +170,35 @@
     --destructive-foreground: oklch(0.637 0.237 25.331);
     --border: oklch(0.269 0 0);
     --input: oklch(0.269 0 0);
-    --ring: oklch(0.439 0 0);
+    --ring: oklch(0.75 0.1 235);
     --chart-1: oklch(0.488 0.243 264.376);
     --chart-2: oklch(0.696 0.17 162.48);
     --chart-3: oklch(0.769 0.188 70.08);
     --chart-4: oklch(0.627 0.265 303.9);
     --chart-5: oklch(0.645 0.246 16.439);
-    --sidebar: oklch(0.205 0 0);
+    --sidebar: oklch(0.19 0 0);
     --sidebar-foreground: oklch(0.985 0 0);
-    --sidebar-primary: oklch(0.985 0 0);
-    --sidebar-primary-foreground: oklch(0.985 0 0);
+    --sidebar-primary: oklch(0.75 0.1 235);
+    --sidebar-primary-foreground: oklch(0.145 0 0);
     --sidebar-accent: oklch(0.269 0 0);
     --sidebar-accent-foreground: oklch(0.985 0 0);
     --sidebar-border: oklch(0.269 0 0);
-    --sidebar-ring: oklch(0.439 0 0);
+    --sidebar-ring: oklch(0.75 0.1 235);
+
+    /* Status palette — dark mode: a dark tint background + a light,
+       readable foreground (same hues as light mode, inverted L). */
+    --status-draft-bg: oklch(0.27 0 0);
+    --status-draft-fg: oklch(0.75 0 0);
+    --status-pending-bg: oklch(0.3 0.07 75);
+    --status-pending-fg: oklch(0.82 0.15 80);
+    --status-success-bg: oklch(0.28 0.06 160);
+    --status-success-fg: oklch(0.78 0.15 160);
+    --status-danger-bg: oklch(0.3 0.08 25);
+    --status-danger-fg: oklch(0.75 0.18 25);
+    --status-contained-bg: oklch(0.28 0.07 300);
+    --status-contained-fg: oklch(0.78 0.15 293);
+    --status-expired-bg: oklch(0.28 0.05 55);
+    --status-expired-fg: oklch(0.72 0.11 55);
 }
 
 @layer base {

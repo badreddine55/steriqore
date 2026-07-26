@@ -1,5 +1,5 @@
-import { Link, router } from '@inertiajs/react';
-import { LogOut, Settings } from 'lucide-react';
+import { Link, router, usePage } from '@inertiajs/react';
+import { Building2, LogOut, Settings } from 'lucide-react';
 import {
     DropdownMenuGroup,
     DropdownMenuItem,
@@ -10,18 +10,36 @@ import { UserInfo } from '@/components/user-info';
 import { useMobileNavigation } from '@/hooks/use-mobile-navigation';
 import { logout } from '@/routes';
 import { edit } from '@/routes/profile';
+import tenant from '@/routes/tenant';
 import type { User } from '@/types';
 
 type Props = {
     user: User;
 };
 
+const ROLE_LABELS: Record<string, string> = {
+    owner: 'Owner',
+    admin: 'Admin',
+    stock_manager: 'Stock manager',
+    releaser: 'Releaser',
+    practitioner: 'Practitioner',
+    viewer: 'Viewer',
+};
+
 export function UserMenuContent({ user }: Props) {
     const cleanup = useMobileNavigation();
+    const page = usePage();
+    const currentTenant = page.props.tenant;
+    const tenants = page.props.tenants;
+    const role = page.props.auth.role;
 
     const handleLogout = () => {
         cleanup();
         router.flushAll();
+    };
+
+    const switchTenant = (tenantId: string) => {
+        router.post(tenant.switch.url(), { tenant_id: tenantId });
     };
 
     return (
@@ -31,6 +49,31 @@ export function UserMenuContent({ user }: Props) {
                     <UserInfo user={user} showEmail={true} />
                 </div>
             </DropdownMenuLabel>
+            {currentTenant && (
+                <>
+                    <DropdownMenuSeparator />
+                    <div className="px-2 py-1 text-xs text-muted-foreground">
+                        {currentTenant.name}
+                        {role && ` · ${ROLE_LABELS[role] ?? role}`}
+                    </div>
+                    {tenants.length > 1 && (
+                        <DropdownMenuGroup>
+                            {tenants
+                                .filter((t) => t.id !== currentTenant.id)
+                                .map((t) => (
+                                    <DropdownMenuItem
+                                        key={t.id}
+                                        className="cursor-pointer"
+                                        onClick={() => switchTenant(t.id)}
+                                    >
+                                        <Building2 className="mr-2" />
+                                        Switch to {t.name}
+                                    </DropdownMenuItem>
+                                ))}
+                        </DropdownMenuGroup>
+                    )}
+                </>
+            )}
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
                 <DropdownMenuItem asChild>

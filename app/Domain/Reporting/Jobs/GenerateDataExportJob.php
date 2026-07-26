@@ -58,6 +58,7 @@ class GenerateDataExportJob implements ShouldQueue
             throw (new ModelNotFoundException)->setModel(DataExportRequest::class, [$this->dataExportRequestId]);
         }
 
+        $tenantId = (string) $tenantId;
         $tenant = Tenant::findOrFail($tenantId);
 
         TenantContext::run($tenant, function () {

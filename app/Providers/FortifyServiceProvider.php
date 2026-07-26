@@ -4,8 +4,10 @@ namespace App\Providers;
 
 use App\Actions\Fortify\CreateNewUser;
 use App\Actions\Fortify\ResetUserPassword;
+use App\Models\User;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
@@ -30,6 +32,7 @@ class FortifyServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->configureActions();
+        $this->configureAuthentication();
         $this->configureViews();
         $this->configureRateLimiting();
     }
@@ -41,6 +44,36 @@ class FortifyServiceProvider extends ServiceProvider
     {
         Fortify::resetUserPasswordsUsing(ResetUserPassword::class);
         Fortify::createUsersUsing(CreateNewUser::class);
+    }
+
+    /**
+     * CLAUDE.md invariant #6: "Users are soft-disabled, never deleted" —
+     * a disabled account must still never authenticate, web or mobile
+     * (App\Domain\Identity\Actions\AuthenticateUserAction enforces the
+     * same thing for the API). Whether the user has an active practice
+     * membership is deliberately NOT checked here: that's already
+     * enforced on every tenant-scoped page by Web\SetCurrentTenant, and a
+     * bare account with no practice yet still needs to be able to log in
+     * to reach onboarding rather than being rejected before ever seeing
+     * why. A generic `null` return (rather than a specific message)
+     * matches Fortify's default "these credentials do not match"
+     * response, the same way a mismatched password does.
+     */
+    private function configureAuthentication(): void
+    {
+        Fortify::authenticateUsing(function (Request $request) {
+            $user = User::where('email', $request->email)->first();
+
+            if (! $user || ! Hash::check($request->password, $user->password)) {
+                return null;
+            }
+
+            if ($user->disabled_at !== null) {
+                return null;
+            }
+
+            return $user;
+        });
     }
 
     /**

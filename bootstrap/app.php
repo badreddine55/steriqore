@@ -5,6 +5,7 @@ use App\Http\Middleware\Api\EnsureIdempotency;
 use App\Http\Middleware\Api\SetCurrentTenant;
 use App\Http\Middleware\HandleAppearance;
 use App\Http\Middleware\HandleInertiaRequests;
+use App\Http\Middleware\Web\SetCurrentTenant as SetCurrentTenantWeb;
 use App\Support\Api\ApiExceptionRenderer;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -37,6 +38,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'idempotent' => EnsureIdempotency::class,
             'tenant' => SetCurrentTenant::class,
+            'tenant.web' => SetCurrentTenantWeb::class,
         ]);
 
         // Without this, Laravel's default middleware priority runs
@@ -47,6 +49,11 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->prependToPriorityList(
             before: SubstituteBindings::class,
             prepend: SetCurrentTenant::class,
+        );
+
+        $middleware->prependToPriorityList(
+            before: SubstituteBindings::class,
+            prepend: SetCurrentTenantWeb::class,
         );
     })
     ->withExceptions(function (Exceptions $exceptions): void {
