@@ -37,6 +37,7 @@ class SeedTenantRolesAction
         'devices.manage',
         'cycles.view',
         'cycles.manage',
+        'cycles.release',
     ];
 
     private const array PERMISSIONS_BY_ROLE = [
@@ -54,10 +55,10 @@ class SeedTenantRolesAction
             'inventory.view', 'inventory.manage', 'alerts.view', 'alerts.manage',
             'devices.view', 'devices.manage', 'cycles.view', 'cycles.manage',
         ],
-        // releaser gains a dedicated cycles.release permission in
-        // S3-ANA-03 — running a cycle and releasing it are kept distinct
-        // even though the same fixed role list has to cover both.
-        'releaser' => ['sites.view', 'products.view', 'suppliers.view', 'purchasing.view', 'inventory.view', 'alerts.view', 'devices.view', 'cycles.view'],
+        // releaser is the only role besides owner/admin with cycles.release
+        // — running a cycle (cycles.manage) and releasing it are kept
+        // distinct even though the same fixed role list has to cover both.
+        'releaser' => ['sites.view', 'products.view', 'suppliers.view', 'purchasing.view', 'inventory.view', 'alerts.view', 'devices.view', 'cycles.view', 'cycles.release'],
         'practitioner' => ['sites.view', 'products.view', 'suppliers.view', 'purchasing.view', 'inventory.view', 'alerts.view', 'devices.view', 'cycles.view'],
         'viewer' => ['sites.view', 'products.view', 'suppliers.view', 'purchasing.view', 'inventory.view', 'alerts.view', 'devices.view', 'cycles.view'],
     ];

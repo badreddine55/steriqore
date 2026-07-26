@@ -30,4 +30,9 @@ class CyclePolicy
     {
         return $user->can('cycles.manage');
     }
+
+    public function release(User $user, Cycle $cycle): bool
+    {
+        return $user->can('cycles.release');
+    }
 }

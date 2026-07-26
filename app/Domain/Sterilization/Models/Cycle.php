@@ -11,6 +11,7 @@ use App\Support\Concerns\HasUuidv7;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Carbon;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
@@ -90,5 +91,13 @@ class Cycle extends Model implements HasMedia
     public function controlTests(): HasMany
     {
         return $this->hasMany(ControlTest::class);
+    }
+
+    /**
+     * @return HasOne<CycleRelease, $this>
+     */
+    public function release(): HasOne
+    {
+        return $this->hasOne(CycleRelease::class);
     }
 }

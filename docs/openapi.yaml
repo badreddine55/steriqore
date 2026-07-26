@@ -738,6 +738,93 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ApiErrorEnvelope'
+  '/v1/cycles/{cycle}/release':
+    get:
+      operationId: v1.cycles.release.show
+      tags:
+        - CycleRelease
+      parameters:
+        -
+          name: cycle
+          in: path
+          required: true
+          description: 'The cycle ID'
+          schema:
+            type: string
+      responses:
+        200:
+          description: '`CycleReleaseData`'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CycleReleaseData'
+        403:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+        404:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+        401:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+    post:
+      operationId: v1.cycles.release.store
+      tags:
+        - CycleRelease
+      parameters:
+        -
+          name: cycle
+          in: path
+          required: true
+          description: 'The cycle ID'
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReleaseCycleRequest'
+      responses:
+        200:
+          description: '`CycleReleaseData`'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CycleReleaseData'
+        403:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+        404:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+        401:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+        422:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
   /v1/devices:
     get:
       operationId: v1.devices.index
@@ -2805,6 +2892,16 @@ components:
       type: object
       additionalProperties: {}
       title: CycleItemData
+    CycleReleaseData:
+      type: object
+      additionalProperties: {}
+      title: CycleReleaseData
+    CycleReleaseDecision:
+      type: string
+      enum:
+        - compliant
+        - rejected
+      title: CycleReleaseDecision
     DeviceData:
       type: object
       additionalProperties: {}
@@ -3007,6 +3104,23 @@ components:
         - owner_email
         - password
       title: RegisterTenantRequest
+    ReleaseCycleRequest:
+      type: object
+      properties:
+        decision:
+          $ref: '#/components/schemas/CycleReleaseDecision'
+        reason:
+          type:
+            - string
+            - 'null'
+          description: |-
+            A compliant release doesn't need a reason; a rejection
+            always needs one — this is the release evidence, it has to
+            say why.
+          maxLength: 2000
+      required:
+        - decision
+      title: ReleaseCycleRequest
     StockMovementData:
       type: object
       additionalProperties: {}

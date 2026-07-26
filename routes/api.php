@@ -27,6 +27,7 @@ use App\Http\Controllers\Api\V1\Sterilization\ControlTestController;
 use App\Http\Controllers\Api\V1\Sterilization\CycleAttachmentController;
 use App\Http\Controllers\Api\V1\Sterilization\CycleController;
 use App\Http\Controllers\Api\V1\Sterilization\CycleItemController;
+use App\Http\Controllers\Api\V1\Sterilization\CycleReleaseController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->name('api.v1.')->group(function () {
@@ -164,6 +165,11 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
             ->middleware('idempotent')
             ->name('cycles.attachments.store');
         Route::delete('cycles/{cycle}/attachments/{media}', [CycleAttachmentController::class, 'destroy'])->name('cycles.attachments.destroy');
+
+        Route::get('cycles/{cycle}/release', [CycleReleaseController::class, 'show'])->name('cycles.release.show');
+        Route::post('cycles/{cycle}/release', [CycleReleaseController::class, 'store'])
+            ->middleware('idempotent')
+            ->name('cycles.release.store');
 
         // MOCK — the real scan resolution endpoint lands in S3-ANA-05,
         // which needs labels (S3-ANA-04) first.
