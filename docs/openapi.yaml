@@ -1969,6 +1969,124 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ApiErrorEnvelope'
+  /v1/patients:
+    get:
+      operationId: v1.patients.index
+      tags:
+        - Patient
+      responses:
+        200:
+          description: '`CursorPaginatedDataCollection`'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CursorPaginatedDataCollection'
+        403:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+        401:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+    post:
+      operationId: v1.patients.store
+      tags:
+        - Patient
+      responses:
+        200:
+          description: '`PatientData`'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PatientData'
+        403:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+        401:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+  '/v1/patients/{patient}':
+    get:
+      operationId: v1.patients.show
+      tags:
+        - Patient
+      parameters:
+        -
+          name: patient
+          in: path
+          required: true
+          description: 'The patient ID'
+          schema:
+            type: string
+      responses:
+        200:
+          description: '`PatientData`'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PatientData'
+        403:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+        404:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+        401:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+    delete:
+      operationId: v1.patients.destroy
+      tags:
+        - Patient
+      parameters:
+        -
+          name: patient
+          in: path
+          required: true
+          description: 'The patient ID'
+          schema:
+            type: string
+      responses:
+        204:
+          description: 'No content'
+        403:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+        404:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+        401:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
   /v1/products:
     get:
       operationId: v1.products.index
@@ -3392,6 +3510,10 @@ components:
       type: object
       additionalProperties: {}
       title: MaintenanceRecordData
+    PatientData:
+      type: object
+      additionalProperties: {}
+      title: PatientData
     PrintLabelRequest:
       type: object
       properties:

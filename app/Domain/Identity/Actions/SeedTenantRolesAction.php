@@ -40,6 +40,8 @@ class SeedTenantRolesAction
         'cycles.release',
         'labels.view',
         'labels.manage',
+        'patients.view',
+        'patients.manage',
     ];
 
     private const array PERMISSIONS_BY_ROLE = [
@@ -56,14 +58,16 @@ class SeedTenantRolesAction
             'suppliers.view', 'suppliers.manage', 'purchasing.view', 'purchasing.manage',
             'inventory.view', 'inventory.manage', 'alerts.view', 'alerts.manage',
             'devices.view', 'devices.manage', 'cycles.view', 'cycles.manage',
-            'labels.view', 'labels.manage',
+            'labels.view', 'labels.manage', 'patients.view',
         ],
         // releaser is the only role besides owner/admin with cycles.release
         // — running a cycle (cycles.manage) and releasing it are kept
         // distinct even though the same fixed role list has to cover both.
-        'releaser' => ['sites.view', 'products.view', 'suppliers.view', 'purchasing.view', 'inventory.view', 'alerts.view', 'devices.view', 'cycles.view', 'cycles.release', 'labels.view'],
-        'practitioner' => ['sites.view', 'products.view', 'suppliers.view', 'purchasing.view', 'inventory.view', 'alerts.view', 'devices.view', 'cycles.view', 'labels.view'],
-        'viewer' => ['sites.view', 'products.view', 'suppliers.view', 'purchasing.view', 'inventory.view', 'alerts.view', 'devices.view', 'cycles.view', 'labels.view'],
+        'releaser' => ['sites.view', 'products.view', 'suppliers.view', 'purchasing.view', 'inventory.view', 'alerts.view', 'devices.view', 'cycles.view', 'cycles.release', 'labels.view', 'patients.view'],
+        // practitioner is the only non-owner/admin role with patients.manage
+        // — they're the one creating a pseudonym while treating a patient.
+        'practitioner' => ['sites.view', 'products.view', 'suppliers.view', 'purchasing.view', 'inventory.view', 'alerts.view', 'devices.view', 'cycles.view', 'labels.view', 'patients.view', 'patients.manage'],
+        'viewer' => ['sites.view', 'products.view', 'suppliers.view', 'purchasing.view', 'inventory.view', 'alerts.view', 'devices.view', 'cycles.view', 'labels.view', 'patients.view'],
     ];
 
     public function execute(Tenant $tenant): void

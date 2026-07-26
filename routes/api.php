@@ -31,6 +31,7 @@ use App\Http\Controllers\Api\V1\Sterilization\CycleAttachmentController;
 use App\Http\Controllers\Api\V1\Sterilization\CycleController;
 use App\Http\Controllers\Api\V1\Sterilization\CycleItemController;
 use App\Http\Controllers\Api\V1\Sterilization\CycleReleaseController;
+use App\Http\Controllers\Api\V1\Traceability\PatientController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->name('api.v1.')->group(function () {
@@ -194,5 +195,12 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
         Route::get('labels/{label}/datamatrix', [LabelController::class, 'dataMatrix'])->name('labels.datamatrix');
 
         Route::get('labels/{code}', [LabelScanController::class, 'show'])->name('labels.show');
+
+        Route::get('patients', [PatientController::class, 'index'])->name('patients.index');
+        Route::post('patients', [PatientController::class, 'store'])
+            ->middleware('idempotent')
+            ->name('patients.store');
+        Route::get('patients/{patient}', [PatientController::class, 'show'])->name('patients.show');
+        Route::delete('patients/{patient}', [PatientController::class, 'destroy'])->name('patients.destroy');
     });
 });
