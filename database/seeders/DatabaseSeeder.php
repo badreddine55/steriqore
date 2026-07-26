@@ -2,31 +2,40 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
+use App\Domain\Identity\Actions\RegisterTenantAction;
+use App\Domain\Tenancy\Models\Tenant;
+use App\Support\Tenancy\TenantContext;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Str;
 
 class DatabaseSeeder extends Seeder
 {
     use WithoutModelEvents;
 
     /**
-     * Seed the application's database.
+     * A bare `User::create()` (the Laravel starter-kit default) has no
+     * tenant membership at all, so it can't get past Web\SetCurrentTenant
+     * on any real page (S7) — going through the same
+     * RegisterTenantAction the "create a practice" flow actually uses
+     * means this seeded account is a real owner of a real practice, not
+     * a login that only satisfies auth but nothing downstream of it.
      */
     public function run(): void
     {
-        // User::factory(10)->create();
+        if (Tenant::where('slug', 'demo')->exists()) {
+            return;
+        }
 
-        User::create([
-            'name' => 'Admin',
-            'email' => 'admin@steriqore.local',
-            'password' => Hash::make('password'),
-            'email_verified_at' => now(),
-            'remember_token' => Str::random(10),
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
+        $result = app(RegisterTenantAction::class)->execute(
+            tenantName: 'Demo Practice',
+            tenantSlug: 'demo',
+            ownerName: 'Admin',
+            ownerEmail: 'admin@steriqore.local',
+            password: 'password',
+        );
+
+        TenantContext::run($result['tenant'], function () use ($result) {
+            $result['tenant']->sites()->create(['name' => 'Cabinet Principal']);
+        });
     }
 }
