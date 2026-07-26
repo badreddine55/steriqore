@@ -5,6 +5,34 @@ question was flagged instead of guessed, per `CLAUDE.md`. Newest on top.
 
 ---
 
+## OQ-11 — tenant_user/invitations/personal_access_tokens still have no
+Postgres-level RLS
+**Raised:** S5-ANA-03 (Backups), 2026-07-26, while proving a real restore
+against the live container surfaced this by accident (see the S5-ANA-03
+commit for the two bugs that same proof caught and fixed).
+**Context:** `2026_07_25_000001_add_row_level_security_to_tenant_tables
+.php`'s own docblock flagged this back in S1-ANA-01: these three tables
+carry a `tenant_id` but are resolved *during* authentication, before any
+"current tenant" exists to scope by — "RLS on those needs a policy shaped
+around that bootstrap lookup... not guessed at here." That policy design
+was never actually done in a later sprint; these three tables are still
+the only tenant-owned ones relying solely on manual query-level scoping
+in the Identity domain's actions, not a second line of defence.
+**Default implemented:** nothing changed here this round — the actual bug
+this session's live-restore proof caught and fixed
+(`App\Support\Tenancy\TenantContext`) was a different, narrower problem:
+`roles`/`model_has_roles`/`model_has_permissions` (which *do* have RLS,
+added in S1-ANA-03) were being written to during registration/invitation
+-acceptance before anything bound `app.tenant_id`, and every automated
+test masked it by running under the elevated DB role instead of the
+restricted one the app actually uses.
+**Needs confirmation:** should tenant_user/invitations/personal_access_
+tokens get real RLS policies now (shaped around the bootstrap lookups
+that must work before a tenant is "current" — e.g. USING (true) for
+SELECT during login/invitation-token lookup, but a real policy for
+writes), or is the existing manual-scoping-only approach an accepted
+risk for these specific three tables?
+
 ## OQ-10 — Staging/monitoring: no infrastructure exists yet
 **Raised:** S5-ANA-02 (Operations), 2026-07-26
 **Context:** the backlog asks for "staging, logs, monitoring, alerts" —

@@ -4,10 +4,9 @@ namespace App\Http\Middleware\Api;
 
 use App\Domain\Identity\Models\PersonalAccessToken;
 use App\Domain\Tenancy\Models\Tenant;
+use App\Support\Tenancy\TenantContext;
 use Closure;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use Spatie\Permission\PermissionRegistrar;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
@@ -39,18 +38,6 @@ class SetCurrentTenant
 
         abort_if($tenant === null, 401);
 
-        $tenant->makeCurrent();
-        app(PermissionRegistrar::class)->setPermissionsTeamId($tenant->id);
-
-        try {
-            return DB::transaction(function () use ($tenant, $next, $request) {
-                DB::select("select set_config('app.tenant_id', ?, true)", [$tenant->id]);
-
-                return $next($request);
-            });
-        } finally {
-            Tenant::forgetCurrent();
-            app(PermissionRegistrar::class)->setPermissionsTeamId(null);
-        }
+        return TenantContext::run($tenant, fn () => $next($request));
     }
 }

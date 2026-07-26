@@ -102,6 +102,7 @@ services:
       - AWS_DEFAULT_REGION=us-east-1
       - AWS_BUCKET=saw
       - AWS_BUCKET_MEDIA=steriqore-media
+      - AWS_BUCKET_BACKUPS=steriqore-backups
       - AWS_ENDPOINT=http://minio:9000
       - AWS_URL=http://localhost:9023/saw
       - AWS_USE_PATH_STYLE_ENDPOINT=true
@@ -218,6 +219,7 @@ services:
         mc mb local/saw --ignore-existing;
         mc anonymous set public local/saw;
         mc mb local/steriqore-media --ignore-existing;
+        mc mb local/steriqore-backups --ignore-existing;
         echo 'MinIO buckets initialized.';
       "
     networks:

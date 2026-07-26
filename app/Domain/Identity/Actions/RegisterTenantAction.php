@@ -8,10 +8,10 @@ use App\Domain\Identity\Models\TenantUser;
 use App\Domain\Tenancy\Models\Tenant;
 use App\Models\User;
 use App\Support\Api\ApiException;
+use App\Support\Tenancy\TenantContext;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
-use Spatie\Permission\PermissionRegistrar;
 
 /**
  * Self-serve trial signup: a brand new practice plus its first user, who
@@ -49,31 +49,32 @@ class RegisterTenantAction
                 'trial_ends_at' => now()->addDays(30),
             ]);
 
-            $owner = User::create([
-                'name' => $ownerName,
-                'email' => $ownerEmail,
-                'password' => Hash::make($password),
-                'email_verified_at' => now(),
-            ]);
+            // roles/model_has_roles are RLS-protected (S1-ANA-03) — nothing
+            // is "the current tenant" yet at this point in a brand new
+            // registration, so without this, SeedTenantRolesAction's own
+            // inserts and assignRole() below fail against the restricted
+            // DB role the app actually runs as (only ever masked in tests,
+            // whose default connection is the elevated migrations role).
+            return TenantContext::run($tenant, function () use ($tenant, $ownerName, $ownerEmail, $password) {
+                $owner = User::create([
+                    'name' => $ownerName,
+                    'email' => $ownerEmail,
+                    'password' => Hash::make($password),
+                    'email_verified_at' => now(),
+                ]);
 
-            TenantUser::create([
-                'tenant_id' => $tenant->id,
-                'user_id' => $owner->id,
-                'status' => 'active',
-                'joined_at' => now(),
-            ]);
+                TenantUser::create([
+                    'tenant_id' => $tenant->id,
+                    'user_id' => $owner->id,
+                    'status' => 'active',
+                    'joined_at' => now(),
+                ]);
 
-            $this->seedTenantRoles->execute($tenant);
-
-            $registrar = app(PermissionRegistrar::class);
-            $registrar->setPermissionsTeamId($tenant->id);
-            try {
+                $this->seedTenantRoles->execute($tenant);
                 $owner->assignRole(TenantRole::Owner->value);
-            } finally {
-                $registrar->setPermissionsTeamId(null);
-            }
 
-            return [$tenant, $owner];
+                return [$tenant, $owner];
+            });
         });
 
         $this->recordAuditEvent->execute(

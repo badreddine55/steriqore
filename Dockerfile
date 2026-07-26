@@ -82,6 +82,14 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && npm install --prefix /opt/browsershot puppeteer \
     && rm -rf /var/lib/apt/lists/* /var/cache/apt/*
 
+# postgresql-client-18 for spatie/laravel-backup's pg_dump (S5-ANA-03) —
+# matching major version, not whatever Debian bookworm's default repo
+# ships (older), via the official PGDG apt repository.
+RUN apt-get update && apt-get install -y --no-install-recommends postgresql-common \
+    && /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh -y \
+    && apt-get update && apt-get install -y --no-install-recommends postgresql-client-18 \
+    && rm -rf /var/lib/apt/lists/* /var/cache/apt/*
+
 # Optimized PHP Configuration
 RUN { \
     echo 'opcache.enable=1'; \

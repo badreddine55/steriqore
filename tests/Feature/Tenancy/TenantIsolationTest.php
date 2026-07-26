@@ -1,5 +1,6 @@
 <?php
 
+use App\Domain\Identity\Actions\RegisterTenantAction;
 use App\Domain\Tenancy\Models\Site;
 use App\Domain\Tenancy\Models\Tenant;
 use Illuminate\Database\QueryException;
@@ -93,6 +94,39 @@ test('Row-Level Security denies every row when app.tenant_id is not set, even fo
     });
 
     expect($count)->toBe(0);
+});
+
+test('registering a new tenant succeeds under the restricted DB role (roles/model_has_roles are RLS-protected too)', function () {
+    // Found via S5-ANA-03's real backup/restore proof against the live
+    // container: RegisterTenantAction ran fine in every test only because
+    // the test suite's default connection is the elevated migrations
+    // role — under the actual restricted app role, SeedTenantRolesAction's
+    // inserts into `roles` failed the RLS policy outright, since nothing
+    // had bound app.tenant_id yet for a tenant that didn't exist a moment
+    // ago. Fixed via App\Support\Tenancy\TenantContext.
+    $slug = 'cabinet-rls-register-'.Str::lower(Str::random(8));
+
+    $result = DB::transaction(function () use ($slug) {
+        DB::statement('SET LOCAL ROLE steriqore_app');
+
+        return app(RegisterTenantAction::class)->execute(
+            tenantName: 'Cabinet RLS Register',
+            tenantSlug: $slug,
+            ownerName: 'Owner',
+            ownerEmail: 'owner-'.Str::lower(Str::random(8)).'@example.com',
+            password: 'correct-password-123',
+        );
+    });
+
+    expect($result['tenant']->slug)->toBe($slug);
+    expect(
+        DB::table('model_has_roles')
+            ->join('roles', 'roles.id', '=', 'model_has_roles.role_id')
+            ->where('model_has_roles.model_uuid', $result['user']->id)
+            ->where('roles.tenant_id', $result['tenant']->id)
+            ->where('roles.name', 'owner')
+            ->exists()
+    )->toBeTrue();
 });
 
 test('Row-Level Security rejects an insert whose tenant_id does not match the session tenant', function () {
