@@ -5,6 +5,23 @@ question was flagged instead of guessed, per `CLAUDE.md`. Newest on top.
 
 ---
 
+## OQ-12 — Inventory counts: no backend at all yet (UI-17 skipped)
+**Raised:** S7 UI queue, UI-17, 2026-07-27.
+**Context:** Unlike every other UI-XX item so far, `inventory_counts` has no
+migration, model, Action, DTO, policy, or API route anywhere — not a missing
+screen over an existing capability, but the whole feature undesigned. Building
+even a read-only screen would mean inventing the count-session lifecycle
+(who can start/close one, whether closing a count auto-writes an Adjustment
+movement per discrepant line via `AdjustStockAction` or requires a separate
+confirm step, whether partial/per-location counts are allowed) with no brief
+guidance to anchor a "safe default" to.
+**Default implemented:** none — asked instead of guessing (per the per-task
+contract's step 2). User chose to skip UI-17 for now and continue the queue
+(UI-18 onward), deferring counts until its backend is designed as its own
+item.
+**Needs confirmation:** the count-session lifecycle and reconciliation rule
+above, before any migration/Action is written for this domain.
+
 ## OQ-11 — tenant_user/invitations/personal_access_tokens still have no
 Postgres-level RLS
 **Raised:** S5-ANA-03 (Backups), 2026-07-26, while proving a real restore
