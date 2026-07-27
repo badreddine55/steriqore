@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Web\Catalog\ProductCategoryController;
 use App\Http\Controllers\Web\Catalog\ProductController;
+use App\Http\Controllers\Web\Compliance\AuditEventController;
 use App\Http\Controllers\Web\Compliance\NonConformityController;
 use App\Http\Controllers\Web\Equipment\DeviceController;
 use App\Http\Controllers\Web\Equipment\DeviceProgramController;
@@ -111,6 +112,8 @@ Route::middleware(['auth', 'verified', 'tenant.web'])->group(function () {
         Route::post('/', [NonConformityController::class, 'store'])->name('store');
         Route::post('{nonConformity}/resolve', [NonConformityController::class, 'resolve'])->name('resolve');
     });
+
+    Route::get('audit-log', [AuditEventController::class, 'index'])->name('audit-log.index');
 
     Route::prefix('suppliers')->name('suppliers.')->group(function () {
         Route::get('/', [SupplierController::class, 'index'])->name('index');

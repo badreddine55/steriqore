@@ -14,6 +14,7 @@ class AuditEventData extends Data
      */
     public function __construct(
         public readonly string $id,
+        public readonly ?string $actor_id,
         public readonly ?string $actor_label_snapshot,
         public readonly string $action,
         public readonly string $subject_type,
@@ -28,6 +29,7 @@ class AuditEventData extends Data
     {
         return new self(
             $event->id,
+            $event->actor_id,
             $event->actor_label_snapshot,
             $event->action,
             $event->subject_type,

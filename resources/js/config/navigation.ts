@@ -24,6 +24,7 @@ import {
 import { dashboard } from '@/routes';
 import alertRoutes from '@/routes/alerts';
 import { edit as editAppearance } from '@/routes/appearance';
+import auditLogRoutes from '@/routes/audit-log';
 import batchRoutes from '@/routes/batches';
 import controlTests from '@/routes/control-tests';
 import cycles from '@/routes/cycles';
@@ -161,10 +162,9 @@ export const navGroups: NavGroup[] = [
             },
             {
                 title: 'Audit log',
-                href: '/audit-log',
+                href: auditLogRoutes.index(),
                 icon: ScrollText,
                 permission: 'audit.view',
-                comingSoon: true,
             },
         ],
     },
