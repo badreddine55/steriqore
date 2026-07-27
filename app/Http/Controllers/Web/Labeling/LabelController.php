@@ -13,7 +13,9 @@ use App\Domain\Labeling\Models\Label;
 use App\Domain\Labeling\Support\LabelCodeRenderer;
 use App\Domain\Sterilization\Data\CycleData;
 use App\Domain\Sterilization\Data\CycleItemData;
+use App\Domain\Tenancy\Models\Tenant;
 use App\Domain\Traceability\Data\LabelUsageData;
+use App\Domain\Traceability\Models\LabelUsage;
 use App\Domain\Traceability\Models\Patient;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\V1\Labeling\PrintLabelRequest;
@@ -58,7 +60,7 @@ class LabelController extends Controller
         ]);
     }
 
-    public function show(Label $label): InertiaResponse
+    public function show(Label $label, Request $request): InertiaResponse
     {
         $this->authorize('view', $label);
 
@@ -74,6 +76,15 @@ class LabelController extends Controller
         $patient = $usage ? Patient::find($usage->patient_id) : null;
         $practitioner = $usage ? User::find($usage->practitioner_id) : null;
 
+        $tenant = Tenant::current();
+        $patients = Patient::orderBy('reference')->get()
+            ->map(fn (Patient $p) => new OptionData($p->id, $p->reference));
+        $practitioners = User::whereHas(
+            'tenantUsers',
+            fn ($query) => $query->where('tenant_id', $tenant->id)->where('status', 'active')
+        )->orderBy('name')->get()
+            ->map(fn (User $user) => new OptionData($user->id, $user->name));
+
         return Inertia::render('sterilization/labels/show', [
             'label' => LabelData::fromModel($label),
             'cycle' => CycleData::fromModel($cycle),
@@ -85,6 +96,9 @@ class LabelController extends Controller
             'usage' => $usage ? LabelUsageData::fromModel($usage) : null,
             'patient' => $patient ? new OptionData($patient->id, $patient->reference) : null,
             'practitioner' => $practitioner ? new OptionData($practitioner->id, $practitioner->name) : null,
+            'patients' => OptionData::collect($patients),
+            'practitioners' => OptionData::collect($practitioners),
+            'canRecordUsage' => $request->user()->can('create', LabelUsage::class),
         ]);
     }
 

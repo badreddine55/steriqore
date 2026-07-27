@@ -44,7 +44,7 @@ work — it syncs PHP/config changes into the container automatically.
 | Horizon (queues) | http://localhost:8010/horizon |
 | Mailpit (catches all local mail) | http://localhost:8035 |
 | MinIO console | http://localhost:9024 (`minioadmin` / `minioadmin`) |
-| Postgres | `localhost:5455` (`saw` / `secret`) |
+| Postgres | `localhost:5455` (`steriqore` / `secret`) |
 | Redis | `localhost:6395` |
 
 `./steriqore.sh help` lists every helper command (`art` for artisan,

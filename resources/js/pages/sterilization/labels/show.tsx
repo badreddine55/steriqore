@@ -1,10 +1,19 @@
-import { Head, Link, router } from '@inertiajs/react';
+import { Head, Link, router, useForm } from '@inertiajs/react';
 import { ArrowLeft } from 'lucide-react';
 import { Mono } from '@/components/mono';
 import { ReprintLabelDialog } from '@/components/reprint-label-dialog';
 import { StatusBadge } from '@/components/status-badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label as FormLabel } from '@/components/ui/label';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
 import {
     Table,
     TableBody,
@@ -13,11 +22,14 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
+import { Textarea } from '@/components/ui/textarea';
 import { formatDateTime } from '@/lib/format';
 import { labelStatus } from '@/lib/status';
 import { dashboard } from '@/routes';
 import cycles from '@/routes/cycles';
 import labels from '@/routes/labels';
+import labelUsage from '@/routes/labels/usage';
+import patients from '@/routes/patients';
 import type {
     Cycle,
     CycleItem,
@@ -26,6 +38,144 @@ import type {
     LabelUsage,
     Option,
 } from '@/types';
+
+const UNUSABLE_STATUSES = ['recalled', 'voided', 'expired'];
+
+function RecordUsageForm({
+    label,
+    patients: patientOptions,
+    practitioners,
+}: {
+    label: LabelType;
+    patients: Option[];
+    practitioners: Option[];
+}) {
+    const form = useForm({
+        patient_id: '',
+        practitioner_id: '',
+        procedure: '',
+        notes: '',
+    });
+
+    function submit() {
+        form.post(labelUsage.store(label.id).url, {
+            preserveScroll: true,
+        });
+    }
+
+    return (
+        <div className="grid gap-4">
+            <div className="grid gap-2">
+                <FormLabel htmlFor="usage-patient">Patient</FormLabel>
+                <Select
+                    value={form.data.patient_id}
+                    onValueChange={(value) =>
+                        form.setData('patient_id', value)
+                    }
+                >
+                    <SelectTrigger id="usage-patient" className="w-full">
+                        <SelectValue placeholder="Select a patient" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        {patientOptions.map((p) => (
+                            <SelectItem key={p.id} value={p.id}>
+                                {p.label}
+                            </SelectItem>
+                        ))}
+                    </SelectContent>
+                </Select>
+                {form.errors.patient_id && (
+                    <p className="text-sm text-destructive">
+                        {form.errors.patient_id}
+                    </p>
+                )}
+                <p className="text-xs text-muted-foreground">
+                    Don&apos;t see the right patient?{' '}
+                    <Link
+                        href={patients.index().url}
+                        className="underline"
+                    >
+                        Create one
+                    </Link>
+                    , then come back here.
+                </p>
+            </div>
+
+            <div className="grid gap-2">
+                <FormLabel htmlFor="usage-practitioner">
+                    Practitioner
+                </FormLabel>
+                <Select
+                    value={form.data.practitioner_id}
+                    onValueChange={(value) =>
+                        form.setData('practitioner_id', value)
+                    }
+                >
+                    <SelectTrigger
+                        id="usage-practitioner"
+                        className="w-full"
+                    >
+                        <SelectValue placeholder="Select a practitioner" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        {practitioners.map((p) => (
+                            <SelectItem key={p.id} value={p.id}>
+                                {p.label}
+                            </SelectItem>
+                        ))}
+                    </SelectContent>
+                </Select>
+                {form.errors.practitioner_id && (
+                    <p className="text-sm text-destructive">
+                        {form.errors.practitioner_id}
+                    </p>
+                )}
+            </div>
+
+            <div className="grid gap-2">
+                <FormLabel htmlFor="usage-procedure">Procedure</FormLabel>
+                <Input
+                    id="usage-procedure"
+                    value={form.data.procedure}
+                    onChange={(e) =>
+                        form.setData('procedure', e.target.value)
+                    }
+                    placeholder="e.g. Détartrage"
+                />
+                {form.errors.procedure && (
+                    <p className="text-sm text-destructive">
+                        {form.errors.procedure}
+                    </p>
+                )}
+            </div>
+
+            <div className="grid gap-2">
+                <FormLabel htmlFor="usage-notes">
+                    Notes (optional)
+                </FormLabel>
+                <Textarea
+                    id="usage-notes"
+                    value={form.data.notes}
+                    onChange={(e) => form.setData('notes', e.target.value)}
+                />
+            </div>
+
+            <div>
+                <Button
+                    onClick={submit}
+                    disabled={
+                        form.processing ||
+                        !form.data.patient_id ||
+                        !form.data.practitioner_id ||
+                        !form.data.procedure.trim()
+                    }
+                >
+                    Link label to procedure
+                </Button>
+            </div>
+        </div>
+    );
+}
 
 export default function LabelShow({
     label,
@@ -38,6 +188,9 @@ export default function LabelShow({
     usage,
     patient,
     practitioner,
+    patients: patientOptions,
+    practitioners,
+    canRecordUsage,
 }: {
     label: LabelType;
     cycle: Cycle;
@@ -49,6 +202,9 @@ export default function LabelShow({
     usage: LabelUsage | null;
     patient: Option | null;
     practitioner: Option | null;
+    patients: Option[];
+    practitioners: Option[];
+    canRecordUsage: boolean;
 }) {
     const status = labelStatus[label.status] ?? labelStatus.created;
     const printedByName = (userId: string) =>
@@ -301,6 +457,17 @@ export default function LabelShow({
                                     </>
                                 )}
                             </dl>
+                        ) : UNUSABLE_STATUSES.includes(label.status) ? (
+                            <p className="text-sm text-muted-foreground">
+                                This label is {label.status} and can no
+                                longer be linked to a procedure.
+                            </p>
+                        ) : canRecordUsage ? (
+                            <RecordUsageForm
+                                label={label}
+                                patients={patientOptions}
+                                practitioners={practitioners}
+                            />
                         ) : (
                             <p className="text-sm text-muted-foreground">
                                 Not yet scanned at the point of care — this

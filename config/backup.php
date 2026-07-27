@@ -98,7 +98,7 @@ return [
              * BYPASSRLS — a full-database pg_dump (no app.tenant_id
              * session var, no tenant to scope to) fails outright against
              * a table with RLS enabled from that role. pgsql_admin is the
-             * elevated 'saw' role already used for migrations.
+             * elevated 'steriqore' role already used for migrations.
              */
             'databases' => [
                 'pgsql_admin',

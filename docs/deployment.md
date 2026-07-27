@@ -61,7 +61,7 @@ Notable groups:
 
 - **`DB_*` / `DB_ADMIN_*`** — two Postgres roles. `DB_USERNAME`
   (`steriqore_app`) is restricted and RLS-enforced; it's what the app
-  actually runs as. `DB_ADMIN_USERNAME` (`saw`) is the elevated role,
+  actually runs as. `DB_ADMIN_USERNAME` (`steriqore`) is the elevated role,
   used only for migrations and `pgsql_admin`-scoped operations (backups,
   the pilot-volume seeder). Never point the app's runtime connection at
   the admin role — RLS silently stops applying if you do (superusers and

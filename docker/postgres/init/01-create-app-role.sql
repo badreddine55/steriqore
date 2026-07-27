@@ -2,7 +2,7 @@
 -- role the running application connects as is NOT a superuser and does NOT
 -- own the tables: Postgres superusers and table owners bypass RLS entirely,
 -- regardless of ENABLE/FORCE ROW LEVEL SECURITY. The POSTGRES_USER created by
--- the official postgres image (here: "saw") owns the whole cluster, so it
+-- the official postgres image (here: "steriqore") owns the whole cluster, so it
 -- must be reserved for migrations/admin tasks only. The app connects as this
 -- restricted role instead. See docs/erd.md section 4 and CLAUDE.md's
 -- tenancy invariant.
@@ -15,15 +15,15 @@ BEGIN
 END
 $$;
 
-GRANT CONNECT ON DATABASE saw TO steriqore_app;
+GRANT CONNECT ON DATABASE steriqore TO steriqore_app;
 GRANT USAGE ON SCHEMA public TO steriqore_app;
 
 -- Tables/sequences created later by migrations (run as the superuser) won't
 -- automatically grant to steriqore_app — ALTER DEFAULT PRIVILEGES covers
 -- every table the superuser creates from here on.
-ALTER DEFAULT PRIVILEGES FOR ROLE saw IN SCHEMA public
+ALTER DEFAULT PRIVILEGES FOR ROLE steriqore IN SCHEMA public
     GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO steriqore_app;
-ALTER DEFAULT PRIVILEGES FOR ROLE saw IN SCHEMA public
+ALTER DEFAULT PRIVILEGES FOR ROLE steriqore IN SCHEMA public
     GRANT USAGE, SELECT ON SEQUENCES TO steriqore_app;
 
 -- Also grant on whatever already exists at init time (harmless if empty).

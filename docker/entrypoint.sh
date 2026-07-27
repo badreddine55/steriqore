@@ -1,7 +1,7 @@
 #!/bin/sh
 set -e
 
-echo "🚀 SAW — Starting production deployment..."
+echo "🚀 SteriQore — Starting production deployment..."
 
 # ─── Laravel Optimizations ───────────────────────────────────────────
 echo "⚡ Caching configuration..."

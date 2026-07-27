@@ -48,7 +48,7 @@ print_urls() {
   echo "  Mailpit:      http://localhost:8035"
   echo "  MinIO API:    http://localhost:9023"
   echo "  MinIO UI:     http://localhost:9024  (minioadmin / minioadmin)"
-  echo "  Postgres:     localhost:5455  (saw / secret)"
+  echo "  Postgres:     localhost:5455  (steriqore / secret)"
   echo "  Redis:        localhost:6395"
   echo
 }

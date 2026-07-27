@@ -22,6 +22,7 @@ use App\Http\Controllers\Web\Sterilization\CycleControlTestController;
 use App\Http\Controllers\Web\Sterilization\CycleItemController;
 use App\Http\Controllers\Web\Tenancy\SwitchSiteController;
 use App\Http\Controllers\Web\Tenancy\SwitchTenantController;
+use App\Http\Controllers\Web\Traceability\LabelUsageController;
 use App\Http\Controllers\Web\Traceability\PatientController;
 use Illuminate\Support\Facades\Route;
 
@@ -126,6 +127,7 @@ Route::middleware(['auth', 'verified', 'tenant.web'])->group(function () {
         Route::get('{label}/pdf', [LabelController::class, 'pdf'])->name('pdf');
         Route::get('{label}/qr-code', [LabelController::class, 'qrCode'])->name('qr-code');
         Route::get('{label}/datamatrix', [LabelController::class, 'dataMatrix'])->name('datamatrix');
+        Route::post('{label}/usage', [LabelUsageController::class, 'store'])->name('usage.store');
     });
 });
 

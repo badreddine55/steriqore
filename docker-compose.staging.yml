@@ -56,7 +56,7 @@ services:
     # access if it's ever genuinely needed.
     environment:
       POSTGRES_DB: steriqore
-      POSTGRES_USER: saw
+      POSTGRES_USER: steriqore
       POSTGRES_PASSWORD: ${DB_ADMIN_PASSWORD}
     volumes:
       - postgres-data-staging:/var/lib/postgresql
@@ -64,7 +64,7 @@ services:
     networks:
       - steriqore-staging
     healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U saw -d steriqore']
+      test: ['CMD-SHELL', 'pg_isready -U steriqore -d steriqore']
       interval: 10s
       timeout: 5s
       retries: 5

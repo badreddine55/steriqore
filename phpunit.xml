@@ -40,7 +40,7 @@
         <env name="DB_HOST" value="127.0.0.1"/>
         <env name="DB_PORT" value="5455"/>
         <env name="DB_DATABASE" value="steriqore_test"/>
-        <env name="DB_USERNAME" value="saw"/>
+        <env name="DB_USERNAME" value="steriqore"/>
         <env name="DB_PASSWORD" value="secret"/>
         <env name="DB_URL" value=""/>
         <env name="MAIL_MAILER" value="array"/>
