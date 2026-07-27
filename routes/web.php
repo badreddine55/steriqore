@@ -22,6 +22,7 @@ use App\Http\Controllers\Web\Sterilization\CycleControlTestController;
 use App\Http\Controllers\Web\Sterilization\CycleItemController;
 use App\Http\Controllers\Web\Tenancy\SwitchSiteController;
 use App\Http\Controllers\Web\Tenancy\SwitchTenantController;
+use App\Http\Controllers\Web\Traceability\PatientController;
 use Illuminate\Support\Facades\Route;
 
 Route::inertia('/', 'welcome')->name('home');
@@ -88,6 +89,13 @@ Route::middleware(['auth', 'verified', 'tenant.web'])->group(function () {
     Route::prefix('alerts')->name('alerts.')->group(function () {
         Route::get('/', [AlertController::class, 'index'])->name('index');
         Route::post('{alert}/resolve', [AlertController::class, 'resolve'])->name('resolve');
+    });
+
+    Route::prefix('patients')->name('patients.')->group(function () {
+        Route::get('/', [PatientController::class, 'index'])->name('index');
+        Route::post('/', [PatientController::class, 'store'])->name('store');
+        Route::get('{patient}', [PatientController::class, 'show'])->name('show');
+        Route::delete('{patient}', [PatientController::class, 'destroy'])->name('destroy');
     });
 
     Route::prefix('suppliers')->name('suppliers.')->group(function () {

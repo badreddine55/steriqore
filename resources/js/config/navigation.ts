@@ -28,6 +28,7 @@ import controlTests from '@/routes/control-tests';
 import cycles from '@/routes/cycles';
 import devices from '@/routes/devices';
 import labels from '@/routes/labels';
+import patientRoutes from '@/routes/patients';
 import productRoutes from '@/routes/products';
 import { edit as editProfile } from '@/routes/profile';
 import purchaseOrderRoutes from '@/routes/purchase-orders';
@@ -127,10 +128,9 @@ export const navGroups: NavGroup[] = [
         items: [
             {
                 title: 'Patients',
-                href: '/patients',
+                href: patientRoutes.index(),
                 icon: UserRoundSearch,
                 permission: 'patients.view',
-                comingSoon: true,
             },
             {
                 title: 'Evidence search',
