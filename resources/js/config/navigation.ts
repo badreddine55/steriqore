@@ -25,6 +25,7 @@ import controlTests from '@/routes/control-tests';
 import cycles from '@/routes/cycles';
 import devices from '@/routes/devices';
 import labels from '@/routes/labels';
+import productRoutes from '@/routes/products';
 import { edit as editProfile } from '@/routes/profile';
 import { edit as editSecurity } from '@/routes/security';
 import type { NavGroup, NavItem } from '@/types';
@@ -79,10 +80,9 @@ export const navGroups: NavGroup[] = [
         items: [
             {
                 title: 'Products',
-                href: '/products',
+                href: productRoutes.index(),
                 icon: Boxes,
                 permission: 'products.view',
-                comingSoon: true,
             },
             {
                 title: 'Suppliers',

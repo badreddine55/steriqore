@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\Web\Catalog\ProductCategoryController;
+use App\Http\Controllers\Web\Catalog\ProductController;
 use App\Http\Controllers\Web\Equipment\DeviceController;
 use App\Http\Controllers\Web\Equipment\DeviceProgramController;
 use App\Http\Controllers\Web\Equipment\MaintenanceRecordController;
@@ -57,6 +59,16 @@ Route::middleware(['auth', 'verified', 'tenant.web'])->group(function () {
 
         Route::post('{device}/maintenance-records', [MaintenanceRecordController::class, 'store'])->name('maintenance-records.store');
     });
+
+    Route::prefix('products')->name('products.')->group(function () {
+        Route::get('/', [ProductController::class, 'index'])->name('index');
+        Route::post('/', [ProductController::class, 'store'])->name('store');
+        Route::get('{product}', [ProductController::class, 'show'])->name('show');
+        Route::patch('{product}', [ProductController::class, 'update'])->name('update');
+        Route::delete('{product}', [ProductController::class, 'destroy'])->name('destroy');
+    });
+
+    Route::post('product-categories', [ProductCategoryController::class, 'store'])->name('product-categories.store');
 
     Route::prefix('labels')->name('labels.')->group(function () {
         Route::get('/', [LabelController::class, 'index'])->name('index');
