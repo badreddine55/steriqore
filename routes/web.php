@@ -7,10 +7,12 @@ use App\Http\Controllers\Web\Equipment\DeviceProgramController;
 use App\Http\Controllers\Web\Equipment\MaintenanceRecordController;
 use App\Http\Controllers\Web\Labeling\CycleLabelController;
 use App\Http\Controllers\Web\Labeling\LabelController;
+use App\Http\Controllers\Web\Purchasing\SupplierController;
+use App\Http\Controllers\Web\Purchasing\SupplierProductController;
 use App\Http\Controllers\Web\Sterilization\ControlTestController;
 use App\Http\Controllers\Web\Sterilization\CycleAttachmentController;
-use App\Http\Controllers\Web\Sterilization\CycleControlTestController;
 use App\Http\Controllers\Web\Sterilization\CycleController;
+use App\Http\Controllers\Web\Sterilization\CycleControlTestController;
 use App\Http\Controllers\Web\Sterilization\CycleItemController;
 use App\Http\Controllers\Web\Tenancy\SwitchSiteController;
 use App\Http\Controllers\Web\Tenancy\SwitchTenantController;
@@ -69,6 +71,16 @@ Route::middleware(['auth', 'verified', 'tenant.web'])->group(function () {
     });
 
     Route::post('product-categories', [ProductCategoryController::class, 'store'])->name('product-categories.store');
+
+    Route::prefix('suppliers')->name('suppliers.')->group(function () {
+        Route::get('/', [SupplierController::class, 'index'])->name('index');
+        Route::post('/', [SupplierController::class, 'store'])->name('store');
+        Route::get('{supplier}', [SupplierController::class, 'show'])->name('show');
+        Route::patch('{supplier}', [SupplierController::class, 'update'])->name('update');
+        Route::delete('{supplier}', [SupplierController::class, 'destroy'])->name('destroy');
+
+        Route::post('{supplier}/products', [SupplierProductController::class, 'store'])->name('products.store');
+    });
 
     Route::prefix('labels')->name('labels.')->group(function () {
         Route::get('/', [LabelController::class, 'index'])->name('index');

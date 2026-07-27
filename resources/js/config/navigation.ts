@@ -28,6 +28,7 @@ import labels from '@/routes/labels';
 import productRoutes from '@/routes/products';
 import { edit as editProfile } from '@/routes/profile';
 import { edit as editSecurity } from '@/routes/security';
+import supplierRoutes from '@/routes/suppliers';
 import type { NavGroup, NavItem } from '@/types';
 
 /**
@@ -86,10 +87,9 @@ export const navGroups: NavGroup[] = [
             },
             {
                 title: 'Suppliers',
-                href: '/suppliers',
+                href: supplierRoutes.index(),
                 icon: Truck,
                 permission: 'suppliers.view',
-                comingSoon: true,
             },
             {
                 title: 'Purchase orders',
