@@ -86,3 +86,78 @@ export async function createDemoCycle(
 
     return (await response.json()).id as string;
 }
+
+export async function addDemoCycleItem(
+    request: APIRequestContext,
+    token: string,
+    cycleId: string,
+    description: string,
+): Promise<void> {
+    const response = await request.post(`/api/v1/cycles/${cycleId}/items`, {
+        headers: {
+            Authorization: `Bearer ${token}`,
+            'Idempotency-Key': crypto.randomUUID(),
+        },
+        data: { description },
+    });
+
+    if (!response.ok()) {
+        throw new Error(
+            `Cycle item creation failed: ${response.status()} ${await response.text()}`,
+        );
+    }
+}
+
+/** Advances draft -> running -> completed, the only state a control test can
+ * be recorded from (CYCLE_NOT_READY_FOR_TESTS otherwise). */
+export async function completeDemoCycle(
+    request: APIRequestContext,
+    token: string,
+    cycleId: string,
+): Promise<void> {
+    for (const action of ['start', 'complete']) {
+        const response = await request.post(
+            `/api/v1/cycles/${cycleId}/${action}`,
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    'Idempotency-Key': crypto.randomUUID(),
+                },
+                data: {},
+            },
+        );
+
+        if (!response.ok()) {
+            throw new Error(
+                `Cycle ${action} failed: ${response.status()} ${await response.text()}`,
+            );
+        }
+    }
+}
+
+export async function recordDemoControlTest(
+    request: APIRequestContext,
+    token: string,
+    cycleId: string,
+): Promise<void> {
+    const response = await request.post(
+        `/api/v1/cycles/${cycleId}/control-tests`,
+        {
+            headers: {
+                Authorization: `Bearer ${token}`,
+                'Idempotency-Key': crypto.randomUUID(),
+            },
+            data: {
+                type: 'vacuum',
+                result: 'pass',
+                performed_at: new Date().toISOString(),
+            },
+        },
+    );
+
+    if (!response.ok()) {
+        throw new Error(
+            `Control test creation failed: ${response.status()} ${await response.text()}`,
+        );
+    }
+}

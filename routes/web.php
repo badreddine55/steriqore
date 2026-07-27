@@ -15,6 +15,7 @@ Route::middleware(['auth', 'verified', 'tenant.web'])->group(function () {
 
     Route::prefix('cycles')->name('cycles.')->group(function () {
         Route::get('/', [CycleController::class, 'index'])->name('index');
+        Route::get('{cycle}', [CycleController::class, 'show'])->name('show');
     });
 });
 

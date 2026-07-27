@@ -117,3 +117,11 @@ export const alertSeverity: Record<string, StatusMeta> = {
     warning: meta('pending', 'Warning'),
     critical: meta('danger', 'Critical'),
 };
+
+/** Control test type — a category, not a status; no tone/badge, just a label. */
+export const controlTestTypeLabel: Record<string, string> = {
+    vacuum: 'Vacuum',
+    bowie_dick: 'Bowie-Dick',
+    helix: 'Helix',
+    biological: 'Biological',
+};

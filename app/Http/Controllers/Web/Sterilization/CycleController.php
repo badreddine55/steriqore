@@ -3,8 +3,14 @@
 namespace App\Http\Controllers\Web\Sterilization;
 
 use App\Domain\Equipment\Models\Device;
+use App\Domain\Sterilization\Data\ControlTestData;
+use App\Domain\Sterilization\Data\CycleAttachmentData;
 use App\Domain\Sterilization\Data\CycleData;
+use App\Domain\Sterilization\Data\CycleItemData;
+use App\Domain\Sterilization\Data\CycleReleaseData;
+use App\Domain\Sterilization\Models\ControlTest;
 use App\Domain\Sterilization\Models\Cycle;
+use App\Domain\Sterilization\Models\CycleItem;
 use App\Domain\Tenancy\Models\Tenant;
 use App\Http\Controllers\Controller;
 use App\Models\User;
@@ -13,6 +19,7 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 use Spatie\LaravelData\CursorPaginatedDataCollection;
+use Spatie\MediaLibrary\MediaCollections\Models\Media;
 use Spatie\QueryBuilder\AllowedFilter;
 use Spatie\QueryBuilder\QueryBuilder;
 
@@ -69,6 +76,42 @@ class CycleController extends Controller
             // off the request; this is purely to hand the current values
             // back to the page for the filter bar's controlled inputs.
             'filters' => $request->input('filter', []),
+        ]);
+    }
+
+    /**
+     * One page assembling everything the mobile API exposes as separate
+     * endpoints (items, control-tests, attachments, release) — a web
+     * detail view has no reason to make the browser round-trip four
+     * times for one screen the way a mobile client's own navigation does.
+     */
+    public function show(Cycle $cycle): Response
+    {
+        $this->authorize('view', $cycle);
+
+        $cycle->loadMissing(['device', 'deviceProgram', 'operator']);
+
+        $release = $cycle->release()->first();
+        $releasedBy = $release ? User::find($release->released_by_user_id) : null;
+
+        return Inertia::render('sterilization/cycles/show', [
+            'cycle' => CycleData::fromModel($cycle),
+            'device' => new OptionData($cycle->device->id, $cycle->device->name),
+            'program' => $cycle->deviceProgram ? new OptionData($cycle->deviceProgram->id, $cycle->deviceProgram->name) : null,
+            'operator' => new OptionData($cycle->operator->id, $cycle->operator->name),
+            'items' => CycleItemData::collect(
+                $cycle->items()->orderBy('sequence_in_cycle')->get()
+                    ->map(fn (CycleItem $item) => CycleItemData::fromModel($item))
+            ),
+            'controlTests' => ControlTestData::collect(
+                $cycle->controlTests()->orderBy('performed_at')->get()
+                    ->map(fn (ControlTest $test) => ControlTestData::fromModel($test))
+            ),
+            'attachments' => CycleAttachmentData::collect(
+                $cycle->getMedia('attachments')->map(fn (Media $media) => CycleAttachmentData::fromModel($media))
+            ),
+            'release' => $release ? CycleReleaseData::fromModel($release) : null,
+            'releasedBy' => $releasedBy ? new OptionData($releasedBy->id, $releasedBy->name) : null,
         ]);
     }
 }

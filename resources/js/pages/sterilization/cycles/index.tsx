@@ -1,4 +1,4 @@
-import { Head, router } from '@inertiajs/react';
+import { Head, Link, router } from '@inertiajs/react';
 import { AlertCircle, ChevronLeft, ChevronRight, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Mono } from '@/components/mono';
@@ -332,12 +332,31 @@ export default function CyclesIndex({
                                     return (
                                         <TableRow
                                             key={cycle.id}
-                                            className="h-10"
+                                            className="h-10 cursor-pointer hover:bg-muted/40"
+                                            onClick={() =>
+                                                router.visit(
+                                                    cycles.show(cycle.id).url,
+                                                )
+                                            }
                                         >
                                             <TableCell>
-                                                <Mono>
-                                                    #{cycle.cycle_number}
-                                                </Mono>
+                                                {/* The real, keyboard/screen-reader-accessible affordance — the
+                                                    row's own onClick above is a mouse-only convenience layered
+                                                    on top, and never overrides the row's native "row" role. */}
+                                                <Link
+                                                    href={
+                                                        cycles.show(cycle.id)
+                                                            .url
+                                                    }
+                                                    className="hover:underline"
+                                                    onClick={(e) =>
+                                                        e.stopPropagation()
+                                                    }
+                                                >
+                                                    <Mono>
+                                                        #{cycle.cycle_number}
+                                                    </Mono>
+                                                </Link>
                                             </TableCell>
                                             <TableCell>
                                                 {device?.label ?? '—'}
