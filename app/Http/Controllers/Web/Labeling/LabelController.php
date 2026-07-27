@@ -73,7 +73,9 @@ class LabelController extends Controller
             ->map(fn (User $user) => new OptionData($user->id, $user->name));
 
         $usage = $label->usage()->first();
-        $patient = $usage ? Patient::find($usage->patient_id) : null;
+        // withTrashed(): the usage keeps its patient's identity even if
+        // the pseudonym was later archived (same as LabelUsage::patient()).
+        $patient = $usage ? Patient::withTrashed()->find($usage->patient_id) : null;
         $practitioner = $usage ? User::find($usage->practitioner_id) : null;
 
         $tenant = Tenant::current();

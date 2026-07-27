@@ -21,6 +21,7 @@ class EvidenceSearchRequest extends FormRequest
             'cycle_number' => ['nullable', 'integer', 'min:1'],
             'batch_number' => ['nullable', 'string', 'max:255'],
             'device_id' => ['nullable', 'uuid'],
+            'operator_id' => ['nullable', 'uuid'],
             'from' => ['nullable', 'date'],
             'to' => ['nullable', 'date', 'after_or_equal:from'],
         ];

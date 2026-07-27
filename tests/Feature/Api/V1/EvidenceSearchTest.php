@@ -7,7 +7,7 @@ use App\Support\Tenancy\TenantScope;
 use Illuminate\Support\Str;
 
 /**
- * @return array{label_id: string, cycle_number: int, device_id: string, batch_id: string, patient_reference: string}
+ * @return array{label_id: string, cycle_number: int, device_id: string, batch_id: string, patient_id: string, patient_reference: string}
  */
 function fullEvidenceChainFor(string $token, Tenant $tenant, string $practitionerId): array
 {
@@ -49,6 +49,7 @@ function fullEvidenceChainFor(string $token, Tenant $tenant, string $practitione
         'cycle_number' => $cycleNumber,
         'device_id' => $deviceId,
         'batch_id' => $received['batch_id'],
+        'patient_id' => $patient->json('id'),
         'patient_reference' => $patient->json('reference'),
     ];
 }

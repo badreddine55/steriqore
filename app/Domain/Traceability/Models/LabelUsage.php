@@ -48,11 +48,17 @@ class LabelUsage extends Model
     }
 
     /**
+     * withTrashed(): evidence keeps a patient's identity even after the
+     * pseudonym is archived (ArchivePatientAction is a soft delete for
+     * exactly this reason) — same principle as invariant #6 for disabled
+     * users. Without this, a usage referencing an archived patient would
+     * silently resolve to no patient at all.
+     *
      * @return BelongsTo<Patient, $this>
      */
     public function patient(): BelongsTo
     {
-        return $this->belongsTo(Patient::class);
+        return $this->belongsTo(Patient::class)->withTrashed();
     }
 
     /**

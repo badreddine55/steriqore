@@ -30,10 +30,15 @@ paths:
               schema:
                 type: object
                 properties:
-                  token: { type: string }
-                  token_type: { type: string, const: Bearer }
-                  user: { $ref: '#/components/schemas/UserData' }
-                  tenant: { $ref: '#/components/schemas/TenantData' }
+                  token:
+                    type: string
+                  token_type:
+                    type: string
+                    const: Bearer
+                  user:
+                    $ref: '#/components/schemas/UserData'
+                  tenant:
+                    $ref: '#/components/schemas/TenantData'
                 required:
                   - token
                   - token_type
@@ -85,9 +90,12 @@ paths:
               schema:
                 type: object
                 properties:
-                  low_stock: { type: integer }
-                  near_expiry: { type: integer }
-                  expired: { type: integer }
+                  low_stock:
+                    type: integer
+                  near_expiry:
+                    type: integer
+                  expired:
+                    type: integer
                 required:
                   - low_stock
                   - near_expiry
@@ -1521,6 +1529,14 @@ paths:
               - 'null'
             format: uuid
         -
+          name: operator_id
+          in: query
+          schema:
+            type:
+              - string
+              - 'null'
+            format: uuid
+        -
           name: from
           in: query
           schema:
@@ -1593,6 +1609,14 @@ paths:
             maxLength: 255
         -
           name: device_id
+          in: query
+          schema:
+            type:
+              - string
+              - 'null'
+            format: uuid
+        -
+          name: operator_id
           in: query
           schema:
             type:
@@ -2104,10 +2128,15 @@ paths:
               schema:
                 type: object
                 properties:
-                  token: { type: string }
-                  token_type: { type: string, const: Bearer }
-                  user: { $ref: '#/components/schemas/UserData' }
-                  tenant: { $ref: '#/components/schemas/TenantData' }
+                  token:
+                    type: string
+                  token_type:
+                    type: string
+                    const: Bearer
+                  user:
+                    $ref: '#/components/schemas/UserData'
+                  tenant:
+                    $ref: '#/components/schemas/TenantData'
                 required:
                   - token
                   - token_type
@@ -2257,8 +2286,10 @@ paths:
               schema:
                 type: object
                 properties:
-                  user: { $ref: '#/components/schemas/UserData' }
-                  tenant: { $ref: '#/components/schemas/TenantData' }
+                  user:
+                    $ref: '#/components/schemas/UserData'
+                  tenant:
+                    $ref: '#/components/schemas/TenantData'
                 required:
                   - user
                   - tenant
@@ -3017,10 +3048,15 @@ paths:
               schema:
                 type: object
                 properties:
-                  token: { type: string }
-                  token_type: { type: string, const: Bearer }
-                  user: { $ref: '#/components/schemas/UserData' }
-                  tenant: { $ref: '#/components/schemas/TenantData' }
+                  token:
+                    type: string
+                  token_type:
+                    type: string
+                    const: Bearer
+                  user:
+                    $ref: '#/components/schemas/UserData'
+                  tenant:
+                    $ref: '#/components/schemas/TenantData'
                 required:
                   - token
                   - token_type
@@ -3102,7 +3138,8 @@ paths:
               schema:
                 type: object
                 properties:
-                  rows_rebuilt: { type: integer }
+                  rows_rebuilt:
+                    type: integer
                 required:
                   - rows_rebuilt
         403:
@@ -3172,8 +3209,10 @@ paths:
               schema:
                 type: object
                 properties:
-                  debit: { $ref: '#/components/schemas/StockMovementData' }
-                  credit: { $ref: '#/components/schemas/StockMovementData' }
+                  debit:
+                    $ref: '#/components/schemas/StockMovementData'
+                  credit:
+                    $ref: '#/components/schemas/StockMovementData'
                 required:
                   - debit
                   - credit

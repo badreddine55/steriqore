@@ -27,6 +27,7 @@ import batchRoutes from '@/routes/batches';
 import controlTests from '@/routes/control-tests';
 import cycles from '@/routes/cycles';
 import devices from '@/routes/devices';
+import evidenceSearchRoutes from '@/routes/evidence-search';
 import labels from '@/routes/labels';
 import patientRoutes from '@/routes/patients';
 import productRoutes from '@/routes/products';
@@ -134,10 +135,9 @@ export const navGroups: NavGroup[] = [
             },
             {
                 title: 'Evidence search',
-                href: '/evidence-search',
+                href: evidenceSearchRoutes.index(),
                 icon: Search,
                 permission: 'usages.view',
-                comingSoon: true,
             },
         ],
     },

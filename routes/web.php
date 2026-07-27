@@ -22,6 +22,7 @@ use App\Http\Controllers\Web\Sterilization\CycleControlTestController;
 use App\Http\Controllers\Web\Sterilization\CycleItemController;
 use App\Http\Controllers\Web\Tenancy\SwitchSiteController;
 use App\Http\Controllers\Web\Tenancy\SwitchTenantController;
+use App\Http\Controllers\Web\Traceability\EvidenceSearchController;
 use App\Http\Controllers\Web\Traceability\LabelUsageController;
 use App\Http\Controllers\Web\Traceability\PatientController;
 use Illuminate\Support\Facades\Route;
@@ -98,6 +99,8 @@ Route::middleware(['auth', 'verified', 'tenant.web'])->group(function () {
         Route::get('{patient}', [PatientController::class, 'show'])->name('show');
         Route::delete('{patient}', [PatientController::class, 'destroy'])->name('destroy');
     });
+
+    Route::get('evidence-search', [EvidenceSearchController::class, 'index'])->name('evidence-search.index');
 
     Route::prefix('suppliers')->name('suppliers.')->group(function () {
         Route::get('/', [SupplierController::class, 'index'])->name('index');
