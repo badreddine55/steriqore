@@ -191,6 +191,7 @@ export default function LabelShow({
     patients: patientOptions,
     practitioners,
     canRecordUsage,
+    canViewDossier,
 }: {
     label: LabelType;
     cycle: Cycle;
@@ -205,6 +206,7 @@ export default function LabelShow({
     patients: Option[];
     practitioners: Option[];
     canRecordUsage: boolean;
+    canViewDossier: boolean;
 }) {
     const status = labelStatus[label.status] ?? labelStatus.created;
     const printedByName = (userId: string) =>
@@ -416,10 +418,21 @@ export default function LabelShow({
                 </Card>
 
                 <Card>
-                    <CardHeader>
+                    <CardHeader className="flex flex-row items-center justify-between">
                         <CardTitle className="text-sm">
                             Point-of-care usage
                         </CardTitle>
+                        {usage && canViewDossier && (
+                            <a
+                                href={labelUsage.dossier(label.id).url}
+                                target="_blank"
+                                rel="noreferrer"
+                            >
+                                <Button size="sm" variant="outline">
+                                    Evidence dossier
+                                </Button>
+                            </a>
+                        )}
                     </CardHeader>
                     <CardContent>
                         {usage ? (

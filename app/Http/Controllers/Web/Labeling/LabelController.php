@@ -98,6 +98,7 @@ class LabelController extends Controller
             'usage' => $usage ? LabelUsageData::fromModel($usage) : null,
             'patient' => $patient ? new OptionData($patient->id, $patient->reference) : null,
             'practitioner' => $practitioner ? new OptionData($practitioner->id, $practitioner->name) : null,
+            'canViewDossier' => $usage ? $request->user()->can('view', $usage) : false,
             'patients' => OptionData::collect($patients),
             'practitioners' => OptionData::collect($practitioners),
             'canRecordUsage' => $request->user()->can('create', LabelUsage::class),

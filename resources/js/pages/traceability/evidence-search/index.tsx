@@ -38,11 +38,13 @@ export default function EvidenceSearchIndex({
     devices,
     operators,
     filters,
+    canExport,
 }: {
     results: CursorPaginated<EvidenceSearchResult>;
     devices: Option[];
     operators: Option[];
     filters: EvidenceSearchFilters;
+    canExport: boolean;
 }) {
     const [patientReference, setPatientReference] = useState(
         filters.patient_reference ?? '',
@@ -169,14 +171,42 @@ export default function EvidenceSearchIndex({
             <Head title="Evidence search" />
 
             <div className="flex h-full flex-col gap-4 p-4">
-                <div>
-                    <h1 className="text-lg font-semibold tracking-tight">
-                        Evidence search
-                    </h1>
-                    <p className="text-sm text-muted-foreground">
-                        Every pouch traced end to end — patient, cycle,
-                        batch, device, operator and period.
-                    </p>
+                <div className="flex items-start justify-between">
+                    <div>
+                        <h1 className="text-lg font-semibold tracking-tight">
+                            Evidence search
+                        </h1>
+                        <p className="text-sm text-muted-foreground">
+                            Every pouch traced end to end — patient, cycle,
+                            batch, device, operator and period.
+                        </p>
+                    </div>
+                    {canExport && (
+                        <div className="no-print flex gap-2">
+                            <a
+                                href={
+                                    evidenceSearch.export({
+                                        query: { ...filters, format: 'csv' },
+                                    }).url
+                                }
+                            >
+                                <Button size="sm" variant="outline">
+                                    Export CSV
+                                </Button>
+                            </a>
+                            <a
+                                href={
+                                    evidenceSearch.export({
+                                        query: { ...filters, format: 'xlsx' },
+                                    }).url
+                                }
+                            >
+                                <Button size="sm" variant="outline">
+                                    Export XLSX
+                                </Button>
+                            </a>
+                        </div>
+                    )}
                 </div>
 
                 {loadError && (

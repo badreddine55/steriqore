@@ -101,6 +101,7 @@ Route::middleware(['auth', 'verified', 'tenant.web'])->group(function () {
     });
 
     Route::get('evidence-search', [EvidenceSearchController::class, 'index'])->name('evidence-search.index');
+    Route::get('evidence-search/export', [EvidenceSearchController::class, 'export'])->name('evidence-search.export');
 
     Route::prefix('suppliers')->name('suppliers.')->group(function () {
         Route::get('/', [SupplierController::class, 'index'])->name('index');
@@ -131,6 +132,7 @@ Route::middleware(['auth', 'verified', 'tenant.web'])->group(function () {
         Route::get('{label}/qr-code', [LabelController::class, 'qrCode'])->name('qr-code');
         Route::get('{label}/datamatrix', [LabelController::class, 'dataMatrix'])->name('datamatrix');
         Route::post('{label}/usage', [LabelUsageController::class, 'store'])->name('usage.store');
+        Route::get('{label}/usage/dossier', [LabelUsageController::class, 'dossier'])->name('usage.dossier');
     });
 });
 
