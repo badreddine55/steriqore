@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\Web\Labeling\CycleLabelController;
+use App\Http\Controllers\Web\Labeling\LabelController;
 use App\Http\Controllers\Web\Sterilization\ControlTestController;
 use App\Http\Controllers\Web\Sterilization\CycleAttachmentController;
 use App\Http\Controllers\Web\Sterilization\CycleControlTestController;
@@ -33,9 +35,19 @@ Route::middleware(['auth', 'verified', 'tenant.web'])->group(function () {
         Route::delete('{cycle}/attachments/{media}', [CycleAttachmentController::class, 'destroy'])->name('attachments.destroy');
 
         Route::post('{cycle}/control-tests', [CycleControlTestController::class, 'store'])->name('control-tests.store');
+
+        Route::get('{cycle}/labels', [CycleLabelController::class, 'index'])->name('labels.index');
+        Route::post('{cycle}/labels', [CycleLabelController::class, 'store'])->name('labels.store');
     });
 
     Route::get('control-tests', [ControlTestController::class, 'index'])->name('control-tests.index');
+
+    Route::prefix('labels')->name('labels.')->group(function () {
+        Route::post('{label}/print', [LabelController::class, 'print'])->name('print');
+        Route::get('{label}/pdf', [LabelController::class, 'pdf'])->name('pdf');
+        Route::get('{label}/qr-code', [LabelController::class, 'qrCode'])->name('qr-code');
+        Route::get('{label}/datamatrix', [LabelController::class, 'dataMatrix'])->name('datamatrix');
+    });
 });
 
 require __DIR__.'/settings.php';

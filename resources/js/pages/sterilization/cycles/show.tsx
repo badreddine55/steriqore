@@ -51,6 +51,7 @@ import cycles from '@/routes/cycles';
 import cycleAttachments from '@/routes/cycles/attachments';
 import cycleControlTests from '@/routes/cycles/control-tests';
 import cycleItems from '@/routes/cycles/items';
+import cycleLabels from '@/routes/cycles/labels';
 import type {
     ControlTest,
     Cycle,
@@ -504,7 +505,14 @@ export default function CycleShow({
                             </h1>
                             <StatusBadge status={status} />
                         </div>
-                        <div className="no-print">
+                        <div className="no-print flex items-center gap-2">
+                            {cycle.status === 'released' && (
+                                <Link href={cycleLabels.index(cycle.id).url}>
+                                    <Button size="sm" variant="outline">
+                                        View labels
+                                    </Button>
+                                </Link>
+                            )}
                             <CycleActions
                                 cycle={cycle}
                                 canManage={canManage}

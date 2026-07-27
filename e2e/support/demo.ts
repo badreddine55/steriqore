@@ -159,6 +159,60 @@ export async function submitDemoCycleForRelease(
     }
 }
 
+/** Releases a submitted cycle as compliant (the demo owner has cycles.release). */
+export async function releaseDemoCycleAsCompliant(
+    request: APIRequestContext,
+    token: string,
+    cycleId: string,
+): Promise<void> {
+    const response = await request.post(`/api/v1/cycles/${cycleId}/release`, {
+        headers: {
+            Authorization: `Bearer ${token}`,
+            'Idempotency-Key': crypto.randomUUID(),
+        },
+        data: { decision: 'compliant' },
+    });
+
+    if (!response.ok()) {
+        throw new Error(
+            `Cycle release failed: ${response.status()} ${await response.text()}`,
+        );
+    }
+}
+
+/**
+ * DLU rules aren't seeded — labels can't be generated without at least one.
+ * A rule is practice-wide configuration a real practice sets up once, not
+ * per-cycle, so — unlike devices/cycles — this is meant to be reused across
+ * spec runs against the persistent demo tenant. DLU_RULE_ALREADY_EXISTS (409)
+ * from an earlier run is exactly as good as creating it fresh.
+ */
+export async function createDemoDluRule(
+    request: APIRequestContext,
+    token: string,
+    packagingType: string,
+    storageCondition: string,
+    shelfLifeDays: number,
+): Promise<void> {
+    const response = await request.post('/api/v1/dlu-rules', {
+        headers: {
+            Authorization: `Bearer ${token}`,
+            'Idempotency-Key': crypto.randomUUID(),
+        },
+        data: {
+            packaging_type: packagingType,
+            storage_condition: storageCondition,
+            shelf_life_days: shelfLifeDays,
+        },
+    });
+
+    if (!response.ok() && response.status() !== 409) {
+        throw new Error(
+            `DLU rule creation failed: ${response.status()} ${await response.text()}`,
+        );
+    }
+}
+
 export async function recordDemoControlTest(
     request: APIRequestContext,
     token: string,
