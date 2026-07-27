@@ -27,6 +27,7 @@ import devices from '@/routes/devices';
 import labels from '@/routes/labels';
 import productRoutes from '@/routes/products';
 import { edit as editProfile } from '@/routes/profile';
+import purchaseOrderRoutes from '@/routes/purchase-orders';
 import { edit as editSecurity } from '@/routes/security';
 import supplierRoutes from '@/routes/suppliers';
 import type { NavGroup, NavItem } from '@/types';
@@ -93,10 +94,9 @@ export const navGroups: NavGroup[] = [
             },
             {
                 title: 'Purchase orders',
-                href: '/purchase-orders',
+                href: purchaseOrderRoutes.index(),
                 icon: ClipboardList,
                 permission: 'purchasing.view',
-                comingSoon: true,
             },
             {
                 title: 'Stock',

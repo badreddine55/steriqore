@@ -7,6 +7,7 @@ use App\Http\Controllers\Web\Equipment\DeviceProgramController;
 use App\Http\Controllers\Web\Equipment\MaintenanceRecordController;
 use App\Http\Controllers\Web\Labeling\CycleLabelController;
 use App\Http\Controllers\Web\Labeling\LabelController;
+use App\Http\Controllers\Web\Purchasing\PurchaseOrderController;
 use App\Http\Controllers\Web\Purchasing\SupplierController;
 use App\Http\Controllers\Web\Purchasing\SupplierProductController;
 use App\Http\Controllers\Web\Sterilization\ControlTestController;
@@ -80,6 +81,15 @@ Route::middleware(['auth', 'verified', 'tenant.web'])->group(function () {
         Route::delete('{supplier}', [SupplierController::class, 'destroy'])->name('destroy');
 
         Route::post('{supplier}/products', [SupplierProductController::class, 'store'])->name('products.store');
+    });
+
+    Route::prefix('purchase-orders')->name('purchase-orders.')->group(function () {
+        Route::get('/', [PurchaseOrderController::class, 'index'])->name('index');
+        Route::get('create', [PurchaseOrderController::class, 'create'])->name('create');
+        Route::post('/', [PurchaseOrderController::class, 'store'])->name('store');
+        Route::get('{purchaseOrder}', [PurchaseOrderController::class, 'show'])->name('show');
+        Route::post('{purchaseOrder}/order', [PurchaseOrderController::class, 'order'])->name('order');
+        Route::post('{purchaseOrder}/cancel', [PurchaseOrderController::class, 'cancel'])->name('cancel');
     });
 
     Route::prefix('labels')->name('labels.')->group(function () {
