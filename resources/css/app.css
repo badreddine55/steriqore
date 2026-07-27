@@ -210,3 +210,59 @@
         @apply bg-background text-foreground;
     }
 }
+
+/*
+ * Motion: only state transitions and skeletons, never ambient animation —
+ * and even those respect a user's reduced-motion preference. A blanket
+ * rule here means every future screen gets this for free instead of each
+ * one having to remember to guard its own animate-* utility.
+ */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}
+
+/*
+ * Print: inspectors print these. The dark theme must never follow a
+ * screen onto paper, and app chrome (sidebar, header, filters, pagination)
+ * has no business on a printed page — only the evidence does. Elements
+ * marked .no-print (nav, filter bars, action buttons) are hidden;
+ * everything else keeps its normal light-mode colors regardless of which
+ * theme was active on screen.
+ */
+@media print {
+    :root,
+    .dark {
+        --background: oklch(1 0 0);
+        --foreground: oklch(0.145 0 0);
+        --card: oklch(1 0 0);
+        --card-foreground: oklch(0.145 0 0);
+        --popover: oklch(1 0 0);
+        --popover-foreground: oklch(0.145 0 0);
+        --muted: oklch(0.97 0 0);
+        --muted-foreground: oklch(0.4 0 0);
+        --border: oklch(0.85 0 0);
+        --status-draft-bg: oklch(0.96 0 0);
+        --status-draft-fg: oklch(0.3 0 0);
+        --status-pending-bg: oklch(0.96 0.05 85);
+        --status-pending-fg: oklch(0.4 0.13 68);
+        --status-success-bg: oklch(0.95 0.05 160);
+        --status-success-fg: oklch(0.35 0.13 160);
+        --status-danger-bg: oklch(0.95 0.04 25);
+        --status-danger-fg: oklch(0.42 0.21 27);
+        --status-contained-bg: oklch(0.95 0.035 300);
+        --status-contained-fg: oklch(0.38 0.2 293);
+        --status-expired-bg: oklch(0.94 0.03 55);
+        --status-expired-fg: oklch(0.35 0.1 45);
+    }
+
+    .no-print {
+        display: none !important;
+    }
+}

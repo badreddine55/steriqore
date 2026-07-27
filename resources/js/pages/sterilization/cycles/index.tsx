@@ -1,5 +1,5 @@
 import { Head, router } from '@inertiajs/react';
-import { ChevronLeft, ChevronRight, X } from 'lucide-react';
+import { AlertCircle, ChevronLeft, ChevronRight, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Mono } from '@/components/mono';
 import { StatusBadge } from '@/components/status-badge';
@@ -12,6 +12,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
+import { Skeleton } from '@/components/ui/skeleton';
 import {
     Table,
     TableBody,
@@ -24,12 +25,7 @@ import { formatDateTime } from '@/lib/format';
 import { cycleStatus } from '@/lib/status';
 import { dashboard } from '@/routes';
 import cycles from '@/routes/cycles';
-import type {
-    CursorPaginated,
-    Cycle,
-    CycleFilters,
-    LookupOption,
-} from '@/types';
+import type { CursorPaginated, Cycle, CycleFilters, Option } from '@/types';
 
 const STATUS_OPTIONS = Object.keys(cycleStatus);
 
@@ -40,11 +36,27 @@ export default function CyclesIndex({
     filters,
 }: {
     cycles: CursorPaginated<Cycle>;
-    devices: LookupOption[];
-    operators: LookupOption[];
+    devices: Option[];
+    operators: Option[];
     filters: CycleFilters;
 }) {
     const [q, setQ] = useState(filters.q ?? '');
+    const [isLoading, setIsLoading] = useState(false);
+    const [loadError, setLoadError] = useState(false);
+
+    // Inertia's global top progress bar covers full page navigation, but a
+    // filtered/paginated reload of just this table benefits from a more
+    // localized signal — the rows themselves go quiet rather than the whole
+    // page appearing to hang.
+    useEffect(() => {
+        const removeStart = router.on('start', () => setIsLoading(true));
+        const removeFinish = router.on('finish', () => setIsLoading(false));
+
+        return () => {
+            removeStart();
+            removeFinish();
+        };
+    }, []);
 
     // Debounced free-text search — every other filter below applies
     // immediately on change, since a select/date change is already a
@@ -83,6 +95,8 @@ export default function CyclesIndex({
                 preserveScroll: true,
                 replace: true,
                 only: ['cycles', 'filters'],
+                onError: () => setLoadError(true),
+                onSuccess: () => setLoadError(false),
             },
         );
     }
@@ -96,7 +110,14 @@ export default function CyclesIndex({
             preserveState: true,
             preserveScroll: true,
             only: ['cycles', 'filters'],
+            onError: () => setLoadError(true),
+            onSuccess: () => setLoadError(false),
         });
+    }
+
+    function retry() {
+        setLoadError(false);
+        router.reload({ only: ['cycles', 'filters'] });
     }
 
     const hasFilters = Object.keys(filters).length > 0;
@@ -117,7 +138,20 @@ export default function CyclesIndex({
                     </div>
                 </div>
 
-                <div className="flex flex-wrap items-center gap-2">
+                {loadError && (
+                    <div className="flex items-center justify-between gap-3 rounded-md border border-status-danger-fg/30 bg-status-danger-bg px-3 py-2 text-sm text-status-danger-fg">
+                        <span className="flex items-center gap-2">
+                            <AlertCircle className="size-4" />
+                            Couldn&apos;t load cycles — the request failed. Your
+                            filters weren&apos;t lost.
+                        </span>
+                        <Button variant="outline" size="sm" onClick={retry}>
+                            Retry
+                        </Button>
+                    </div>
+                )}
+
+                <div className="no-print flex flex-wrap items-center gap-2">
                     <Input
                         value={q}
                         onChange={(e) => setQ(e.target.value)}
@@ -158,7 +192,7 @@ export default function CyclesIndex({
                             <SelectItem value="all">All devices</SelectItem>
                             {devices.map((device) => (
                                 <SelectItem key={device.id} value={device.id}>
-                                    {device.name}
+                                    {device.label}
                                 </SelectItem>
                             ))}
                         </SelectContent>
@@ -180,7 +214,7 @@ export default function CyclesIndex({
                                     key={operator.id}
                                     value={operator.id}
                                 >
-                                    {operator.name}
+                                    {operator.label}
                                 </SelectItem>
                             ))}
                         </SelectContent>
@@ -254,65 +288,88 @@ export default function CyclesIndex({
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {cyclesPage.data.length === 0 && (
-                                <TableRow>
-                                    <TableCell
-                                        colSpan={6}
-                                        className="h-24 text-center text-muted-foreground"
+                            {isLoading &&
+                                Array.from({ length: 6 }).map((_, i) => (
+                                    <TableRow
+                                        key={`skeleton-${i}`}
+                                        className="h-10"
                                     >
-                                        {hasFilters
-                                            ? 'No cycles match these filters.'
-                                            : 'No cycles have been run yet — start one from an autoclave to see it here.'}
-                                    </TableCell>
-                                </TableRow>
-                            )}
-                            {cyclesPage.data.map((cycle) => {
-                                const device = devices.find(
-                                    (d) => d.id === cycle.device_id,
-                                );
-                                const operator = operators.find(
-                                    (o) => o.id === cycle.operator_id,
-                                );
-                                const status =
-                                    cycleStatus[cycle.status] ??
-                                    cycleStatus.draft;
-
-                                return (
-                                    <TableRow key={cycle.id} className="h-10">
-                                        <TableCell>
-                                            <Mono>#{cycle.cycle_number}</Mono>
-                                        </TableCell>
-                                        <TableCell>
-                                            {device?.name ?? '—'}
-                                        </TableCell>
-                                        <TableCell>
-                                            {operator?.name ?? '—'}
-                                        </TableCell>
-                                        <TableCell>
-                                            <StatusBadge status={status} />
-                                        </TableCell>
-                                        <TableCell>
-                                            <Mono className="text-xs">
-                                                {formatDateTime(
-                                                    cycle.started_at,
-                                                )}
-                                            </Mono>
-                                        </TableCell>
-                                        <TableCell>
-                                            <Mono className="text-xs">
-                                                {formatDateTime(
-                                                    cycle.completed_at,
-                                                )}
-                                            </Mono>
+                                        {Array.from({ length: 6 }).map(
+                                            (__, j) => (
+                                                <TableCell key={j}>
+                                                    <Skeleton className="h-4 w-full max-w-32" />
+                                                </TableCell>
+                                            ),
+                                        )}
+                                    </TableRow>
+                                ))}
+                            {!isLoading &&
+                                !loadError &&
+                                cyclesPage.data.length === 0 && (
+                                    <TableRow>
+                                        <TableCell
+                                            colSpan={6}
+                                            className="h-24 text-center text-muted-foreground"
+                                        >
+                                            {hasFilters
+                                                ? 'No cycles match these filters.'
+                                                : 'No cycles have been run yet — start one from an autoclave to see it here.'}
                                         </TableCell>
                                     </TableRow>
-                                );
-                            })}
+                                )}
+                            {!isLoading &&
+                                cyclesPage.data.map((cycle) => {
+                                    const device = devices.find(
+                                        (d) => d.id === cycle.device_id,
+                                    );
+                                    const operator = operators.find(
+                                        (o) => o.id === cycle.operator_id,
+                                    );
+                                    const status =
+                                        cycleStatus[cycle.status] ??
+                                        cycleStatus.draft;
+
+                                    return (
+                                        <TableRow
+                                            key={cycle.id}
+                                            className="h-10"
+                                        >
+                                            <TableCell>
+                                                <Mono>
+                                                    #{cycle.cycle_number}
+                                                </Mono>
+                                            </TableCell>
+                                            <TableCell>
+                                                {device?.label ?? '—'}
+                                            </TableCell>
+                                            <TableCell>
+                                                {operator?.label ?? '—'}
+                                            </TableCell>
+                                            <TableCell>
+                                                <StatusBadge status={status} />
+                                            </TableCell>
+                                            <TableCell>
+                                                <Mono className="text-xs">
+                                                    {formatDateTime(
+                                                        cycle.started_at,
+                                                    )}
+                                                </Mono>
+                                            </TableCell>
+                                            <TableCell>
+                                                <Mono className="text-xs">
+                                                    {formatDateTime(
+                                                        cycle.completed_at,
+                                                    )}
+                                                </Mono>
+                                            </TableCell>
+                                        </TableRow>
+                                    );
+                                })}
                         </TableBody>
                     </Table>
                 </div>
 
-                <div className="flex items-center justify-end gap-2">
+                <div className="no-print flex items-center justify-end gap-2">
                     <Button
                         variant="outline"
                         size="sm"

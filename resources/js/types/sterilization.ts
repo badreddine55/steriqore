@@ -11,12 +11,6 @@ export type Cycle = {
     notes: string | null;
 };
 
-/** A lightweight lookup row for filter dropdowns — not the full domain model. */
-export type LookupOption = {
-    id: string;
-    name: string;
-};
-
 export type CycleFilters = {
     device_id?: string;
     status?: string;

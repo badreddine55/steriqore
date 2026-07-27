@@ -8,6 +8,7 @@ use App\Domain\Sterilization\Models\Cycle;
 use App\Domain\Tenancy\Models\Tenant;
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Support\Data\OptionData;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -51,13 +52,19 @@ class CycleController extends Controller
             ->cursorPaginate(perPage: 25)
             ->withQueryString();
 
+        $devices = Device::orderBy('name')->get()
+            ->map(fn (Device $device) => new OptionData($device->id, $device->name));
+
+        $operators = User::whereHas(
+            'tenantUsers',
+            fn ($query) => $query->where('tenant_id', $tenant->id)->where('status', 'active')
+        )->orderBy('name')->get()
+            ->map(fn (User $user) => new OptionData($user->id, $user->name));
+
         return Inertia::render('sterilization/cycles/index', [
             'cycles' => CycleData::collect($cycles, CursorPaginatedDataCollection::class),
-            'devices' => Device::orderBy('name')->get(['id', 'name']),
-            'operators' => User::whereHas(
-                'tenantUsers',
-                fn ($query) => $query->where('tenant_id', $tenant->id)->where('status', 'active')
-            )->orderBy('name')->get(['id', 'name']),
+            'devices' => OptionData::collect($devices),
+            'operators' => OptionData::collect($operators),
             // spatie/laravel-query-builder itself reads filter[...] straight
             // off the request; this is purely to hand the current values
             // back to the page for the filter bar's controlled inputs.

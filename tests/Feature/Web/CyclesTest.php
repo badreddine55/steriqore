@@ -2,6 +2,7 @@
 
 use App\Domain\Identity\Enums\TenantRole;
 use App\Models\User;
+use App\Support\Tenancy\TenantContext;
 use Illuminate\Support\Str;
 use Inertia\Testing\AssertableInertia as Assert;
 
@@ -76,4 +77,18 @@ test('a user with no active practice membership anywhere is refused, not shown a
     $user = User::factory()->create();
 
     $this->actingAs($user)->get('/cycles')->assertForbidden();
+});
+
+test('a user without the cycles.view permission is refused by the Policy, not just hidden from the nav', function () {
+    [$tenant, $owner] = sterilizationTenantWithMember(TenantRole::Owner);
+
+    // cycles.view comes from the 'owner' role, not a direct grant — remove
+    // the role itself (rather than revokePermissionTo(), which only ever
+    // touches direct user-level grants) to prove the Policy check is real
+    // and not just a decorative call that always passes for this fixture.
+    TenantContext::run($tenant, function () use ($owner) {
+        $owner->removeRole(TenantRole::Owner->value);
+    });
+
+    $this->actingAs($owner->fresh())->get('/cycles')->assertForbidden();
 });

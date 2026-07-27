@@ -18,7 +18,7 @@ export function AppSidebar() {
     const { isCurrentUrl } = useCurrentUrl();
 
     return (
-        <Sidebar collapsible="icon" variant="inset">
+        <Sidebar collapsible="icon" variant="inset" className="no-print">
             <SidebarHeader>
                 <SidebarMenu>
                     <SidebarMenuItem>
