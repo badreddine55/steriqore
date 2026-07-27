@@ -9,6 +9,7 @@ use App\Support\Concerns\BelongsToTenant;
 use App\Support\Concerns\HasUuidv7;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
 
 /**
@@ -51,5 +52,13 @@ class Batch extends Model
     public function supplier(): BelongsTo
     {
         return $this->belongsTo(Supplier::class);
+    }
+
+    /**
+     * @return HasMany<StockLevel, $this>
+     */
+    public function stockLevels(): HasMany
+    {
+        return $this->hasMany(StockLevel::class);
     }
 }

@@ -23,7 +23,8 @@ use Illuminate\Support\Facades\DB;
  */
 class DetectAlertsAction
 {
-    private const int NEAR_EXPIRY_DAYS = 30;
+    /** Also the threshold the batches list (UI-15) uses for its "expiring soon" filter — one source of truth. */
+    public const int NEAR_EXPIRY_DAYS = 30;
 
     /**
      * @return array{low_stock: int, near_expiry: int, expired: int}

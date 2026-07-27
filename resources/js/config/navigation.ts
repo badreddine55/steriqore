@@ -7,6 +7,7 @@ import {
     FlaskConical,
     KeyRound,
     LayoutGrid,
+    Layers,
     PackageSearch,
     Palette,
     ScrollText,
@@ -21,6 +22,7 @@ import {
 } from 'lucide-react';
 import { dashboard } from '@/routes';
 import { edit as editAppearance } from '@/routes/appearance';
+import batchRoutes from '@/routes/batches';
 import controlTests from '@/routes/control-tests';
 import cycles from '@/routes/cycles';
 import devices from '@/routes/devices';
@@ -97,6 +99,12 @@ export const navGroups: NavGroup[] = [
                 href: purchaseOrderRoutes.index(),
                 icon: ClipboardList,
                 permission: 'purchasing.view',
+            },
+            {
+                title: 'Batches',
+                href: batchRoutes.index(),
+                icon: Layers,
+                permission: 'inventory.view',
             },
             {
                 title: 'Stock',

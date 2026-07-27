@@ -1,6 +1,7 @@
 export type * from './auth';
 export type * from './catalog';
 export type * from './equipment';
+export type * from './inventory';
 export type * from './labeling';
 export type * from './navigation';
 export type * from './pagination';
