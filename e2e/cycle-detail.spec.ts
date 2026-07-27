@@ -46,8 +46,13 @@ test.describe('Cycle detail (UI-02)', () => {
         ).toBeVisible();
 
         await expect(page.getByText('Scaler kit, pouch 1')).toBeVisible();
-        await expect(page.getByText('Vacuum')).toBeVisible();
-        await expect(page.getByText('Pass')).toBeVisible();
+        // Scoped to the control test's own row — UI-04 added a "record a
+        // test" form right below this table whose Type/Result pickers
+        // default to the same "Vacuum"/"Pass" text, so a bare page-wide
+        // getByText would match both.
+        const testRow = page.getByRole('row').filter({ hasText: 'Vacuum' });
+        await expect(testRow).toBeVisible();
+        await expect(testRow.getByText('Pass')).toBeVisible();
     });
 
     test('clicking a row in the cycles list opens its detail page', async ({

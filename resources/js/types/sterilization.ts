@@ -58,3 +58,24 @@ export type CycleRelease = {
     released_at: string;
     reason: string | null;
 };
+
+/** Mirrors App\Domain\Sterilization\Data\ControlTestLogEntryData exactly. */
+export type ControlTestLogEntry = {
+    id: string;
+    cycle_id: string;
+    cycle_number: number;
+    device_id: string;
+    device_name: string;
+    type: string;
+    result: string;
+    performed_at: string;
+    notes: string | null;
+};
+
+export type ControlTestFilters = {
+    type?: string;
+    result?: string;
+    device_id?: string;
+    from?: string;
+    to?: string;
+};

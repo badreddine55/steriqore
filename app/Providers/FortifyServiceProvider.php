@@ -121,7 +121,16 @@ class FortifyServiceProvider extends ServiceProvider
         RateLimiter::for('login', function (Request $request) {
             $throttleKey = Str::transliterate(Str::lower($request->input(Fortify::username())).'|'.$request->ip());
 
-            return Limit::perMinute(5)->by($throttleKey);
+            // 5/minute is the real security control, verified for real by
+            // AuthenticationTest (APP_ENV=testing) — untouched here. Only
+            // the `local` Docker dev container is loosened: Playwright E2E
+            // specs re-authenticate the same demo account dozens of times
+            // per run against that one long-lived container (a real user
+            // never does this) and legitimately trip it. Test-loop volume,
+            // not an attack to defend against.
+            $limit = app()->environment('local') ? 1000 : 5;
+
+            return Limit::perMinute($limit)->by($throttleKey);
         });
 
         RateLimiter::for('passkeys', function (Request $request) {

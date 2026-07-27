@@ -7,6 +7,14 @@ import { StatusBadge } from '@/components/status-badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
 import {
     Table,
     TableBody,
@@ -15,6 +23,7 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
+import { Textarea } from '@/components/ui/textarea';
 import {
     Tooltip,
     TooltipContent,
@@ -30,6 +39,7 @@ import {
 import { dashboard } from '@/routes';
 import cycles from '@/routes/cycles';
 import cycleAttachments from '@/routes/cycles/attachments';
+import cycleControlTests from '@/routes/cycles/control-tests';
 import cycleItems from '@/routes/cycles/items';
 import type {
     ControlTest,
@@ -159,6 +169,130 @@ function AddItemForm({ cycle }: { cycle: Cycle }) {
             >
                 Add item
             </Button>
+        </form>
+    );
+}
+
+const CONTROL_TEST_TYPES = Object.keys(controlTestTypeLabel);
+
+function defaultPerformedAt(): string {
+    const now = new Date();
+    now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+
+    return now.toISOString().slice(0, 16);
+}
+
+function RecordControlTestForm({ cycle }: { cycle: Cycle }) {
+    const form = useForm({
+        type: 'vacuum',
+        result: 'pass',
+        performed_at: defaultPerformedAt(),
+        notes: '',
+    });
+
+    function submit(e: FormEvent) {
+        e.preventDefault();
+        form.post(cycleControlTests.store(cycle.id).url, {
+            preserveScroll: true,
+            onSuccess: () =>
+                form.setData({
+                    type: 'vacuum',
+                    result: 'pass',
+                    performed_at: defaultPerformedAt(),
+                    notes: '',
+                }),
+        });
+    }
+
+    return (
+        <form onSubmit={submit} className="space-y-2 border-t pt-3">
+            <div className="flex flex-wrap items-end gap-2">
+                <div>
+                    <Label
+                        htmlFor="control-test-type"
+                        className="mb-1 block text-xs text-muted-foreground"
+                    >
+                        Type
+                    </Label>
+                    <Select
+                        value={form.data.type}
+                        onValueChange={(value) => form.setData('type', value)}
+                    >
+                        <SelectTrigger
+                            id="control-test-type"
+                            size="sm"
+                            className="h-8 w-36"
+                        >
+                            <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                            {CONTROL_TEST_TYPES.map((type) => (
+                                <SelectItem key={type} value={type}>
+                                    {controlTestTypeLabel[type]}
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                </div>
+                <div>
+                    <Label
+                        htmlFor="control-test-result"
+                        className="mb-1 block text-xs text-muted-foreground"
+                    >
+                        Result
+                    </Label>
+                    <Select
+                        value={form.data.result}
+                        onValueChange={(value) =>
+                            form.setData('result', value)
+                        }
+                    >
+                        <SelectTrigger
+                            id="control-test-result"
+                            size="sm"
+                            className="h-8 w-28"
+                        >
+                            <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="pass">Pass</SelectItem>
+                            <SelectItem value="fail">Fail</SelectItem>
+                        </SelectContent>
+                    </Select>
+                </div>
+                <div>
+                    <Label
+                        className="mb-1 block text-xs text-muted-foreground"
+                        htmlFor="control-test-performed-at"
+                    >
+                        Performed at
+                    </Label>
+                    <Input
+                        id="control-test-performed-at"
+                        type="datetime-local"
+                        className="h-8"
+                        value={form.data.performed_at}
+                        onChange={(e) =>
+                            form.setData('performed_at', e.target.value)
+                        }
+                    />
+                </div>
+                <Button type="submit" size="sm" disabled={form.processing}>
+                    Record test
+                </Button>
+            </div>
+            <Textarea
+                value={form.data.notes}
+                onChange={(e) => form.setData('notes', e.target.value)}
+                placeholder="Notes (optional)"
+                aria-label="Control test notes"
+                className="min-h-16"
+            />
+            {form.errors.performed_at && (
+                <p className="text-sm text-destructive">
+                    {form.errors.performed_at}
+                </p>
+            )}
         </form>
     );
 }
@@ -429,7 +563,7 @@ export default function CycleShow({
                                 Control tests
                             </CardTitle>
                         </CardHeader>
-                        <CardContent>
+                        <CardContent className="space-y-4">
                             {controlTests.length === 0 ? (
                                 <p className="text-sm text-muted-foreground">
                                     No control tests recorded for this cycle
@@ -474,6 +608,11 @@ export default function CycleShow({
                                     </TableBody>
                                 </Table>
                             )}
+                            {canManage &&
+                                (cycle.status === 'completed' ||
+                                    cycle.status === 'awaiting_release') && (
+                                    <RecordControlTestForm cycle={cycle} />
+                                )}
                         </CardContent>
                     </Card>
                 </div>

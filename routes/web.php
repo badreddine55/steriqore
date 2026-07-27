@@ -1,6 +1,8 @@
 <?php
 
+use App\Http\Controllers\Web\Sterilization\ControlTestController;
 use App\Http\Controllers\Web\Sterilization\CycleAttachmentController;
+use App\Http\Controllers\Web\Sterilization\CycleControlTestController;
 use App\Http\Controllers\Web\Sterilization\CycleController;
 use App\Http\Controllers\Web\Sterilization\CycleItemController;
 use App\Http\Controllers\Web\Tenancy\SwitchSiteController;
@@ -28,7 +30,11 @@ Route::middleware(['auth', 'verified', 'tenant.web'])->group(function () {
 
         Route::post('{cycle}/attachments', [CycleAttachmentController::class, 'store'])->name('attachments.store');
         Route::delete('{cycle}/attachments/{media}', [CycleAttachmentController::class, 'destroy'])->name('attachments.destroy');
+
+        Route::post('{cycle}/control-tests', [CycleControlTestController::class, 'store'])->name('control-tests.store');
     });
+
+    Route::get('control-tests', [ControlTestController::class, 'index'])->name('control-tests.index');
 });
 
 require __DIR__.'/settings.php';

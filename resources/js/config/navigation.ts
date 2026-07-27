@@ -2,6 +2,7 @@ import {
     Bell,
     Boxes,
     Building2,
+    ClipboardCheck,
     ClipboardList,
     FlaskConical,
     KeyRound,
@@ -20,6 +21,7 @@ import {
 } from 'lucide-react';
 import { dashboard } from '@/routes';
 import { edit as editAppearance } from '@/routes/appearance';
+import controlTests from '@/routes/control-tests';
 import cycles from '@/routes/cycles';
 import { edit as editProfile } from '@/routes/profile';
 import { edit as editSecurity } from '@/routes/security';
@@ -48,6 +50,12 @@ export const navGroups: NavGroup[] = [
                 title: 'Cycles',
                 href: cycles.index(),
                 icon: FlaskConical,
+                permission: 'cycles.view',
+            },
+            {
+                title: 'Control tests',
+                href: controlTests.index(),
+                icon: ClipboardCheck,
                 permission: 'cycles.view',
             },
             {
