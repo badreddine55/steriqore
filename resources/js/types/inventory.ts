@@ -18,3 +18,46 @@ export type BatchFilters = {
     status?: string;
     expiry?: string;
 };
+
+/** Mirrors App\Domain\Inventory\Data\StockLevelEntryData exactly. */
+export type StockLevelEntry = {
+    id: string;
+    batch_id: string;
+    batch_number: string;
+    product_id: string;
+    product_name: string;
+    location_id: string;
+    location_name: string;
+    quantity: number;
+};
+
+export type StockLevelFilters = {
+    product_id?: string;
+    location_id?: string;
+    in_stock_only?: string;
+};
+
+/** Mirrors App\Domain\Inventory\Data\StockMovementLogEntryData exactly. */
+export type StockMovementLogEntry = {
+    id: string;
+    type: string;
+    batch_id: string;
+    batch_number: string;
+    product_id: string;
+    product_name: string;
+    location_id: string;
+    location_name: string;
+    qty: number;
+    group_id: string | null;
+    reason: string | null;
+    actor_name: string | null;
+    occurred_at: string;
+};
+
+export type StockMovementFilters = {
+    type?: string;
+    product_id?: string;
+    location_id?: string;
+    from?: string;
+    to?: string;
+};

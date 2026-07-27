@@ -146,3 +146,12 @@ export const controlTestTypeLabel: Record<string, string> = {
     helix: 'Helix',
     biological: 'Biological',
 };
+
+/** Stock movement type — a category, not a status; no tone/badge, just a label. */
+export const stockMovementTypeLabel: Record<string, string> = {
+    receipt: 'Receipt',
+    issue: 'Issue',
+    transfer: 'Transfer',
+    adjustment: 'Adjustment',
+    count: 'Count',
+};

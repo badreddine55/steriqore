@@ -6,6 +6,8 @@ use App\Http\Controllers\Web\Equipment\DeviceController;
 use App\Http\Controllers\Web\Equipment\DeviceProgramController;
 use App\Http\Controllers\Web\Equipment\MaintenanceRecordController;
 use App\Http\Controllers\Web\Inventory\BatchController;
+use App\Http\Controllers\Web\Inventory\StockLevelController;
+use App\Http\Controllers\Web\Inventory\StockMovementController as WebStockMovementController;
 use App\Http\Controllers\Web\Labeling\CycleLabelController;
 use App\Http\Controllers\Web\Labeling\LabelController;
 use App\Http\Controllers\Web\Purchasing\GoodsReceiptController;
@@ -76,6 +78,11 @@ Route::middleware(['auth', 'verified', 'tenant.web'])->group(function () {
     Route::post('product-categories', [ProductCategoryController::class, 'store'])->name('product-categories.store');
 
     Route::get('batches', [BatchController::class, 'index'])->name('batches.index');
+
+    Route::prefix('stock')->name('stock.')->group(function () {
+        Route::get('/', [StockLevelController::class, 'index'])->name('index');
+        Route::get('movements', [WebStockMovementController::class, 'index'])->name('movements');
+    });
 
     Route::prefix('suppliers')->name('suppliers.')->group(function () {
         Route::get('/', [SupplierController::class, 'index'])->name('index');

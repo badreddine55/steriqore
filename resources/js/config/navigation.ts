@@ -31,6 +31,7 @@ import productRoutes from '@/routes/products';
 import { edit as editProfile } from '@/routes/profile';
 import purchaseOrderRoutes from '@/routes/purchase-orders';
 import { edit as editSecurity } from '@/routes/security';
+import stockRoutes from '@/routes/stock';
 import supplierRoutes from '@/routes/suppliers';
 import type { NavGroup, NavItem } from '@/types';
 
@@ -108,10 +109,9 @@ export const navGroups: NavGroup[] = [
             },
             {
                 title: 'Stock',
-                href: '/stock',
+                href: stockRoutes.index(),
                 icon: PackageSearch,
                 permission: 'inventory.view',
-                comingSoon: true,
             },
             {
                 title: 'Alerts',
