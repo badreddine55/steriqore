@@ -5,7 +5,9 @@ namespace App\Http\Controllers\Web\Equipment;
 use App\Domain\Equipment\Actions\CreateDeviceAction;
 use App\Domain\Equipment\Actions\UpdateDeviceAction;
 use App\Domain\Equipment\Data\DeviceData;
+use App\Domain\Equipment\Data\DeviceProgramData;
 use App\Domain\Equipment\Models\Device;
+use App\Domain\Equipment\Models\DeviceProgram;
 use App\Domain\Tenancy\Models\Site;
 use App\Domain\Tenancy\Models\Tenant;
 use App\Http\Controllers\Controller;
@@ -74,6 +76,10 @@ class DeviceController extends Controller
         return Inertia::render('equipment/devices/show', [
             'device' => DeviceData::fromModel($device),
             'site' => new OptionData($device->site->id, $device->site->name),
+            'programs' => DeviceProgramData::collect(
+                $device->programs()->orderBy('name')->get()
+                    ->map(fn (DeviceProgram $program) => DeviceProgramData::fromModel($program))
+            ),
             'canManage' => $request->user()->can('update', $device),
         ]);
     }

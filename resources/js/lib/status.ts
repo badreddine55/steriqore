@@ -93,6 +93,12 @@ export const deviceStatus: Record<string, StatusMeta> = {
     decommissioned: meta('draft', 'Decommissioned'),
 };
 
+/** Device program: is_active boolean */
+export const programStatus: Record<'active' | 'inactive', StatusMeta> = {
+    active: meta('active', 'Active'),
+    inactive: meta('draft', 'Inactive'),
+};
+
 /** Device kind — a category, not a status; no tone/badge, just a label. */
 export const deviceKindLabel: Record<string, string> = {
     autoclave: 'Autoclave',

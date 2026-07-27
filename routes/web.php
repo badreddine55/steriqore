@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Web\Equipment\DeviceController;
+use App\Http\Controllers\Web\Equipment\DeviceProgramController;
 use App\Http\Controllers\Web\Labeling\CycleLabelController;
 use App\Http\Controllers\Web\Labeling\LabelController;
 use App\Http\Controllers\Web\Sterilization\ControlTestController;
@@ -48,6 +49,10 @@ Route::middleware(['auth', 'verified', 'tenant.web'])->group(function () {
         Route::post('/', [DeviceController::class, 'store'])->name('store');
         Route::get('{device}', [DeviceController::class, 'show'])->name('show');
         Route::patch('{device}', [DeviceController::class, 'update'])->name('update');
+
+        Route::post('{device}/programs', [DeviceProgramController::class, 'store'])->name('programs.store');
+        Route::patch('{device}/programs/{program}', [DeviceProgramController::class, 'update'])->name('programs.update');
+        Route::delete('{device}/programs/{program}', [DeviceProgramController::class, 'destroy'])->name('programs.destroy');
     });
 
     Route::prefix('labels')->name('labels.')->group(function () {

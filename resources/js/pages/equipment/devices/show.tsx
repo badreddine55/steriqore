@@ -1,10 +1,11 @@
-import { Head, Link, useForm } from '@inertiajs/react';
-import { ArrowLeft } from 'lucide-react';
+import { Head, Link, router, useForm } from '@inertiajs/react';
+import { ArrowLeft, Pencil, Trash2 } from 'lucide-react';
+import type { FormEvent } from 'react';
 import { useState } from 'react';
 import { Mono } from '@/components/mono';
 import { StatusBadge } from '@/components/status-badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
     Dialog,
     DialogContent,
@@ -23,11 +24,20 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from '@/components/ui/table';
 import { Textarea } from '@/components/ui/textarea';
-import { deviceKindLabel, deviceStatus } from '@/lib/status';
+import { deviceKindLabel, deviceStatus, programStatus } from '@/lib/status';
 import { dashboard } from '@/routes';
 import devices from '@/routes/devices';
-import type { Device, Option } from '@/types';
+import deviceProgramRoutes from '@/routes/devices/programs';
+import type { Device, DeviceProgram, Option } from '@/types';
 
 const STATUS_OPTIONS = Object.keys(deviceStatus);
 const KIND_OPTIONS = Object.keys(deviceKindLabel);
@@ -251,13 +261,231 @@ function EditDeviceDialog({ device }: { device: Device }) {
     );
 }
 
+function EditProgramDialog({
+    device,
+    program,
+}: {
+    device: Device;
+    program: DeviceProgram;
+}) {
+    const [open, setOpen] = useState(false);
+    const form = useForm({
+        name: program.name,
+        target_temperature_celsius: program.target_temperature_celsius,
+        plateau_minutes: program.plateau_minutes,
+        is_active: program.is_active,
+    });
+
+    function submit() {
+        form.patch(
+            deviceProgramRoutes.update({ device: device.id, program: program.id })
+                .url,
+            { onSuccess: () => setOpen(false) },
+        );
+    }
+
+    return (
+        <Dialog
+            open={open}
+            onOpenChange={(next) => {
+                setOpen(next);
+
+                if (!next) {
+                    form.clearErrors();
+                }
+            }}
+        >
+            <DialogTrigger asChild>
+                <Button size="icon" variant="ghost" aria-label={`Edit ${program.name}`}>
+                    <Pencil className="size-4 text-muted-foreground" />
+                </Button>
+            </DialogTrigger>
+            <DialogContent>
+                <DialogHeader>
+                    <DialogTitle>Edit program</DialogTitle>
+                    <DialogDescription>
+                        Changing this only affects future cycles — past
+                        cycles keep the program details they actually ran
+                        with.
+                    </DialogDescription>
+                </DialogHeader>
+
+                <div className="grid gap-4">
+                    <div className="grid gap-2">
+                        <Label htmlFor="edit-program-name">Name</Label>
+                        <Input
+                            id="edit-program-name"
+                            value={form.data.name}
+                            onChange={(e) =>
+                                form.setData('name', e.target.value)
+                            }
+                        />
+                        {form.errors.name && (
+                            <p className="text-sm text-destructive">
+                                {form.errors.name}
+                            </p>
+                        )}
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="grid gap-2">
+                            <Label htmlFor="edit-program-temp">
+                                Target temperature (°C)
+                            </Label>
+                            <Input
+                                id="edit-program-temp"
+                                type="number"
+                                value={form.data.target_temperature_celsius}
+                                onChange={(e) =>
+                                    form.setData(
+                                        'target_temperature_celsius',
+                                        Number(e.target.value),
+                                    )
+                                }
+                            />
+                        </div>
+                        <div className="grid gap-2">
+                            <Label htmlFor="edit-program-plateau">
+                                Plateau (minutes)
+                            </Label>
+                            <Input
+                                id="edit-program-plateau"
+                                type="number"
+                                value={form.data.plateau_minutes}
+                                onChange={(e) =>
+                                    form.setData(
+                                        'plateau_minutes',
+                                        Number(e.target.value),
+                                    )
+                                }
+                            />
+                        </div>
+                    </div>
+                    <div className="grid gap-2">
+                        <Label htmlFor="edit-program-active">Status</Label>
+                        <Select
+                            value={form.data.is_active ? 'active' : 'inactive'}
+                            onValueChange={(value) =>
+                                form.setData('is_active', value === 'active')
+                            }
+                        >
+                            <SelectTrigger
+                                id="edit-program-active"
+                                className="w-full"
+                            >
+                                <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="active">Active</SelectItem>
+                                <SelectItem value="inactive">
+                                    Inactive
+                                </SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
+                </div>
+
+                <DialogFooter>
+                    <Button variant="outline" onClick={() => setOpen(false)}>
+                        Cancel
+                    </Button>
+                    <Button onClick={submit} disabled={form.processing}>
+                        Save changes
+                    </Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
+    );
+}
+
+function AddProgramForm({ device }: { device: Device }) {
+    const form = useForm({
+        name: '',
+        target_temperature_celsius: 134,
+        plateau_minutes: 18,
+    });
+
+    function submit(e: FormEvent) {
+        e.preventDefault();
+        form.post(deviceProgramRoutes.store(device.id).url, {
+            preserveScroll: true,
+            onSuccess: () => form.reset(),
+        });
+    }
+
+    return (
+        <form onSubmit={submit} className="flex flex-wrap items-end gap-2">
+            <div>
+                <Label
+                    htmlFor="new-program-name"
+                    className="mb-1 block text-xs text-muted-foreground"
+                >
+                    Name
+                </Label>
+                <Input
+                    id="new-program-name"
+                    value={form.data.name}
+                    onChange={(e) => form.setData('name', e.target.value)}
+                    placeholder="e.g. 134°C Standard"
+                    className="h-8 w-48"
+                />
+            </div>
+            <div>
+                <Label
+                    htmlFor="new-program-temp"
+                    className="mb-1 block text-xs text-muted-foreground"
+                >
+                    Target temp (°C)
+                </Label>
+                <Input
+                    id="new-program-temp"
+                    type="number"
+                    value={form.data.target_temperature_celsius}
+                    onChange={(e) =>
+                        form.setData(
+                            'target_temperature_celsius',
+                            Number(e.target.value),
+                        )
+                    }
+                    className="h-8 w-28"
+                />
+            </div>
+            <div>
+                <Label
+                    htmlFor="new-program-plateau"
+                    className="mb-1 block text-xs text-muted-foreground"
+                >
+                    Plateau (min)
+                </Label>
+                <Input
+                    id="new-program-plateau"
+                    type="number"
+                    value={form.data.plateau_minutes}
+                    onChange={(e) =>
+                        form.setData('plateau_minutes', Number(e.target.value))
+                    }
+                    className="h-8 w-24"
+                />
+            </div>
+            <Button
+                type="submit"
+                size="sm"
+                disabled={form.processing || !form.data.name.trim()}
+            >
+                Add program
+            </Button>
+        </form>
+    );
+}
+
 export default function DeviceShow({
     device,
     site,
+    programs,
     canManage,
 }: {
     device: Device;
     site: Option;
+    programs: DeviceProgram[];
     canManage: boolean;
 }) {
     const status = deviceStatus[device.status] ?? deviceStatus.active;
@@ -353,6 +581,99 @@ export default function DeviceShow({
                                 </div>
                             )}
                         </dl>
+                    </CardContent>
+                </Card>
+
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="text-sm">Programs</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                        {programs.length === 0 ? (
+                            <p className="text-sm text-muted-foreground">
+                                No programs configured for this device yet.
+                            </p>
+                        ) : (
+                            <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead>Name</TableHead>
+                                        <TableHead>Target temp</TableHead>
+                                        <TableHead>Plateau</TableHead>
+                                        <TableHead className="w-24">
+                                            Status
+                                        </TableHead>
+                                        {canManage && (
+                                            <TableHead className="w-20" />
+                                        )}
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {programs.map((program) => (
+                                        <TableRow key={program.id}>
+                                            <TableCell>
+                                                {program.name}
+                                            </TableCell>
+                                            <TableCell>
+                                                <Mono>
+                                                    {
+                                                        program.target_temperature_celsius
+                                                    }
+                                                    °C
+                                                </Mono>
+                                            </TableCell>
+                                            <TableCell>
+                                                <Mono>
+                                                    {program.plateau_minutes}{' '}
+                                                    min
+                                                </Mono>
+                                            </TableCell>
+                                            <TableCell>
+                                                <StatusBadge
+                                                    status={
+                                                        program.is_active
+                                                            ? programStatus.active
+                                                            : programStatus.inactive
+                                                    }
+                                                />
+                                            </TableCell>
+                                            {canManage && (
+                                                <TableCell>
+                                                    <div className="flex items-center gap-1">
+                                                        <EditProgramDialog
+                                                            device={device}
+                                                            program={program}
+                                                        />
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="icon"
+                                                            aria-label={`Remove ${program.name}`}
+                                                            onClick={() =>
+                                                                router.delete(
+                                                                    deviceProgramRoutes.destroy(
+                                                                        {
+                                                                            device: device.id,
+                                                                            program:
+                                                                                program.id,
+                                                                        },
+                                                                    ).url,
+                                                                    {
+                                                                        preserveScroll: true,
+                                                                    },
+                                                                )
+                                                            }
+                                                        >
+                                                            <Trash2 className="size-4 text-muted-foreground" />
+                                                        </Button>
+                                                    </div>
+                                                </TableCell>
+                                            )}
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                        )}
+                        {canManage && <AddProgramForm device={device} />}
                     </CardContent>
                 </Card>
             </div>
