@@ -1,5 +1,5 @@
 import { Head, Link, router, useForm } from '@inertiajs/react';
-import { ArrowLeft, Pencil, Trash2 } from 'lucide-react';
+import { ArrowLeft, Clock, Pencil, Trash2, XCircle } from 'lucide-react';
 import type { FormEvent } from 'react';
 import { useState } from 'react';
 import { Mono } from '@/components/mono';
@@ -33,11 +33,18 @@ import {
     TableRow,
 } from '@/components/ui/table';
 import { Textarea } from '@/components/ui/textarea';
-import { deviceKindLabel, deviceStatus, programStatus } from '@/lib/status';
+import { formatDateTime } from '@/lib/format';
+import {
+    deviceKindLabel,
+    deviceStatus,
+    maintenanceKindLabel,
+    programStatus,
+} from '@/lib/status';
 import { dashboard } from '@/routes';
 import devices from '@/routes/devices';
+import deviceMaintenanceRecords from '@/routes/devices/maintenance-records';
 import deviceProgramRoutes from '@/routes/devices/programs';
-import type { Device, DeviceProgram, Option } from '@/types';
+import type { Device, DeviceProgram, MaintenanceRecord, Option } from '@/types';
 
 const STATUS_OPTIONS = Object.keys(deviceStatus);
 const KIND_OPTIONS = Object.keys(deviceKindLabel);
@@ -477,18 +484,174 @@ function AddProgramForm({ device }: { device: Device }) {
     );
 }
 
+const MAINTENANCE_KINDS = Object.keys(maintenanceKindLabel);
+
+function defaultDateTimeLocal(): string {
+    const now = new Date();
+    now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+
+    return now.toISOString().slice(0, 16);
+}
+
+/**
+ * The most recent record that actually set a next-due date — not
+ * necessarily the single latest record, since e.g. a corrective repair
+ * visit might not reset the scheduled date a preventive visit set earlier.
+ */
+function nextDueStatus(records: MaintenanceRecord[]) {
+    const nextDueAt = records.find((r) => r.next_due_at)?.next_due_at;
+
+    if (!nextDueAt) {
+        return null;
+    }
+
+    const isOverdue = new Date(nextDueAt) < new Date();
+    const date = nextDueAt.slice(0, 10);
+
+    return isOverdue
+        ? { tone: 'danger' as const, label: `Overdue since ${date}`, icon: XCircle }
+        : { tone: 'pending' as const, label: `Next due ${date}`, icon: Clock };
+}
+
+function RecordMaintenanceForm({ device }: { device: Device }) {
+    const form = useForm({
+        kind: 'preventive',
+        technician: '',
+        performed_at: defaultDateTimeLocal(),
+        next_due_at: '',
+        description: '',
+    });
+
+    function submit(e: FormEvent) {
+        e.preventDefault();
+        form.post(deviceMaintenanceRecords.store(device.id).url, {
+            preserveScroll: true,
+            onSuccess: () =>
+                form.setData({
+                    kind: 'preventive',
+                    technician: '',
+                    performed_at: defaultDateTimeLocal(),
+                    next_due_at: '',
+                    description: '',
+                }),
+        });
+    }
+
+    return (
+        <form onSubmit={submit} className="space-y-2 border-t pt-3">
+            <div className="flex flex-wrap items-end gap-2">
+                <div>
+                    <Label
+                        htmlFor="maintenance-kind"
+                        className="mb-1 block text-xs text-muted-foreground"
+                    >
+                        Kind
+                    </Label>
+                    <Select
+                        value={form.data.kind}
+                        onValueChange={(value) => form.setData('kind', value)}
+                    >
+                        <SelectTrigger id="maintenance-kind" className="h-8 w-36">
+                            <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                            {MAINTENANCE_KINDS.map((kind) => (
+                                <SelectItem key={kind} value={kind}>
+                                    {maintenanceKindLabel[kind]}
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                </div>
+                <div>
+                    <Label
+                        htmlFor="maintenance-technician"
+                        className="mb-1 block text-xs text-muted-foreground"
+                    >
+                        Technician
+                    </Label>
+                    <Input
+                        id="maintenance-technician"
+                        value={form.data.technician}
+                        onChange={(e) =>
+                            form.setData('technician', e.target.value)
+                        }
+                        className="h-8 w-40"
+                    />
+                </div>
+                <div>
+                    <Label
+                        htmlFor="maintenance-performed-at"
+                        className="mb-1 block text-xs text-muted-foreground"
+                    >
+                        Performed at
+                    </Label>
+                    <Input
+                        id="maintenance-performed-at"
+                        type="datetime-local"
+                        value={form.data.performed_at}
+                        onChange={(e) =>
+                            form.setData('performed_at', e.target.value)
+                        }
+                        className="h-8"
+                    />
+                </div>
+                <div>
+                    <Label
+                        htmlFor="maintenance-next-due"
+                        className="mb-1 block text-xs text-muted-foreground"
+                    >
+                        Next due (optional)
+                    </Label>
+                    <Input
+                        id="maintenance-next-due"
+                        type="datetime-local"
+                        value={form.data.next_due_at}
+                        onChange={(e) =>
+                            form.setData('next_due_at', e.target.value)
+                        }
+                        className="h-8"
+                    />
+                </div>
+                <Button
+                    type="submit"
+                    size="sm"
+                    disabled={form.processing}
+                >
+                    Record maintenance
+                </Button>
+            </div>
+            <Textarea
+                value={form.data.description}
+                onChange={(e) => form.setData('description', e.target.value)}
+                placeholder="Notes (optional)"
+                aria-label="Maintenance notes"
+                className="min-h-16"
+            />
+            {form.errors.next_due_at && (
+                <p className="text-sm text-destructive">
+                    {form.errors.next_due_at}
+                </p>
+            )}
+        </form>
+    );
+}
+
 export default function DeviceShow({
     device,
     site,
     programs,
+    maintenanceRecords,
     canManage,
 }: {
     device: Device;
     site: Option;
     programs: DeviceProgram[];
+    maintenanceRecords: MaintenanceRecord[];
     canManage: boolean;
 }) {
     const status = deviceStatus[device.status] ?? deviceStatus.active;
+    const dueStatus = nextDueStatus(maintenanceRecords);
 
     return (
         <>
@@ -509,6 +672,7 @@ export default function DeviceShow({
                                 {device.name}
                             </h1>
                             <StatusBadge status={status} />
+                            {dueStatus && <StatusBadge status={dueStatus} />}
                         </div>
                         {canManage && <EditDeviceDialog device={device} />}
                     </div>
@@ -674,6 +838,68 @@ export default function DeviceShow({
                             </Table>
                         )}
                         {canManage && <AddProgramForm device={device} />}
+                    </CardContent>
+                </Card>
+
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="text-sm">Maintenance</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                        {maintenanceRecords.length === 0 ? (
+                            <p className="text-sm text-muted-foreground">
+                                No maintenance has been recorded for this
+                                device yet.
+                            </p>
+                        ) : (
+                            <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead>Kind</TableHead>
+                                        <TableHead>Technician</TableHead>
+                                        <TableHead>Performed</TableHead>
+                                        <TableHead>Next due</TableHead>
+                                        <TableHead>Notes</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {maintenanceRecords.map((record) => (
+                                        <TableRow key={record.id}>
+                                            <TableCell>
+                                                {maintenanceKindLabel[
+                                                    record.kind
+                                                ] ?? record.kind}
+                                            </TableCell>
+                                            <TableCell>
+                                                {record.technician ?? '—'}
+                                            </TableCell>
+                                            <TableCell>
+                                                <Mono className="text-xs">
+                                                    {formatDateTime(
+                                                        record.performed_at,
+                                                    )}
+                                                </Mono>
+                                            </TableCell>
+                                            <TableCell>
+                                                <Mono className="text-xs">
+                                                    {record.next_due_at
+                                                        ? formatDateTime(
+                                                              record.next_due_at,
+                                                          )
+                                                        : '—'}
+                                                </Mono>
+                                            </TableCell>
+                                            <TableCell className="text-muted-foreground">
+                                                {record.description ?? '—'}
+                                            </TableCell>
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                        )}
+                        {canManage && (
+                            <RecordMaintenanceForm device={device} />
+                        )}
                     </CardContent>
                 </Card>
             </div>

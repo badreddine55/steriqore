@@ -47,8 +47,11 @@ test.describe('Devices (UI-08)', () => {
         // still shows "Maintenance" as its selected value while animating
         // out, which would otherwise collide with the status badge below.
         await expect(dialog).not.toBeVisible();
+        // .first() — the status badge in the page header (DOM order: first)
+        // vs. the "Maintenance" section title further down the page (UI-10),
+        // both matching a bare exact-text query.
         await expect(
-            page.getByText('Maintenance', { exact: true }),
+            page.getByText('Maintenance', { exact: true }).first(),
         ).toBeVisible();
     });
 });

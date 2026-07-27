@@ -29,3 +29,15 @@ export type DeviceFilters = {
     status?: string;
     kind?: string;
 };
+
+/** Mirrors App\Domain\Equipment\Data\MaintenanceRecordData exactly. */
+export type MaintenanceRecord = {
+    id: string;
+    device_id: string;
+    recorded_by_user_id: string | null;
+    kind: string;
+    technician: string | null;
+    performed_at: string;
+    next_due_at: string | null;
+    description: string | null;
+};

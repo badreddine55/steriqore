@@ -132,6 +132,13 @@ export const alertSeverity: Record<string, StatusMeta> = {
     critical: meta('danger', 'Critical'),
 };
 
+/** Maintenance kind — a category, not a status; no tone/badge, just a label. */
+export const maintenanceKindLabel: Record<string, string> = {
+    preventive: 'Preventive',
+    corrective: 'Corrective',
+    calibration: 'Calibration',
+};
+
 /** Control test type — a category, not a status; no tone/badge, just a label. */
 export const controlTestTypeLabel: Record<string, string> = {
     vacuum: 'Vacuum',

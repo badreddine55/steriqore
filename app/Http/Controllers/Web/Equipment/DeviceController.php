@@ -6,8 +6,10 @@ use App\Domain\Equipment\Actions\CreateDeviceAction;
 use App\Domain\Equipment\Actions\UpdateDeviceAction;
 use App\Domain\Equipment\Data\DeviceData;
 use App\Domain\Equipment\Data\DeviceProgramData;
+use App\Domain\Equipment\Data\MaintenanceRecordData;
 use App\Domain\Equipment\Models\Device;
 use App\Domain\Equipment\Models\DeviceProgram;
+use App\Domain\Equipment\Models\MaintenanceRecord;
 use App\Domain\Tenancy\Models\Site;
 use App\Domain\Tenancy\Models\Tenant;
 use App\Http\Controllers\Controller;
@@ -79,6 +81,10 @@ class DeviceController extends Controller
             'programs' => DeviceProgramData::collect(
                 $device->programs()->orderBy('name')->get()
                     ->map(fn (DeviceProgram $program) => DeviceProgramData::fromModel($program))
+            ),
+            'maintenanceRecords' => MaintenanceRecordData::collect(
+                $device->maintenanceRecords()->orderByDesc('performed_at')->get()
+                    ->map(fn (MaintenanceRecord $record) => MaintenanceRecordData::fromModel($record))
             ),
             'canManage' => $request->user()->can('update', $device),
         ]);
