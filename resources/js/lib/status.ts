@@ -132,6 +132,20 @@ export const alertSeverity: Record<string, StatusMeta> = {
     critical: meta('danger', 'Critical'),
 };
 
+/** Alert state: open -> resolved (auto-reopened by the next detection if still true) */
+export const alertState: Record<string, StatusMeta> = {
+    open: meta('pending', 'Open'),
+    resolved: meta('success', 'Resolved'),
+};
+
+/** Alert type — a category, not a status; no tone/badge, just a label. */
+export const alertTypeLabel: Record<string, string> = {
+    low_stock: 'Low stock',
+    near_expiry: 'Near expiry',
+    expired: 'Expired',
+    failed_cycle: 'Failed cycle',
+};
+
 /** Maintenance kind — a category, not a status; no tone/badge, just a label. */
 export const maintenanceKindLabel: Record<string, string> = {
     preventive: 'Preventive',

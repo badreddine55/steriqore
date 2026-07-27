@@ -61,3 +61,23 @@ export type StockMovementFilters = {
     from?: string;
     to?: string;
 };
+
+/** Mirrors App\Domain\Inventory\Data\AlertData exactly. */
+export type Alert = {
+    id: string;
+    type: string;
+    severity: string;
+    state: string;
+    subject_type: string;
+    subject_id: string;
+    message: string;
+    resolved_at: string | null;
+    resolved_by_name: string | null;
+    created_at: string;
+};
+
+export type AlertFilters = {
+    type?: string;
+    severity?: string;
+    state?: string;
+};

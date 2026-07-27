@@ -5,6 +5,7 @@ use App\Http\Controllers\Web\Catalog\ProductController;
 use App\Http\Controllers\Web\Equipment\DeviceController;
 use App\Http\Controllers\Web\Equipment\DeviceProgramController;
 use App\Http\Controllers\Web\Equipment\MaintenanceRecordController;
+use App\Http\Controllers\Web\Inventory\AlertController;
 use App\Http\Controllers\Web\Inventory\BatchController;
 use App\Http\Controllers\Web\Inventory\StockLevelController;
 use App\Http\Controllers\Web\Inventory\StockMovementController as WebStockMovementController;
@@ -82,6 +83,11 @@ Route::middleware(['auth', 'verified', 'tenant.web'])->group(function () {
     Route::prefix('stock')->name('stock.')->group(function () {
         Route::get('/', [StockLevelController::class, 'index'])->name('index');
         Route::get('movements', [WebStockMovementController::class, 'index'])->name('movements');
+    });
+
+    Route::prefix('alerts')->name('alerts.')->group(function () {
+        Route::get('/', [AlertController::class, 'index'])->name('index');
+        Route::post('{alert}/resolve', [AlertController::class, 'resolve'])->name('resolve');
     });
 
     Route::prefix('suppliers')->name('suppliers.')->group(function () {

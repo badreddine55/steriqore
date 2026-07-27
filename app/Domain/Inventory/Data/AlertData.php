@@ -17,6 +17,8 @@ class AlertData extends Data
         public readonly string $subject_id,
         public readonly string $message,
         public readonly ?CarbonInterface $resolved_at,
+        public readonly ?string $resolved_by_name,
+        public readonly CarbonInterface $created_at,
     ) {}
 
     public static function fromModel(Alert $alert): self
@@ -30,6 +32,8 @@ class AlertData extends Data
             $alert->subject_id,
             $alert->message,
             $alert->resolved_at,
+            $alert->resolvedBy?->name,
+            $alert->created_at,
         );
     }
 }

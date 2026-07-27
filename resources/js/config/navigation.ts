@@ -21,6 +21,7 @@ import {
     Wrench,
 } from 'lucide-react';
 import { dashboard } from '@/routes';
+import alertRoutes from '@/routes/alerts';
 import { edit as editAppearance } from '@/routes/appearance';
 import batchRoutes from '@/routes/batches';
 import controlTests from '@/routes/control-tests';
@@ -115,10 +116,9 @@ export const navGroups: NavGroup[] = [
             },
             {
                 title: 'Alerts',
-                href: '/alerts',
+                href: alertRoutes.index(),
                 icon: Bell,
                 permission: 'alerts.view',
-                comingSoon: true,
             },
         ],
     },
