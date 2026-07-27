@@ -39,3 +39,21 @@ export type PurchaseOrder = {
     expected_at: string | null;
     lines: PurchaseOrderLine[];
 };
+
+/** Mirrors App\Domain\Purchasing\Data\GoodsReceiptLineData exactly. */
+export type GoodsReceiptLine = {
+    id: string;
+    purchase_order_line_id: string;
+    product_id: string;
+    batch_id: string;
+    qty: number;
+    discrepancy_reason: string | null;
+};
+
+/** Mirrors App\Domain\Purchasing\Data\GoodsReceiptData exactly. */
+export type GoodsReceipt = {
+    id: string;
+    purchase_order_id: string;
+    received_at: string;
+    lines: GoodsReceiptLine[];
+};

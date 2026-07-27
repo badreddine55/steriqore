@@ -7,6 +7,7 @@ use App\Http\Controllers\Web\Equipment\DeviceProgramController;
 use App\Http\Controllers\Web\Equipment\MaintenanceRecordController;
 use App\Http\Controllers\Web\Labeling\CycleLabelController;
 use App\Http\Controllers\Web\Labeling\LabelController;
+use App\Http\Controllers\Web\Purchasing\GoodsReceiptController;
 use App\Http\Controllers\Web\Purchasing\PurchaseOrderController;
 use App\Http\Controllers\Web\Purchasing\SupplierController;
 use App\Http\Controllers\Web\Purchasing\SupplierProductController;
@@ -90,6 +91,8 @@ Route::middleware(['auth', 'verified', 'tenant.web'])->group(function () {
         Route::get('{purchaseOrder}', [PurchaseOrderController::class, 'show'])->name('show');
         Route::post('{purchaseOrder}/order', [PurchaseOrderController::class, 'order'])->name('order');
         Route::post('{purchaseOrder}/cancel', [PurchaseOrderController::class, 'cancel'])->name('cancel');
+
+        Route::post('{purchaseOrder}/receipts', [GoodsReceiptController::class, 'store'])->name('receipts.store');
     });
 
     Route::prefix('labels')->name('labels.')->group(function () {

@@ -6,9 +6,12 @@ use App\Domain\Catalog\Models\Product;
 use App\Domain\Purchasing\Actions\CancelPurchaseOrderAction;
 use App\Domain\Purchasing\Actions\CreatePurchaseOrderAction;
 use App\Domain\Purchasing\Actions\MarkPurchaseOrderOrderedAction;
+use App\Domain\Purchasing\Data\GoodsReceiptData;
 use App\Domain\Purchasing\Data\PurchaseOrderData;
+use App\Domain\Purchasing\Models\GoodsReceipt;
 use App\Domain\Purchasing\Models\PurchaseOrder;
 use App\Domain\Purchasing\Models\Supplier;
+use App\Domain\Tenancy\Models\StorageLocation;
 use App\Domain\Tenancy\Models\Tenant;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\V1\Purchasing\CancelPurchaseOrderRequest;
@@ -23,11 +26,7 @@ use Spatie\LaravelData\CursorPaginatedDataCollection;
 /**
  * Same PurchaseOrder model and PurchaseOrderData DTO the mobile API uses
  * (Api\V1\Purchasing\PurchaseOrderController) — this is a second, web-only
- * presentation of the identical query, not new domain logic. Receiving
- * (partially_received/received) is a separate screen (UI-14) with its own
- * Actions that don't exist yet — this covers draft, ordered, and cancelled
- * only, exactly what CreatePurchaseOrderAction/MarkPurchaseOrderOrderedAction/
- * CancelPurchaseOrderAction support today.
+ * presentation of the identical query, not new domain logic.
  */
 class PurchaseOrderController extends Controller
 {
@@ -87,10 +86,18 @@ class PurchaseOrderController extends Controller
         $products = Product::orderBy('name')->get()
             ->map(fn (Product $product) => new OptionData($product->id, $product->name));
 
+        $locations = StorageLocation::orderBy('name')->get()
+            ->map(fn (StorageLocation $location) => new OptionData($location->id, $location->name));
+
+        $goodsReceipts = $purchaseOrder->goodsReceipts()->with('lines')->orderByDesc('received_at')->get()
+            ->map(fn (GoodsReceipt $receipt) => GoodsReceiptData::fromModel($receipt));
+
         return Inertia::render('purchasing/purchase-orders/show', [
             'purchaseOrder' => PurchaseOrderData::fromModel($purchaseOrder),
             'supplier' => new OptionData($purchaseOrder->supplier->id, $purchaseOrder->supplier->name),
             'products' => OptionData::collect($products),
+            'locations' => OptionData::collect($locations),
+            'goodsReceipts' => GoodsReceiptData::collect($goodsReceipts),
             'canManage' => $request->user()->can('update', $purchaseOrder),
         ]);
     }
