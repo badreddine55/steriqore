@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Web\Equipment\DeviceController;
 use App\Http\Controllers\Web\Labeling\CycleLabelController;
 use App\Http\Controllers\Web\Labeling\LabelController;
 use App\Http\Controllers\Web\Sterilization\ControlTestController;
@@ -41,6 +42,13 @@ Route::middleware(['auth', 'verified', 'tenant.web'])->group(function () {
     });
 
     Route::get('control-tests', [ControlTestController::class, 'index'])->name('control-tests.index');
+
+    Route::prefix('devices')->name('devices.')->group(function () {
+        Route::get('/', [DeviceController::class, 'index'])->name('index');
+        Route::post('/', [DeviceController::class, 'store'])->name('store');
+        Route::get('{device}', [DeviceController::class, 'show'])->name('show');
+        Route::patch('{device}', [DeviceController::class, 'update'])->name('update');
+    });
 
     Route::prefix('labels')->name('labels.')->group(function () {
         Route::get('/', [LabelController::class, 'index'])->name('index');

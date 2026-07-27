@@ -93,6 +93,14 @@ export const deviceStatus: Record<string, StatusMeta> = {
     decommissioned: meta('draft', 'Decommissioned'),
 };
 
+/** Device kind — a category, not a status; no tone/badge, just a label. */
+export const deviceKindLabel: Record<string, string> = {
+    autoclave: 'Autoclave',
+    washer_disinfector: 'Washer-disinfector',
+    sealer: 'Sealer',
+    other: 'Other',
+};
+
 /** Purchase order: draft -> ordered -> partially_received -> received -> closed | cancelled */
 export const purchaseOrderStatus: Record<string, StatusMeta> = {
     draft: meta('draft', 'Draft'),

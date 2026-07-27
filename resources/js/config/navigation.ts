@@ -23,6 +23,7 @@ import { dashboard } from '@/routes';
 import { edit as editAppearance } from '@/routes/appearance';
 import controlTests from '@/routes/control-tests';
 import cycles from '@/routes/cycles';
+import devices from '@/routes/devices';
 import labels from '@/routes/labels';
 import { edit as editProfile } from '@/routes/profile';
 import { edit as editSecurity } from '@/routes/security';
@@ -61,10 +62,9 @@ export const navGroups: NavGroup[] = [
             },
             {
                 title: 'Devices',
-                href: '/devices',
+                href: devices.index(),
                 icon: Wrench,
                 permission: 'devices.view',
-                comingSoon: true,
             },
             {
                 title: 'Labels',
