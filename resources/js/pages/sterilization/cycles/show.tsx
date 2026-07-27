@@ -1,11 +1,21 @@
 import { Head, Link, router, useForm, usePage } from '@inertiajs/react';
 import { ArrowLeft, Paperclip, Trash2 } from 'lucide-react';
 import type { FormEvent } from 'react';
+import { useState } from 'react';
 import { CycleTimeline } from '@/components/cycle-timeline';
 import { Mono } from '@/components/mono';
 import { StatusBadge } from '@/components/status-badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+} from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
@@ -132,6 +142,108 @@ function CycleActions({
     }
 
     return null;
+}
+
+function RejectCycleDialog({ cycle }: { cycle: Cycle }) {
+    const [open, setOpen] = useState(false);
+    const form = useForm({ decision: 'rejected', reason: '' });
+
+    function submit() {
+        form.post(cycles.release(cycle.id).url, {
+            preserveScroll: true,
+            onSuccess: () => {
+                setOpen(false);
+                form.reset();
+            },
+        });
+    }
+
+    return (
+        <Dialog
+            open={open}
+            onOpenChange={(next) => {
+                setOpen(next);
+
+                if (!next) {
+                    form.reset();
+                    form.clearErrors();
+                }
+            }}
+        >
+            <DialogTrigger asChild>
+                <Button size="sm" variant="destructive">
+                    Reject cycle
+                </Button>
+            </DialogTrigger>
+            <DialogContent>
+                <DialogHeader>
+                    <DialogTitle>Reject cycle #{cycle.cycle_number}</DialogTitle>
+                    <DialogDescription>
+                        This is permanent evidence — a rejection can&apos;t be
+                        edited or undone afterwards, only explained.
+                    </DialogDescription>
+                </DialogHeader>
+
+                <div className="grid gap-2">
+                    <Label htmlFor="reject-reason">Reason</Label>
+                    <Textarea
+                        id="reject-reason"
+                        value={form.data.reason}
+                        onChange={(e) =>
+                            form.setData('reason', e.target.value)
+                        }
+                        placeholder="What made this cycle non-compliant?"
+                    />
+                    {form.errors.reason && (
+                        <p className="text-sm text-destructive">
+                            {form.errors.reason}
+                        </p>
+                    )}
+                </div>
+
+                <DialogFooter>
+                    <Button variant="outline" onClick={() => setOpen(false)}>
+                        Cancel
+                    </Button>
+                    <Button
+                        variant="destructive"
+                        onClick={submit}
+                        disabled={form.processing || !form.data.reason.trim()}
+                    >
+                        Reject cycle
+                    </Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
+    );
+}
+
+function ReleaseDecisionForm({ cycle }: { cycle: Cycle }) {
+    function releaseAsCompliant() {
+        router.post(
+            cycles.release(cycle.id).url,
+            { decision: 'compliant' },
+            { preserveScroll: true },
+        );
+    }
+
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle className="text-sm">Release decision</CardTitle>
+            </CardHeader>
+            <CardContent className="flex flex-wrap items-center gap-2">
+                <p className="mr-auto text-sm text-muted-foreground">
+                    This cycle is awaiting release. Both outcomes are
+                    permanent evidence.
+                </p>
+                <RejectCycleDialog cycle={cycle} />
+                <Button size="sm" onClick={releaseAsCompliant}>
+                    Release as compliant
+                </Button>
+            </CardContent>
+        </Card>
+    );
 }
 
 function AddItemForm({ cycle }: { cycle: Cycle }) {
@@ -369,6 +481,7 @@ export default function CycleShow({
     const status = cycleStatus[cycle.status] ?? cycleStatus.draft;
     const { auth } = usePage().props;
     const canManage = auth.permissions.includes('cycles.manage');
+    const canRelease = auth.permissions.includes('cycles.release');
     const loadLocked = cycle.status !== 'draft';
 
     return (
@@ -470,6 +583,10 @@ export default function CycleShow({
                         </CardContent>
                     </Card>
                 )}
+
+                {!release &&
+                    cycle.status === 'awaiting_release' &&
+                    canRelease && <ReleaseDecisionForm cycle={cycle} />}
 
                 <div className="grid gap-6 lg:grid-cols-2">
                     <Card>

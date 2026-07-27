@@ -7,6 +7,7 @@ use App\Domain\Equipment\Models\Device;
 use App\Domain\Equipment\Models\DeviceProgram;
 use App\Domain\Sterilization\Actions\CompleteCycleAction;
 use App\Domain\Sterilization\Actions\CreateCycleAction;
+use App\Domain\Sterilization\Actions\ReleaseCycleAction;
 use App\Domain\Sterilization\Actions\StartCycleAction;
 use App\Domain\Sterilization\Actions\SubmitCycleForReleaseAction;
 use App\Domain\Sterilization\Data\ControlTestData;
@@ -14,12 +15,14 @@ use App\Domain\Sterilization\Data\CycleAttachmentData;
 use App\Domain\Sterilization\Data\CycleData;
 use App\Domain\Sterilization\Data\CycleItemData;
 use App\Domain\Sterilization\Data\CycleReleaseData;
+use App\Domain\Sterilization\Enums\CycleReleaseDecision;
 use App\Domain\Sterilization\Models\ControlTest;
 use App\Domain\Sterilization\Models\Cycle;
 use App\Domain\Sterilization\Models\CycleItem;
 use App\Domain\Tenancy\Models\Tenant;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\V1\Sterilization\CreateCycleRequest;
+use App\Http\Requests\Api\V1\Sterilization\ReleaseCycleRequest;
 use App\Models\User;
 use App\Support\Data\OptionData;
 use Illuminate\Http\RedirectResponse;
@@ -136,6 +139,25 @@ class CycleController extends Controller
         $action->execute($cycle, $request->user());
 
         Inertia::flash('toast', ['type' => 'success', 'message' => 'Submitted for release.']);
+
+        return back();
+    }
+
+    public function release(Cycle $cycle, ReleaseCycleRequest $request, ReleaseCycleAction $action): RedirectResponse
+    {
+        $this->authorize('release', $cycle);
+
+        $decision = CycleReleaseDecision::from($request->string('decision')->toString());
+        $reason = $request->string('reason')->toString() ?: null;
+
+        $action->execute($cycle, $request->user(), $decision, $reason);
+
+        Inertia::flash('toast', [
+            'type' => $decision === CycleReleaseDecision::Compliant ? 'success' : 'error',
+            'message' => $decision === CycleReleaseDecision::Compliant
+                ? "Cycle #{$cycle->cycle_number} released as compliant."
+                : "Cycle #{$cycle->cycle_number} rejected.",
+        ]);
 
         return back();
     }

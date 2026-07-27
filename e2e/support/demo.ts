@@ -135,6 +135,30 @@ export async function completeDemoCycle(
     }
 }
 
+/** Advances a completed cycle to awaiting_release. */
+export async function submitDemoCycleForRelease(
+    request: APIRequestContext,
+    token: string,
+    cycleId: string,
+): Promise<void> {
+    const response = await request.post(
+        `/api/v1/cycles/${cycleId}/submit-for-release`,
+        {
+            headers: {
+                Authorization: `Bearer ${token}`,
+                'Idempotency-Key': crypto.randomUUID(),
+            },
+            data: {},
+        },
+    );
+
+    if (!response.ok()) {
+        throw new Error(
+            `Cycle submit-for-release failed: ${response.status()} ${await response.text()}`,
+        );
+    }
+}
+
 export async function recordDemoControlTest(
     request: APIRequestContext,
     token: string,

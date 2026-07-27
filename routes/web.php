@@ -24,6 +24,7 @@ Route::middleware(['auth', 'verified', 'tenant.web'])->group(function () {
         Route::post('{cycle}/start', [CycleController::class, 'start'])->name('start');
         Route::post('{cycle}/complete', [CycleController::class, 'complete'])->name('complete');
         Route::post('{cycle}/submit-for-release', [CycleController::class, 'submitForRelease'])->name('submit-for-release');
+        Route::post('{cycle}/release', [CycleController::class, 'release'])->name('release');
 
         Route::post('{cycle}/items', [CycleItemController::class, 'store'])->name('items.store');
         Route::delete('{cycle}/items/{item}', [CycleItemController::class, 'destroy'])->name('items.destroy');

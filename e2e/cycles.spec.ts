@@ -19,7 +19,14 @@ test.describe('Cycles list (UI-01)', () => {
         await createDemoCycle(request, token, deviceId);
 
         await loginAsDemoOwner(page);
-        await page.goto('/cycles');
+        // Pre-scoped to this test's own freshly-created device via the URL
+        // (which only ever has one draft cycle) — the demo tenant is a
+        // persistent, shared fixture that has accumulated dozens of "E2E
+        // Autoclave" devices and even rejected cycles from other spec runs
+        // (e.g. UI-05's release flow), so "no cycles match" can no longer be
+        // assumed tenant-wide. The status combobox below is still driven
+        // through the real UI — that's the actual feature under test.
+        await page.goto(`/cycles?filter%5Bdevice_id%5D=${deviceId}`);
 
         await expect(
             page.getByRole('heading', { name: 'Cycles' }),
@@ -29,9 +36,9 @@ test.describe('Cycles list (UI-01)', () => {
         await expect(row).toBeVisible();
         await expect(row.getByText('Draft')).toBeVisible();
 
-        // Filtering to a status with no matches proves the filter really
-        // reaches the server (spatie/laravel-query-builder's filter[...]
-        // bucket), not just a client-side illusion.
+        // Filtering to a status with no matches (within this device) proves
+        // the filter really reaches the server (spatie/laravel-query-
+        // builder's filter[...] bucket), not just a client-side illusion.
         await page
             .getByRole('combobox')
             .filter({ hasText: 'All statuses' })
