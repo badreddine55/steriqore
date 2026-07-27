@@ -58,10 +58,12 @@ test.describe('Labels index and detail (UI-07)', () => {
         ).toBeVisible();
         await expect(page.getByText('Chain')).toBeVisible();
         await expect(page.getByText('Print history')).toBeVisible();
+        // Not yet used — the demo owner has usages.manage, so this is now
+        // the "link to a procedure" form (UI-20's web scan fallback),
+        // not a static "not yet scanned" message.
+        await expect(page.getByText('Point-of-care usage')).toBeVisible();
         await expect(
-            page.getByText('Not yet scanned at the point of care', {
-                exact: false,
-            }),
+            page.getByRole('button', { name: 'Link label to procedure' }),
         ).toBeVisible();
 
         // Already printed once (via the API fixture above) — the detail

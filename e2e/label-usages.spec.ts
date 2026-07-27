@@ -63,6 +63,6 @@ test.describe('Label usages — web fallback for the scan (UI-20)', () => {
 
         await expect(page.getByText('Label linked to procedure.')).toBeVisible();
         await expect(page.getByText(procedure)).toBeVisible();
-        await expect(page.getByText('used', { exact: true }).first()).toBeVisible();
+        await expect(page.getByText('Used', { exact: true }).first()).toBeVisible();
     });
 });
