@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\Web\Labeling;
 
+use App\Domain\Compliance\Actions\RaiseNonConformityAction;
+use App\Domain\Compliance\Models\NonConformity;
 use App\Domain\Equipment\Models\Device;
 use App\Domain\Labeling\Actions\PrintLabelAction;
 use App\Domain\Labeling\Actions\RenderLabelPdfAction;
@@ -60,7 +62,7 @@ class LabelController extends Controller
         ]);
     }
 
-    public function show(Label $label, Request $request): InertiaResponse
+    public function show(Label $label, Request $request, RaiseNonConformityAction $raiseNonConformity): InertiaResponse
     {
         $this->authorize('view', $label);
 
@@ -88,6 +90,8 @@ class LabelController extends Controller
             ->map(fn (User $user) => new OptionData($user->id, $user->name));
 
         return Inertia::render('sterilization/labels/show', [
+            'nonConformityBlastRadius' => $raiseNonConformity->previewBlastRadius($label),
+            'canRaiseNonConformity' => $request->user()->can('create', NonConformity::class),
             'label' => LabelData::fromModel($label),
             'cycle' => CycleData::fromModel($cycle),
             'device' => new OptionData($cycle->device->id, $cycle->device->name),

@@ -138,6 +138,12 @@ export const alertState: Record<string, StatusMeta> = {
     resolved: meta('success', 'Resolved'),
 };
 
+/** Non-conformity: open (raised_at set) -> resolved (resolved_at set) */
+export const nonConformityState: Record<string, StatusMeta> = {
+    open: meta('contained', 'Open'),
+    resolved: meta('success', 'Resolved'),
+};
+
 /** Alert type — a category, not a status; no tone/badge, just a label. */
 export const alertTypeLabel: Record<string, string> = {
     low_stock: 'Low stock',

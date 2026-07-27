@@ -29,6 +29,7 @@ import cycles from '@/routes/cycles';
 import devices from '@/routes/devices';
 import evidenceSearchRoutes from '@/routes/evidence-search';
 import labels from '@/routes/labels';
+import nonConformityRoutes from '@/routes/non-conformities';
 import patientRoutes from '@/routes/patients';
 import productRoutes from '@/routes/products';
 import { edit as editProfile } from '@/routes/profile';
@@ -146,10 +147,9 @@ export const navGroups: NavGroup[] = [
         items: [
             {
                 title: 'Non-conformities',
-                href: '/non-conformities',
+                href: nonConformityRoutes.index(),
                 icon: ShieldAlert,
                 permission: 'non_conformities.view',
-                comingSoon: true,
             },
             {
                 title: 'Audit log',

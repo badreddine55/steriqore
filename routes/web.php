@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Web\Catalog\ProductCategoryController;
 use App\Http\Controllers\Web\Catalog\ProductController;
+use App\Http\Controllers\Web\Compliance\NonConformityController;
 use App\Http\Controllers\Web\Equipment\DeviceController;
 use App\Http\Controllers\Web\Equipment\DeviceProgramController;
 use App\Http\Controllers\Web\Equipment\MaintenanceRecordController;
@@ -102,6 +103,12 @@ Route::middleware(['auth', 'verified', 'tenant.web'])->group(function () {
 
     Route::get('evidence-search', [EvidenceSearchController::class, 'index'])->name('evidence-search.index');
     Route::get('evidence-search/export', [EvidenceSearchController::class, 'export'])->name('evidence-search.export');
+
+    Route::prefix('non-conformities')->name('non-conformities.')->group(function () {
+        Route::get('/', [NonConformityController::class, 'index'])->name('index');
+        Route::post('/', [NonConformityController::class, 'store'])->name('store');
+        Route::post('{nonConformity}/resolve', [NonConformityController::class, 'resolve'])->name('resolve');
+    });
 
     Route::prefix('suppliers')->name('suppliers.')->group(function () {
         Route::get('/', [SupplierController::class, 'index'])->name('index');

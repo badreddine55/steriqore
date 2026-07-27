@@ -90,9 +90,33 @@ class RaiseNonConformityAction
     }
 
     /**
+     * Read-only — the blast radius a confirmation screen shows BEFORE
+     * raising, so the same skip conditions execute() applies (already-
+     * recalled/voided labels, already-quarantined batches don't count
+     * twice) must stay in sync with the loop above if either changes.
+     *
+     * @return array{labels_to_recall: int, batches_to_quarantine: int}
+     */
+    public function previewBlastRadius(Cycle|Label $subject): array
+    {
+        $labelsToRecall = $this->affectedLabels($subject)
+            ->reject(fn (Label $label) => in_array($label->status, [LabelStatus::Recalled, LabelStatus::Voided], true));
+
+        $batchesToQuarantine = $labelsToRecall
+            ->map(fn (Label $label) => $label->cycleItem->batch)
+            ->filter(fn ($batch) => $batch instanceof Batch && $batch->status !== BatchStatus::Quarantined)
+            ->unique('id');
+
+        return [
+            'labels_to_recall' => $labelsToRecall->count(),
+            'batches_to_quarantine' => $batchesToQuarantine->count(),
+        ];
+    }
+
+    /**
      * @return Collection<int, Label>
      */
-    private function affectedLabels(Cycle|Label $subject): Collection
+    public function affectedLabels(Cycle|Label $subject): Collection
     {
         if ($subject instanceof Label) {
             return new Collection([$subject]);

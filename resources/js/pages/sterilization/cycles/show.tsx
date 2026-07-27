@@ -4,6 +4,7 @@ import type { FormEvent } from 'react';
 import { useState } from 'react';
 import { CycleTimeline } from '@/components/cycle-timeline';
 import { Mono } from '@/components/mono';
+import { RecallDialog } from '@/components/recall-dialog';
 import { StatusBadge } from '@/components/status-badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -58,6 +59,7 @@ import type {
     CycleAttachment,
     CycleItem,
     CycleRelease,
+    NonConformityBlastRadius,
     Option,
 } from '@/types';
 
@@ -468,6 +470,7 @@ export default function CycleShow({
     attachments,
     release,
     releasedBy,
+    nonConformityBlastRadius,
 }: {
     cycle: Cycle;
     device: Option;
@@ -478,11 +481,15 @@ export default function CycleShow({
     attachments: CycleAttachment[];
     release: CycleRelease | null;
     releasedBy: Option | null;
+    nonConformityBlastRadius: NonConformityBlastRadius;
 }) {
     const status = cycleStatus[cycle.status] ?? cycleStatus.draft;
     const { auth } = usePage().props;
     const canManage = auth.permissions.includes('cycles.manage');
     const canRelease = auth.permissions.includes('cycles.release');
+    const canRaiseNonConformity = auth.permissions.includes(
+        'non_conformities.manage',
+    );
     const loadLocked = cycle.status !== 'draft';
 
     return (
@@ -518,6 +525,14 @@ export default function CycleShow({
                                 canManage={canManage}
                                 itemCount={items.length}
                             />
+                            {canRaiseNonConformity && (
+                                <RecallDialog
+                                    subjectType="cycle"
+                                    subjectId={cycle.id}
+                                    subjectLabel={`cycle #${cycle.cycle_number}`}
+                                    blastRadius={nonConformityBlastRadius}
+                                />
+                            )}
                         </div>
                     </div>
                     <dl className="mt-1 flex flex-wrap gap-x-6 gap-y-1 text-sm text-muted-foreground">

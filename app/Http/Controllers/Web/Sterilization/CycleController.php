@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Web\Sterilization;
 
+use App\Domain\Compliance\Actions\RaiseNonConformityAction;
 use App\Domain\Equipment\Data\DeviceProgramData;
 use App\Domain\Equipment\Models\Device;
 use App\Domain\Equipment\Models\DeviceProgram;
@@ -168,7 +169,7 @@ class CycleController extends Controller
      * detail view has no reason to make the browser round-trip four
      * times for one screen the way a mobile client's own navigation does.
      */
-    public function show(Cycle $cycle): Response
+    public function show(Cycle $cycle, RaiseNonConformityAction $raiseNonConformity): Response
     {
         $this->authorize('view', $cycle);
 
@@ -178,6 +179,7 @@ class CycleController extends Controller
         $releasedBy = $release ? User::find($release->released_by_user_id) : null;
 
         return Inertia::render('sterilization/cycles/show', [
+            'nonConformityBlastRadius' => $raiseNonConformity->previewBlastRadius($cycle),
             'cycle' => CycleData::fromModel($cycle),
             'device' => new OptionData($cycle->device->id, $cycle->device->name),
             'program' => $cycle->deviceProgram ? new OptionData($cycle->deviceProgram->id, $cycle->deviceProgram->name) : null,

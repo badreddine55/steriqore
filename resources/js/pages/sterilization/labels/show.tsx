@@ -1,6 +1,7 @@
 import { Head, Link, router, useForm } from '@inertiajs/react';
 import { ArrowLeft } from 'lucide-react';
 import { Mono } from '@/components/mono';
+import { RecallDialog } from '@/components/recall-dialog';
 import { ReprintLabelDialog } from '@/components/reprint-label-dialog';
 import { StatusBadge } from '@/components/status-badge';
 import { Button } from '@/components/ui/button';
@@ -36,6 +37,7 @@ import type {
     Label as LabelType,
     LabelPrint,
     LabelUsage,
+    NonConformityBlastRadius,
     Option,
 } from '@/types';
 
@@ -192,6 +194,8 @@ export default function LabelShow({
     practitioners,
     canRecordUsage,
     canViewDossier,
+    canRaiseNonConformity,
+    nonConformityBlastRadius,
 }: {
     label: LabelType;
     cycle: Cycle;
@@ -207,6 +211,8 @@ export default function LabelShow({
     practitioners: Option[];
     canRecordUsage: boolean;
     canViewDossier: boolean;
+    canRaiseNonConformity: boolean;
+    nonConformityBlastRadius: NonConformityBlastRadius;
 }) {
     const status = labelStatus[label.status] ?? labelStatus.created;
     const printedByName = (userId: string) =>
@@ -264,6 +270,14 @@ export default function LabelShow({
                             </Button>
                         ) : (
                             <ReprintLabelDialog label={label} />
+                        )}
+                        {canRaiseNonConformity && (
+                            <RecallDialog
+                                subjectType="label"
+                                subjectId={label.id}
+                                subjectLabel={`label "${item.description}"`}
+                                blastRadius={nonConformityBlastRadius}
+                            />
                         )}
                     </div>
                 </div>
