@@ -28,10 +28,22 @@ test.describe('Cycle detail (UI-02)', () => {
             page.getByRole('heading', { name: /Cycle #/ }),
         ).toBeVisible();
         // The timeline signature element: every station label is present.
-        await expect(page.getByText('Draft')).toBeVisible();
-        await expect(page.getByText('Running')).toBeVisible();
-        await expect(page.getByText('Awaiting release')).toBeVisible();
-        await expect(page.getByText('Released / Rejected')).toBeVisible();
+        // Scoped to the timeline itself (not a plain page-wide text search)
+        // since e.g. "running" also appears in the load composition card's
+        // "Locked once the cycle is running" note.
+        const timeline = page.getByLabel('Cycle progress');
+        await expect(
+            timeline.getByText('Draft', { exact: true }),
+        ).toBeVisible();
+        await expect(
+            timeline.getByText('Running', { exact: true }),
+        ).toBeVisible();
+        await expect(
+            timeline.getByText('Awaiting release', { exact: true }),
+        ).toBeVisible();
+        await expect(
+            timeline.getByText('Released / Rejected', { exact: true }),
+        ).toBeVisible();
 
         await expect(page.getByText('Scaler kit, pouch 1')).toBeVisible();
         await expect(page.getByText('Vacuum')).toBeVisible();

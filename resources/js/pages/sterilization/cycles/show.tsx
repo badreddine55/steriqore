@@ -1,9 +1,12 @@
-import { Head, Link } from '@inertiajs/react';
-import { ArrowLeft, Paperclip } from 'lucide-react';
+import { Head, Link, router, useForm, usePage } from '@inertiajs/react';
+import { ArrowLeft, Paperclip, Trash2 } from 'lucide-react';
+import type { FormEvent } from 'react';
 import { CycleTimeline } from '@/components/cycle-timeline';
 import { Mono } from '@/components/mono';
 import { StatusBadge } from '@/components/status-badge';
+import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
 import {
     Table,
     TableBody,
@@ -12,6 +15,11 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipTrigger,
+} from '@/components/ui/tooltip';
 import { formatDateTime } from '@/lib/format';
 import {
     controlTestResult,
@@ -21,6 +29,8 @@ import {
 } from '@/lib/status';
 import { dashboard } from '@/routes';
 import cycles from '@/routes/cycles';
+import cycleAttachments from '@/routes/cycles/attachments';
+import cycleItems from '@/routes/cycles/items';
 import type {
     ControlTest,
     Cycle,
@@ -29,6 +39,177 @@ import type {
     CycleRelease,
     Option,
 } from '@/types';
+
+function CycleActions({
+    cycle,
+    canManage,
+    itemCount,
+}: {
+    cycle: Cycle;
+    canManage: boolean;
+    itemCount: number;
+}) {
+    if (!canManage) {
+        return null;
+    }
+
+    if (cycle.status === 'draft') {
+        const button = (
+            <Button
+                size="sm"
+                disabled={itemCount === 0}
+                onClick={() =>
+                    router.post(
+                        cycles.start(cycle.id).url,
+                        {},
+                        { preserveScroll: true },
+                    )
+                }
+            >
+                Start cycle
+            </Button>
+        );
+
+        if (itemCount === 0) {
+            return (
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                        {/* A disabled native button doesn't fire hover events for the tooltip — the wrapper does. */}
+                        <span>{button}</span>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                        Add at least one item to the load before starting.
+                    </TooltipContent>
+                </Tooltip>
+            );
+        }
+
+        return button;
+    }
+
+    if (cycle.status === 'running') {
+        return (
+            <Button
+                size="sm"
+                onClick={() =>
+                    router.post(
+                        cycles.complete(cycle.id).url,
+                        {},
+                        { preserveScroll: true },
+                    )
+                }
+            >
+                Complete cycle — record result
+            </Button>
+        );
+    }
+
+    if (cycle.status === 'completed') {
+        return (
+            <Button
+                size="sm"
+                onClick={() =>
+                    router.post(
+                        cycles.submitForRelease(cycle.id).url,
+                        {},
+                        { preserveScroll: true },
+                    )
+                }
+            >
+                Submit for release
+            </Button>
+        );
+    }
+
+    return null;
+}
+
+function AddItemForm({ cycle }: { cycle: Cycle }) {
+    const form = useForm({ description: '' });
+
+    function submit(e: FormEvent) {
+        e.preventDefault();
+        form.post(cycleItems.store(cycle.id).url, {
+            preserveScroll: true,
+            onSuccess: () => form.reset(),
+        });
+    }
+
+    return (
+        <form onSubmit={submit} className="flex items-start gap-2">
+            <div className="flex-1">
+                <Input
+                    value={form.data.description}
+                    onChange={(e) =>
+                        form.setData('description', e.target.value)
+                    }
+                    placeholder="e.g. Scaler kit, pouch 1"
+                    aria-label="New item description"
+                />
+                {form.errors.description && (
+                    <p className="mt-1 text-sm text-destructive">
+                        {form.errors.description}
+                    </p>
+                )}
+            </div>
+            <Button
+                type="submit"
+                size="sm"
+                disabled={form.processing || !form.data.description.trim()}
+            >
+                Add item
+            </Button>
+        </form>
+    );
+}
+
+function AttachmentUploadForm({ cycle }: { cycle: Cycle }) {
+    const form = useForm<{ file: File | null }>({ file: null });
+
+    function submit(e: FormEvent) {
+        e.preventDefault();
+
+        if (!form.data.file) {
+            return;
+        }
+
+        form.post(cycleAttachments.store(cycle.id).url, {
+            preserveScroll: true,
+            forceFormData: true,
+            onSuccess: () => form.reset(),
+        });
+    }
+
+    return (
+        <form onSubmit={submit} className="flex items-start gap-2">
+            <div className="flex-1">
+                <Input
+                    type="file"
+                    accept=".jpg,.jpeg,.png,.webp,.pdf"
+                    onChange={(e) =>
+                        form.setData('file', e.target.files?.[0] ?? null)
+                    }
+                    aria-label="Attach a ticket or photo"
+                />
+                <p className="mt-1 text-xs text-muted-foreground">
+                    JPG, PNG, WEBP or PDF, up to 10&nbsp;MB.
+                </p>
+                {form.errors.file && (
+                    <p className="mt-1 text-sm text-destructive">
+                        {form.errors.file}
+                    </p>
+                )}
+            </div>
+            <Button
+                type="submit"
+                size="sm"
+                disabled={form.processing || !form.data.file}
+            >
+                Upload
+            </Button>
+        </form>
+    );
+}
 
 export default function CycleShow({
     cycle,
@@ -52,6 +233,9 @@ export default function CycleShow({
     releasedBy: Option | null;
 }) {
     const status = cycleStatus[cycle.status] ?? cycleStatus.draft;
+    const { auth } = usePage().props;
+    const canManage = auth.permissions.includes('cycles.manage');
+    const loadLocked = cycle.status !== 'draft';
 
     return (
         <>
@@ -66,11 +250,20 @@ export default function CycleShow({
                         <ArrowLeft className="size-3.5" />
                         Back to cycles
                     </Link>
-                    <div className="flex items-center gap-3">
-                        <h1 className="text-lg font-semibold tracking-tight">
-                            Cycle <Mono>#{cycle.cycle_number}</Mono>
-                        </h1>
-                        <StatusBadge status={status} />
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                            <h1 className="text-lg font-semibold tracking-tight">
+                                Cycle <Mono>#{cycle.cycle_number}</Mono>
+                            </h1>
+                            <StatusBadge status={status} />
+                        </div>
+                        <div className="no-print">
+                            <CycleActions
+                                cycle={cycle}
+                                canManage={canManage}
+                                itemCount={items.length}
+                            />
+                        </div>
                     </div>
                     <dl className="mt-1 flex flex-wrap gap-x-6 gap-y-1 text-sm text-muted-foreground">
                         <div className="flex gap-1">
@@ -146,12 +339,17 @@ export default function CycleShow({
 
                 <div className="grid gap-6 lg:grid-cols-2">
                     <Card>
-                        <CardHeader>
+                        <CardHeader className="flex-row items-center justify-between">
                             <CardTitle className="text-sm">
                                 Load composition
                             </CardTitle>
+                            {loadLocked && (
+                                <span className="text-xs text-muted-foreground">
+                                    Locked once the cycle is running.
+                                </span>
+                            )}
                         </CardHeader>
-                        <CardContent>
+                        <CardContent className="space-y-4">
                             {items.length === 0 ? (
                                 <p className="text-sm text-muted-foreground">
                                     No items have been added to this load yet.
@@ -165,6 +363,9 @@ export default function CycleShow({
                                             </TableHead>
                                             <TableHead>Description</TableHead>
                                             <TableHead>Batch</TableHead>
+                                            {!loadLocked && canManage && (
+                                                <TableHead className="w-10" />
+                                            )}
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
@@ -187,10 +388,37 @@ export default function CycleShow({
                                                         '—'
                                                     )}
                                                 </TableCell>
+                                                {!loadLocked && canManage && (
+                                                    <TableCell>
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="icon"
+                                                            aria-label={`Remove item ${item.sequence_in_cycle}`}
+                                                            onClick={() =>
+                                                                router.delete(
+                                                                    cycleItems.destroy(
+                                                                        {
+                                                                            cycle: cycle.id,
+                                                                            item: item.id,
+                                                                        },
+                                                                    ).url,
+                                                                    {
+                                                                        preserveScroll: true,
+                                                                    },
+                                                                )
+                                                            }
+                                                        >
+                                                            <Trash2 className="size-4 text-muted-foreground" />
+                                                        </Button>
+                                                    </TableCell>
+                                                )}
                                             </TableRow>
                                         ))}
                                     </TableBody>
                                 </Table>
+                            )}
+                            {!loadLocked && canManage && (
+                                <AddItemForm cycle={cycle} />
                             )}
                         </CardContent>
                     </Card>
@@ -254,7 +482,7 @@ export default function CycleShow({
                     <CardHeader>
                         <CardTitle className="text-sm">Attachments</CardTitle>
                     </CardHeader>
-                    <CardContent>
+                    <CardContent className="space-y-4">
                         {attachments.length === 0 ? (
                             <p className="text-sm text-muted-foreground">
                                 No tickets or photos have been attached to this
@@ -278,17 +506,43 @@ export default function CycleShow({
                                                 {attachment.file_name}
                                             </a>
                                         </span>
-                                        <span className="text-muted-foreground">
-                                            <Mono className="text-xs">
-                                                {formatDateTime(
-                                                    attachment.created_at,
-                                                )}
-                                            </Mono>
+                                        <span className="flex items-center gap-3">
+                                            <span className="text-muted-foreground">
+                                                <Mono className="text-xs">
+                                                    {formatDateTime(
+                                                        attachment.created_at,
+                                                    )}
+                                                </Mono>
+                                            </span>
+                                            {canManage && (
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="no-print"
+                                                    aria-label={`Remove ${attachment.file_name}`}
+                                                    onClick={() =>
+                                                        router.delete(
+                                                            cycleAttachments.destroy(
+                                                                {
+                                                                    cycle: cycle.id,
+                                                                    media: attachment.id,
+                                                                },
+                                                            ).url,
+                                                            {
+                                                                preserveScroll: true,
+                                                            },
+                                                        )
+                                                    }
+                                                >
+                                                    <Trash2 className="size-4 text-muted-foreground" />
+                                                </Button>
+                                            )}
                                         </span>
                                     </li>
                                 ))}
                             </ul>
                         )}
+                        {canManage && <AttachmentUploadForm cycle={cycle} />}
                     </CardContent>
                 </Card>
             </div>

@@ -2,6 +2,7 @@ import { Head, Link, router } from '@inertiajs/react';
 import { AlertCircle, ChevronLeft, ChevronRight, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Mono } from '@/components/mono';
+import { NewCycleDialog } from '@/components/new-cycle-dialog';
 import { StatusBadge } from '@/components/status-badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -25,19 +26,29 @@ import { formatDateTime } from '@/lib/format';
 import { cycleStatus } from '@/lib/status';
 import { dashboard } from '@/routes';
 import cycles from '@/routes/cycles';
-import type { CursorPaginated, Cycle, CycleFilters, Option } from '@/types';
+import type {
+    CursorPaginated,
+    Cycle,
+    CycleFilters,
+    DeviceProgram,
+    Option,
+} from '@/types';
 
 const STATUS_OPTIONS = Object.keys(cycleStatus);
 
 export default function CyclesIndex({
     cycles: cyclesPage,
     devices,
+    devicePrograms,
     operators,
+    canCreate,
     filters,
 }: {
     cycles: CursorPaginated<Cycle>;
     devices: Option[];
+    devicePrograms: DeviceProgram[];
     operators: Option[];
+    canCreate: boolean;
     filters: CycleFilters;
 }) {
     const [q, setQ] = useState(filters.q ?? '');
@@ -136,6 +147,14 @@ export default function CyclesIndex({
                             Every sterilization run, newest first.
                         </p>
                     </div>
+                    {canCreate && (
+                        <div className="no-print">
+                            <NewCycleDialog
+                                devices={devices}
+                                devicePrograms={devicePrograms}
+                            />
+                        </div>
+                    )}
                 </div>
 
                 {loadError && (

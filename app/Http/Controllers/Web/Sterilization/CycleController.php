@@ -2,7 +2,13 @@
 
 namespace App\Http\Controllers\Web\Sterilization;
 
+use App\Domain\Equipment\Data\DeviceProgramData;
 use App\Domain\Equipment\Models\Device;
+use App\Domain\Equipment\Models\DeviceProgram;
+use App\Domain\Sterilization\Actions\CompleteCycleAction;
+use App\Domain\Sterilization\Actions\CreateCycleAction;
+use App\Domain\Sterilization\Actions\StartCycleAction;
+use App\Domain\Sterilization\Actions\SubmitCycleForReleaseAction;
 use App\Domain\Sterilization\Data\ControlTestData;
 use App\Domain\Sterilization\Data\CycleAttachmentData;
 use App\Domain\Sterilization\Data\CycleData;
@@ -13,8 +19,10 @@ use App\Domain\Sterilization\Models\Cycle;
 use App\Domain\Sterilization\Models\CycleItem;
 use App\Domain\Tenancy\Models\Tenant;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Api\V1\Sterilization\CreateCycleRequest;
 use App\Models\User;
 use App\Support\Data\OptionData;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -68,15 +76,68 @@ class CycleController extends Controller
         )->orderBy('name')->get()
             ->map(fn (User $user) => new OptionData($user->id, $user->name));
 
+        // For the "new cycle" dialog's device -> program cascading picker.
+        // DeviceProgramData already exists (Api\V1\Equipment) — reused as-is.
+        $devicePrograms = DeviceProgram::where('is_active', true)->orderBy('name')->get()
+            ->map(fn (DeviceProgram $program) => DeviceProgramData::fromModel($program));
+
         return Inertia::render('sterilization/cycles/index', [
             'cycles' => CycleData::collect($cycles, CursorPaginatedDataCollection::class),
             'devices' => OptionData::collect($devices),
+            'devicePrograms' => DeviceProgramData::collect($devicePrograms),
             'operators' => OptionData::collect($operators),
+            'canCreate' => $request->user()->can('create', Cycle::class),
             // spatie/laravel-query-builder itself reads filter[...] straight
             // off the request; this is purely to hand the current values
             // back to the page for the filter bar's controlled inputs.
             'filters' => $request->input('filter', []),
         ]);
+    }
+
+    public function store(CreateCycleRequest $request, CreateCycleAction $action): RedirectResponse
+    {
+        $this->authorize('create', Cycle::class);
+
+        $device = Device::findOrFail($request->string('device_id')->toString());
+
+        $cycle = $action->execute(Tenant::current(), $device, $request->user(), $request->safe()->except('device_id'));
+
+        Inertia::flash('toast', ['type' => 'success', 'message' => "Cycle #{$cycle->cycle_number} created."]);
+
+        return redirect()->route('cycles.show', $cycle);
+    }
+
+    public function start(Cycle $cycle, Request $request, StartCycleAction $action): RedirectResponse
+    {
+        $this->authorize('update', $cycle);
+
+        $action->execute($cycle, $request->user());
+
+        Inertia::flash('toast', ['type' => 'success', 'message' => 'Cycle started.']);
+
+        return back();
+    }
+
+    public function complete(Cycle $cycle, Request $request, CompleteCycleAction $action): RedirectResponse
+    {
+        $this->authorize('update', $cycle);
+
+        $action->execute($cycle, $request->user());
+
+        Inertia::flash('toast', ['type' => 'success', 'message' => 'Cycle completed.']);
+
+        return back();
+    }
+
+    public function submitForRelease(Cycle $cycle, Request $request, SubmitCycleForReleaseAction $action): RedirectResponse
+    {
+        $this->authorize('update', $cycle);
+
+        $action->execute($cycle, $request->user());
+
+        Inertia::flash('toast', ['type' => 'success', 'message' => 'Submitted for release.']);
+
+        return back();
     }
 
     /**

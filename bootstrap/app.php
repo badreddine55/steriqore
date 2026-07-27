@@ -7,6 +7,7 @@ use App\Http\Middleware\HandleAppearance;
 use App\Http\Middleware\HandleInertiaRequests;
 use App\Http\Middleware\Web\SetCurrentTenant as SetCurrentTenantWeb;
 use App\Support\Api\ApiExceptionRenderer;
+use App\Support\Web\ApiExceptionWebRenderer;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -62,6 +63,7 @@ return Application::configure(basePath: dirname(__DIR__))
         );
 
         ApiExceptionRenderer::register($exceptions);
+        ApiExceptionWebRenderer::register($exceptions);
 
         // No-op until SENTRY_LARAVEL_DSN is set (S5-ANA-02) — no staging/
         // production Sentry project exists yet, see docs/open-questions.md.

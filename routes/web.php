@@ -1,6 +1,8 @@
 <?php
 
+use App\Http\Controllers\Web\Sterilization\CycleAttachmentController;
 use App\Http\Controllers\Web\Sterilization\CycleController;
+use App\Http\Controllers\Web\Sterilization\CycleItemController;
 use App\Http\Controllers\Web\Tenancy\SwitchSiteController;
 use App\Http\Controllers\Web\Tenancy\SwitchTenantController;
 use Illuminate\Support\Facades\Route;
@@ -15,7 +17,17 @@ Route::middleware(['auth', 'verified', 'tenant.web'])->group(function () {
 
     Route::prefix('cycles')->name('cycles.')->group(function () {
         Route::get('/', [CycleController::class, 'index'])->name('index');
+        Route::post('/', [CycleController::class, 'store'])->name('store');
         Route::get('{cycle}', [CycleController::class, 'show'])->name('show');
+        Route::post('{cycle}/start', [CycleController::class, 'start'])->name('start');
+        Route::post('{cycle}/complete', [CycleController::class, 'complete'])->name('complete');
+        Route::post('{cycle}/submit-for-release', [CycleController::class, 'submitForRelease'])->name('submit-for-release');
+
+        Route::post('{cycle}/items', [CycleItemController::class, 'store'])->name('items.store');
+        Route::delete('{cycle}/items/{item}', [CycleItemController::class, 'destroy'])->name('items.destroy');
+
+        Route::post('{cycle}/attachments', [CycleAttachmentController::class, 'store'])->name('attachments.store');
+        Route::delete('{cycle}/attachments/{media}', [CycleAttachmentController::class, 'destroy'])->name('attachments.destroy');
     });
 });
 
