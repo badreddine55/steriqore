@@ -213,6 +213,56 @@ export async function createDemoDluRule(
     }
 }
 
+/** Requires a matching DLU rule (createDemoDluRule) and a released+compliant cycle. */
+export async function generateDemoLabels(
+    request: APIRequestContext,
+    token: string,
+    cycleId: string,
+    packagingType: string,
+    storageCondition: string,
+): Promise<string[]> {
+    const response = await request.post(`/api/v1/cycles/${cycleId}/labels`, {
+        headers: {
+            Authorization: `Bearer ${token}`,
+            'Idempotency-Key': crypto.randomUUID(),
+        },
+        data: {
+            packaging_type: packagingType,
+            storage_condition: storageCondition,
+        },
+    });
+
+    if (!response.ok()) {
+        throw new Error(
+            `Label generation failed: ${response.status()} ${await response.text()}`,
+        );
+    }
+
+    const body = (await response.json()) as Array<{ id: string }>;
+
+    return body.map((label) => label.id);
+}
+
+export async function printDemoLabel(
+    request: APIRequestContext,
+    token: string,
+    labelId: string,
+): Promise<void> {
+    const response = await request.post(`/api/v1/labels/${labelId}/print`, {
+        headers: {
+            Authorization: `Bearer ${token}`,
+            'Idempotency-Key': crypto.randomUUID(),
+        },
+        data: {},
+    });
+
+    if (!response.ok()) {
+        throw new Error(
+            `Label print failed: ${response.status()} ${await response.text()}`,
+        );
+    }
+}
+
 export async function recordDemoControlTest(
     request: APIRequestContext,
     token: string,

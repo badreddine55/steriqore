@@ -1,20 +1,11 @@
 import { Head, Link, router, useForm } from '@inertiajs/react';
 import { ArrowLeft } from 'lucide-react';
 import type { FormEvent } from 'react';
-import { useState } from 'react';
 import { Mono } from '@/components/mono';
+import { ReprintLabelDialog } from '@/components/reprint-label-dialog';
 import { StatusBadge } from '@/components/status-badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
-    DialogTrigger,
-} from '@/components/ui/dialog';
 import { Label as FieldLabel } from '@/components/ui/label';
 import {
     Select,
@@ -23,7 +14,6 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
-import { Textarea } from '@/components/ui/textarea';
 import { formatDateTime } from '@/lib/format';
 import { labelStatus } from '@/lib/status';
 import { dashboard } from '@/routes';
@@ -170,79 +160,6 @@ function GenerateLabelsForm({
     );
 }
 
-function ReprintLabelDialog({ label }: { label: LabelType }) {
-    const [open, setOpen] = useState(false);
-    const form = useForm({ reason: '' });
-
-    function submit() {
-        form.post(labels.print(label.id).url, {
-            preserveScroll: true,
-            onSuccess: () => {
-                setOpen(false);
-                form.reset();
-            },
-        });
-    }
-
-    return (
-        <Dialog
-            open={open}
-            onOpenChange={(next) => {
-                setOpen(next);
-
-                if (!next) {
-                    form.reset();
-                    form.clearErrors();
-                }
-            }}
-        >
-            <DialogTrigger asChild>
-                <Button size="sm" variant="outline" className="no-print">
-                    Reprint
-                </Button>
-            </DialogTrigger>
-            <DialogContent>
-                <DialogHeader>
-                    <DialogTitle>Reprint this label</DialogTitle>
-                    <DialogDescription>
-                        Reprints are tracked — say why this one is needed
-                        again.
-                    </DialogDescription>
-                </DialogHeader>
-
-                <div className="grid gap-2">
-                    <FieldLabel htmlFor="reprint-reason">Reason</FieldLabel>
-                    <Textarea
-                        id="reprint-reason"
-                        value={form.data.reason}
-                        onChange={(e) =>
-                            form.setData('reason', e.target.value)
-                        }
-                        placeholder="e.g. Original label was damaged."
-                    />
-                    {form.errors.reason && (
-                        <p className="text-sm text-destructive">
-                            {form.errors.reason}
-                        </p>
-                    )}
-                </div>
-
-                <DialogFooter>
-                    <Button variant="outline" onClick={() => setOpen(false)}>
-                        Cancel
-                    </Button>
-                    <Button
-                        onClick={submit}
-                        disabled={form.processing || !form.data.reason.trim()}
-                    >
-                        Reprint
-                    </Button>
-                </DialogFooter>
-            </DialogContent>
-        </Dialog>
-    );
-}
-
 function LabelCard({ label, item }: { label: LabelType; item?: CycleItem }) {
     const status = labelStatus[label.status] ?? labelStatus.created;
 
@@ -263,10 +180,13 @@ function LabelCard({ label, item }: { label: LabelType; item?: CycleItem }) {
                 </div>
                 <div className="flex-1 space-y-1 text-sm">
                     <div className="flex items-center justify-between gap-2">
-                        <span className="font-medium">
+                        <Link
+                            href={labels.show(label.id).url}
+                            className="font-medium hover:underline"
+                        >
                             #{item?.sequence_in_cycle ?? '—'}{' '}
                             {item?.description}
-                        </span>
+                        </Link>
                         <StatusBadge status={status} />
                     </div>
                     <dl className="grid grid-cols-[auto_1fr] gap-x-2 text-xs text-muted-foreground">

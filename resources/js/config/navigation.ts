@@ -23,6 +23,7 @@ import { dashboard } from '@/routes';
 import { edit as editAppearance } from '@/routes/appearance';
 import controlTests from '@/routes/control-tests';
 import cycles from '@/routes/cycles';
+import labels from '@/routes/labels';
 import { edit as editProfile } from '@/routes/profile';
 import { edit as editSecurity } from '@/routes/security';
 import type { NavGroup, NavItem } from '@/types';
@@ -67,10 +68,9 @@ export const navGroups: NavGroup[] = [
             },
             {
                 title: 'Labels',
-                href: '/labels',
+                href: labels.index(),
                 icon: Tags,
                 permission: 'labels.view',
-                comingSoon: true,
             },
         ],
     },

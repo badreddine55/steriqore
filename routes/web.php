@@ -43,6 +43,8 @@ Route::middleware(['auth', 'verified', 'tenant.web'])->group(function () {
     Route::get('control-tests', [ControlTestController::class, 'index'])->name('control-tests.index');
 
     Route::prefix('labels')->name('labels.')->group(function () {
+        Route::get('/', [LabelController::class, 'index'])->name('index');
+        Route::get('{label}', [LabelController::class, 'show'])->name('show');
         Route::post('{label}/print', [LabelController::class, 'print'])->name('print');
         Route::get('{label}/pdf', [LabelController::class, 'pdf'])->name('pdf');
         Route::get('{label}/qr-code', [LabelController::class, 'qrCode'])->name('qr-code');
