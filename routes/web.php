@@ -8,6 +8,7 @@ use App\Http\Controllers\Web\Equipment\DeviceProgramController;
 use App\Http\Controllers\Web\Equipment\MaintenanceRecordController;
 use App\Http\Controllers\Web\Inventory\AlertController;
 use App\Http\Controllers\Web\Inventory\BatchController;
+use App\Http\Controllers\Web\Inventory\QuarantineController;
 use App\Http\Controllers\Web\Inventory\StockLevelController;
 use App\Http\Controllers\Web\Inventory\StockMovementController as WebStockMovementController;
 use App\Http\Controllers\Web\Labeling\CycleLabelController;
@@ -83,6 +84,7 @@ Route::middleware(['auth', 'verified', 'tenant.web'])->group(function () {
     Route::post('product-categories', [ProductCategoryController::class, 'store'])->name('product-categories.store');
 
     Route::get('batches', [BatchController::class, 'index'])->name('batches.index');
+    Route::get('quarantine', [QuarantineController::class, 'index'])->name('quarantine.index');
 
     Route::prefix('stock')->name('stock.')->group(function () {
         Route::get('/', [StockLevelController::class, 'index'])->name('index');

@@ -81,3 +81,17 @@ export type AlertFilters = {
     severity?: string;
     state?: string;
 };
+
+/** Mirrors App\Domain\Inventory\Data\QuarantinedBatchData exactly. */
+export type QuarantinedBatch = {
+    id: string;
+    batch_number: string;
+    product_id: string;
+    product_name: string;
+    supplier_name: string | null;
+    qty_on_hand: number;
+    expiry_date: string | null;
+    quarantined_at: string | null;
+    reason: string | null;
+    quarantined_by: string | null;
+};

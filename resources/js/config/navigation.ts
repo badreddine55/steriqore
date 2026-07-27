@@ -9,6 +9,7 @@ import {
     LayoutGrid,
     Layers,
     PackageSearch,
+    PackageX,
     Palette,
     ScrollText,
     Search,
@@ -34,6 +35,7 @@ import patientRoutes from '@/routes/patients';
 import productRoutes from '@/routes/products';
 import { edit as editProfile } from '@/routes/profile';
 import purchaseOrderRoutes from '@/routes/purchase-orders';
+import quarantineRoutes from '@/routes/quarantine';
 import { edit as editSecurity } from '@/routes/security';
 import stockRoutes from '@/routes/stock';
 import supplierRoutes from '@/routes/suppliers';
@@ -150,6 +152,12 @@ export const navGroups: NavGroup[] = [
                 href: nonConformityRoutes.index(),
                 icon: ShieldAlert,
                 permission: 'non_conformities.view',
+            },
+            {
+                title: 'Quarantine',
+                href: quarantineRoutes.index(),
+                icon: PackageX,
+                permission: 'inventory.view',
             },
             {
                 title: 'Audit log',
