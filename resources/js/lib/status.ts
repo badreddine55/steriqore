@@ -144,6 +144,30 @@ export const nonConformityState: Record<string, StatusMeta> = {
     resolved: meta('success', 'Resolved'),
 };
 
+/** The six tenant roles (CLAUDE.md RBAC) — a category, not a status; no tone/badge, just a label. */
+export const tenantRoleLabel: Record<string, string> = {
+    owner: 'Owner',
+    admin: 'Admin',
+    stock_manager: 'Stock manager',
+    releaser: 'Releaser',
+    practitioner: 'Practitioner',
+    viewer: 'Viewer',
+};
+
+/** Team membership: active -> disabled (never deleted, invariant #6) */
+export const memberStatus: Record<string, StatusMeta> = {
+    active: meta('active', 'Active'),
+    disabled: meta('draft', 'Disabled'),
+};
+
+/** Invitation: pending -> accepted | revoked | expired (computed, not a stored column) */
+export const invitationStatus: Record<string, StatusMeta> = {
+    pending: meta('pending', 'Pending'),
+    accepted: meta('success', 'Accepted'),
+    revoked: meta('contained', 'Revoked'),
+    expired: meta('expired', 'Expired'),
+};
+
 /** Alert type — a category, not a status; no tone/badge, just a label. */
 export const alertTypeLabel: Record<string, string> = {
     low_stock: 'Low stock',

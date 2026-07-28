@@ -7,6 +7,7 @@ use App\Http\Controllers\Web\Compliance\NonConformityController;
 use App\Http\Controllers\Web\Equipment\DeviceController;
 use App\Http\Controllers\Web\Equipment\DeviceProgramController;
 use App\Http\Controllers\Web\Equipment\MaintenanceRecordController;
+use App\Http\Controllers\Web\Identity\TeamController;
 use App\Http\Controllers\Web\Inventory\AlertController;
 use App\Http\Controllers\Web\Inventory\BatchController;
 use App\Http\Controllers\Web\Inventory\QuarantineController;
@@ -114,6 +115,13 @@ Route::middleware(['auth', 'verified', 'tenant.web'])->group(function () {
     });
 
     Route::get('audit-log', [AuditEventController::class, 'index'])->name('audit-log.index');
+
+    Route::prefix('team')->name('team.')->group(function () {
+        Route::get('/', [TeamController::class, 'index'])->name('index');
+        Route::post('invitations', [TeamController::class, 'storeInvitation'])->name('invitations.store');
+        Route::delete('invitations/{invitation}', [TeamController::class, 'revokeInvitation'])->name('invitations.revoke');
+        Route::delete('members/{tenantUser}', [TeamController::class, 'disableMember'])->name('members.disable');
+    });
 
     Route::prefix('suppliers')->name('suppliers.')->group(function () {
         Route::get('/', [SupplierController::class, 'index'])->name('index');

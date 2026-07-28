@@ -8,6 +8,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { UserInfo } from '@/components/user-info';
 import { useMobileNavigation } from '@/hooks/use-mobile-navigation';
+import { tenantRoleLabel } from '@/lib/status';
 import { logout } from '@/routes';
 import { edit } from '@/routes/profile';
 import tenant from '@/routes/tenant';
@@ -15,15 +16,6 @@ import type { User } from '@/types';
 
 type Props = {
     user: User;
-};
-
-const ROLE_LABELS: Record<string, string> = {
-    owner: 'Owner',
-    admin: 'Admin',
-    stock_manager: 'Stock manager',
-    releaser: 'Releaser',
-    practitioner: 'Practitioner',
-    viewer: 'Viewer',
 };
 
 export function UserMenuContent({ user }: Props) {
@@ -54,7 +46,7 @@ export function UserMenuContent({ user }: Props) {
                     <DropdownMenuSeparator />
                     <div className="px-2 py-1 text-xs text-muted-foreground">
                         {currentTenant.name}
-                        {role && ` · ${ROLE_LABELS[role] ?? role}`}
+                        {role && ` · ${tenantRoleLabel[role] ?? role}`}
                     </div>
                     {tenants.length > 1 && (
                         <DropdownMenuGroup>

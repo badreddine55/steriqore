@@ -40,6 +40,7 @@ import quarantineRoutes from '@/routes/quarantine';
 import { edit as editSecurity } from '@/routes/security';
 import stockRoutes from '@/routes/stock';
 import supplierRoutes from '@/routes/suppliers';
+import team from '@/routes/team';
 import type { NavGroup, NavItem } from '@/types';
 
 /**
@@ -173,10 +174,9 @@ export const navGroups: NavGroup[] = [
         items: [
             {
                 title: 'Team',
-                href: '/team',
+                href: team.index(),
                 icon: Users,
                 permission: 'invitations.create',
-                comingSoon: true,
             },
             {
                 title: 'Sites',
