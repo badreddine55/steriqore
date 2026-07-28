@@ -137,6 +137,10 @@ Never invent a business rule: implement the safe default, mark // DECISION NEEDE
 and append it to docs/open-questions.md.
 After each item report: what you built, migrations, tests, OpenAPI delta, open decisions.
 
+S7 (post app-shell UI build-out) works off docs/ui-backlog.md — the full UI-01..UI-31
+queue, its per-task contract, and design constraints. Read it before starting any
+UI-XX item; update its Status column as part of that item's commit.
+
 START NOW with S0: propose the repo structure and the full ERD (tenants, sites, rooms,
 locations, users, roles, audit) as docs/erd.md, ask me anything blocking, and wait for
 my approval before writing migrations.
