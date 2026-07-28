@@ -31,6 +31,7 @@ function dluRuleFor(string $token, string $packagingType = 'Sachet', string $sto
 {
     test()->withToken($token)->postJson('/api/v1/dlu-rules', [
         'packaging_type' => $packagingType, 'storage_condition' => $storageCondition, 'shelf_life_days' => $shelfLifeDays,
+        'reason' => 'Test fixture.',
     ], ['Idempotency-Key' => (string) Str::uuid()]);
 }
 

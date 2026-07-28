@@ -27,6 +27,7 @@ use Illuminate\Support\Carbon;
  * @property Carbon $sterilized_at
  * @property Carbon $use_by_date
  * @property int $print_counter
+ * @property string|null $dlu_rule_version_id
  */
 class Label extends Model
 {
@@ -35,7 +36,7 @@ class Label extends Model
 
     protected $fillable = [
         'tenant_id', 'cycle_item_id', 'status', 'packaging_type', 'storage_condition',
-        'shelf_life_days', 'sterilized_at', 'use_by_date', 'print_counter',
+        'shelf_life_days', 'sterilized_at', 'use_by_date', 'print_counter', 'dlu_rule_version_id',
     ];
 
     protected function casts(): array
@@ -76,5 +77,17 @@ class Label extends Model
     public function usage(): HasOne
     {
         return $this->hasOne(LabelUsage::class);
+    }
+
+    /**
+     * Which DLU rule version computed this label's own use_by_date/
+     * shelf_life_days at generation time (UI-28) — the evidentiary link a
+     * dossier reads, not something re-resolved live against dlu_rules.
+     *
+     * @return BelongsTo<DluRuleVersion, $this>
+     */
+    public function dluRuleVersion(): BelongsTo
+    {
+        return $this->belongsTo(DluRuleVersion::class);
     }
 }

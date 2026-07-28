@@ -32,14 +32,28 @@ class DluRuleController extends Controller
     {
         $this->authorize('create', DluRule::class);
 
-        return DluRuleData::fromModel($action->execute(Tenant::current(), $request->user(), $request->validated()));
+        $rule = $action->execute(
+            Tenant::current(),
+            $request->user(),
+            $request->safe()->except('reason'),
+            $request->validated('reason'),
+        );
+
+        return DluRuleData::fromModel($rule);
     }
 
     public function update(DluRule $rule, UpdateDluRuleRequest $request, UpdateDluRuleAction $action): DluRuleData
     {
         $this->authorize('update', $rule);
 
-        return DluRuleData::fromModel($action->execute($rule, $request->user(), $request->validated()));
+        $rule = $action->execute(
+            $rule,
+            $request->user(),
+            $request->safe()->except('reason'),
+            $request->validated('reason'),
+        );
+
+        return DluRuleData::fromModel($rule);
     }
 
     public function destroy(DluRule $rule, Request $request, DeleteDluRuleAction $action): Response

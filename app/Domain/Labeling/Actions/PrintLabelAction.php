@@ -6,6 +6,7 @@ use App\Domain\Compliance\Actions\RecordAuditEventAction;
 use App\Domain\Labeling\Enums\LabelStatus;
 use App\Domain\Labeling\Models\Label;
 use App\Domain\Labeling\Models\LabelPrint;
+use App\Domain\Tenancy\Models\Tenant;
 use App\Models\User;
 use App\Support\Api\ApiException;
 use Illuminate\Http\Request;
@@ -35,6 +36,11 @@ class PrintLabelAction
             $label = Label::where('id', $label->id)->lockForUpdate()->first();
             $isReprint = $label->status === LabelStatus::Printed;
             $sequence = $label->print_counter + 1;
+            // UI-28: which label-format version is rendering THIS print —
+            // a print-time concern (see LabelFormatVersion's docblock),
+            // recorded per print event rather than frozen on the label.
+            $tenant = Tenant::current();
+            $formatVersion = $tenant ? UpdateLabelFormatAction::current($tenant) : null;
 
             LabelPrint::create([
                 'tenant_id' => $label->tenant_id,
@@ -43,6 +49,7 @@ class PrintLabelAction
                 'sequence' => $sequence,
                 'reason' => $reason,
                 'printed_at' => now(),
+                'label_format_version_id' => $formatVersion?->id,
             ]);
 
             $label->update(['status' => LabelStatus::Printed, 'print_counter' => $sequence]);

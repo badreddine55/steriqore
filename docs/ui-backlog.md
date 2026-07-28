@@ -73,7 +73,7 @@ loads every session.
 | UI-25 | Audit log viewer | Done | Old/new value diffing, filter by actor/action/subject/period |
 | UI-26 | Team — users, invitations, roles, disable (never delete) | Done | |
 | UI-27 | Sites, rooms, storage locations (Settings) | Done | Built the Tenancy domain layer (Actions/Policies/DTOs) from scratch — see item detail |
-| UI-28 | — | Queued — brief pending | |
+| UI-28 | Practice settings (identity, label format, DLU rule table, alerts & notifications) | Done | New versioned-settings pattern added — see item detail |
 | UI-29 | — | Queued — brief pending | |
 | UI-30 | — | Queued — brief pending | |
 | UI-31 | — | Queued — brief pending | |
@@ -312,8 +312,71 @@ this didn't need repeating per-environment.
 
 Removed the "Soon" badge on Sites.
 
-### UI-28 — Queued
-Brief pending.
+### UI-28 — Practice settings
+Domain: Tenancy + Labeling + Inventory alerts. One page, four tabbed
+sections — not four routes. Owner/admin (`practice_settings.manage`)
+reach every section; only owner (`evidence_settings.manage`, the first
+place this codebase distinguishes owner from admin at all) can actually
+save label format or DLU rule changes — the two evidence-affecting
+sections. This was a genuine step-2 stop: **no versioned-settings
+concept existed anywhere** before this item (confirmed by research, then
+designed with the user's sign-off before writing any migration).
+
+**The versioning design**: `dlu_rules`/label-format stay exactly the
+fast "current" projections every existing query already reads
+(`GenerateCycleLabelsAction`, `CycleLabelController`'s picker); a new
+`dlu_rule_versions`/`label_format_versions` table behind each is the
+append-only ledger (mirrors `cycle_releases`/`label_prints`' trigger-
+enforced immutability) — every save inserts a new version row (actor +
+required reason + effective date) and updates the projection. `Label`
+gained a real `dlu_rule_version_id` FK (frozen once, at generation —
+the DLU is computed then, never at print time); `label_prints` gained
+`label_format_version_id` (recorded per print event, since format is a
+render-time concern that can legitimately differ between a label's
+first print and a later reprint — the brief is explicit that's fine).
+This is the first place a dossier could show "which rule version applied
+at print time," which the old `dlu_rule_id`-in-an-audit-event's-JSON
+approach never really supported.
+
+**Reused vs new**: `CreateDluRuleAction`/`UpdateDluRuleAction` (shared
+with the mobile API) were widened in place to write a version alongside
+the projection and require `reason` — a real, intentional breaking
+change to `POST/PATCH /api/v1/dlu-rules` (both now require `reason`),
+not just additive; `docs/openapi.yaml` regenerated. Label format,
+practice identity, alert settings, and digest subscriptions are new,
+web-only concepts (Tenant gained identity columns + a `logo`
+spatie/laravel-medialibrary collection, mirroring `AttachCycleFileAction`'s
+established pattern).
+
+**Alerts & notifications**: `DetectAlertsAction`'s hardcoded
+`NEAR_EXPIRY_DAYS` constant (OQ-6) became a real per-tenant
+`AlertSettings.near_expiry_days` value (30 still the default). A
+near-expiry threshold change previews how many open alerts would
+appear/disappear before saving (mirrors UI-23's blast-radius pattern).
+Digest subscriptions are role-based, not address-based — recipients
+resolve live from whoever currently holds the role, so it can't go
+stale as the team (UI-26) changes — sent via a new `digests:send`
+scheduled command + `DigestMail` (Resend, matching `InvitationMail`'s
+existing pattern). Control-test frequency/overdue-tolerance and
+failed-cycle escalation got settings fields; the missing-test alert
+*detection* itself (OQ-7) stays out of scope, unbuilt — this only gives
+it somewhere to eventually read a frequency value from.
+
+**Test-print**: a real sample-sheet PDF (`RenderLabelFormatSampleAction`
++ a dedicated `pdf/label-format-sample` view), built from synthetic data
+so it never touches a real label — reflects whatever's currently in the
+form, including unsaved edits, so a practice can check a change before
+committing to it.
+
+**EN 868 defaults**: deliberately NOT seeded (would mean inventing a
+compliance figure — OQ-8's reasoning, unchanged). The DLU rule table
+shows a persistent banner instead: shelf-life values are unverified
+until a dental professional signs them off.
+
+**Not built**: cycle numbering versioning — the brief's Rules section
+names it as evidence-affecting, but it isn't one of the four Screens and
+no existing "cycle numbering scheme" concept was found to version.
+Flagging rather than guessing at what that would even mean.
 
 ### UI-29 — Queued
 Brief pending.

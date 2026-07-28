@@ -20,6 +20,7 @@ class UpdateDluRuleRequest extends FormRequest
             'packaging_type' => ['sometimes', 'string', 'max:255'],
             'storage_condition' => ['sometimes', 'string', 'max:255'],
             'shelf_life_days' => ['sometimes', 'integer', 'min:1'],
+            'reason' => ['required', 'string', 'max:1000'],
         ];
     }
 }

@@ -199,3 +199,10 @@ export const stockMovementTypeLabel: Record<string, string> = {
     adjustment: 'Adjustment',
     count: 'Count',
 };
+
+/** Label sheet layout — a category, not a status; matches LabelSheetLayout::label(). */
+export const sheetLayoutLabel: Record<string, string> = {
+    a4_24: 'A4 sheet, 24 labels (4 x 6)',
+    a4_65: 'A4 sheet, 65 labels (5 x 13)',
+    roll: 'Continuous roll',
+};

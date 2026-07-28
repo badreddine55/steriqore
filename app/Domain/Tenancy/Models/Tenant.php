@@ -10,6 +10,8 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
+use Spatie\MediaLibrary\HasMedia;
+use Spatie\MediaLibrary\InteractsWithMedia;
 use Spatie\Multitenancy\Concerns\UsesMultitenancyConfig;
 use Spatie\Multitenancy\Contracts\IsTenant;
 use Spatie\Multitenancy\Models\Concerns\ImplementsTenant;
@@ -28,14 +30,34 @@ use Spatie\Multitenancy\Models\Concerns\ImplementsTenant;
  * @property string $plan
  * @property string $status
  * @property Carbon|null $trial_ends_at
+ * @property string|null $legal_name
+ * @property string|null $address_line1
+ * @property string|null $address_line2
+ * @property string|null $postal_code
+ * @property string|null $city
+ * @property string|null $country_code
+ * @property string|null $contact_email
+ * @property string|null $contact_phone
+ * @property string $timezone
+ * @property string $locale
  */
-class Tenant extends Model implements IsTenant
+class Tenant extends Model implements HasMedia, IsTenant
 {
     use HasUuidv7;
     use ImplementsTenant;
+    use InteractsWithMedia;
     use UsesMultitenancyConfig;
 
-    protected $fillable = ['name', 'slug', 'plan', 'status', 'trial_ends_at'];
+    protected $fillable = [
+        'name', 'slug', 'plan', 'status', 'trial_ends_at',
+        'legal_name', 'address_line1', 'address_line2', 'postal_code', 'city',
+        'country_code', 'contact_email', 'contact_phone', 'timezone', 'locale',
+    ];
+
+    public function registerMediaCollections(): void
+    {
+        $this->addMediaCollection('logo')->singleFile();
+    }
 
     /**
      * No per-tenant database in this architecture — required by IsTenant,

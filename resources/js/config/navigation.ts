@@ -13,6 +13,7 @@ import {
     Palette,
     ScrollText,
     Search,
+    Settings,
     ShieldAlert,
     Tags,
     Truck,
@@ -33,6 +34,7 @@ import evidenceSearchRoutes from '@/routes/evidence-search';
 import labels from '@/routes/labels';
 import nonConformityRoutes from '@/routes/non-conformities';
 import patientRoutes from '@/routes/patients';
+import practiceSettings from '@/routes/practice-settings';
 import productRoutes from '@/routes/products';
 import { edit as editProfile } from '@/routes/profile';
 import purchaseOrderRoutes from '@/routes/purchase-orders';
@@ -184,6 +186,12 @@ export const navGroups: NavGroup[] = [
                 href: siteRoutes.index(),
                 icon: Building2,
                 permission: 'sites.view',
+            },
+            {
+                title: 'Practice',
+                href: practiceSettings.index(),
+                icon: Settings,
+                permission: 'practice_settings.manage',
             },
             { title: 'Profile', href: editProfile(), icon: UserCircle },
             { title: 'Security', href: editSecurity(), icon: KeyRound },

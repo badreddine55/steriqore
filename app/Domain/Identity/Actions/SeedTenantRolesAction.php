@@ -49,10 +49,21 @@ class SeedTenantRolesAction
         'non_conformities.view',
         'non_conformities.manage',
         'data_exports.manage',
+        'practice_settings.manage',
+    ];
+
+    /**
+     * Granted to owner only, never admin — UI-28's "the evidence-affecting
+     * sections [label format, DLU rule table] are owner-only" is the first
+     * place this codebase distinguishes owner from admin at all; every
+     * other permission above treats them identically.
+     */
+    private const array OWNER_ONLY_PERMISSIONS = [
+        'evidence_settings.manage',
     ];
 
     private const array PERMISSIONS_BY_ROLE = [
-        'owner' => self::PERMISSIONS,
+        'owner' => [...self::PERMISSIONS, ...self::OWNER_ONLY_PERMISSIONS],
         'admin' => self::PERMISSIONS,
         // "Catalogue, suppliers, orders, receipts, movements, batches,
         // inventories, alerts" (CLAUDE.md) — stock_manager manages the
@@ -88,7 +99,7 @@ class SeedTenantRolesAction
         $registrar->setPermissionsTeamId($tenant->id);
 
         try {
-            foreach (self::PERMISSIONS as $permissionName) {
+            foreach ([...self::PERMISSIONS, ...self::OWNER_ONLY_PERMISSIONS] as $permissionName) {
                 Permission::firstOrCreate(['name' => $permissionName, 'guard_name' => 'web']);
             }
 

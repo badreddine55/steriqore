@@ -20,6 +20,7 @@ class CreateDluRuleRequest extends FormRequest
             'packaging_type' => ['required', 'string', 'max:255'],
             'storage_condition' => ['required', 'string', 'max:255'],
             'shelf_life_days' => ['required', 'integer', 'min:1'],
+            'reason' => ['required', 'string', 'max:1000'],
         ];
     }
 }

@@ -24,6 +24,7 @@ use App\Http\Controllers\Web\Sterilization\CycleAttachmentController;
 use App\Http\Controllers\Web\Sterilization\CycleController;
 use App\Http\Controllers\Web\Sterilization\CycleControlTestController;
 use App\Http\Controllers\Web\Sterilization\CycleItemController;
+use App\Http\Controllers\Web\Tenancy\PracticeSettingsController;
 use App\Http\Controllers\Web\Tenancy\RoomController;
 use App\Http\Controllers\Web\Tenancy\SiteController;
 use App\Http\Controllers\Web\Tenancy\StorageLocationController;
@@ -146,6 +147,19 @@ Route::middleware(['auth', 'verified', 'tenant.web'])->group(function () {
     Route::prefix('storage-locations')->name('storage-locations.')->group(function () {
         Route::patch('{storageLocation}', [StorageLocationController::class, 'update'])->name('update');
         Route::delete('{storageLocation}', [StorageLocationController::class, 'archive'])->name('archive');
+    });
+
+    Route::prefix('practice-settings')->name('practice-settings.')->group(function () {
+        Route::get('/', [PracticeSettingsController::class, 'index'])->name('index');
+        Route::patch('identity', [PracticeSettingsController::class, 'updateIdentity'])->name('identity.update');
+        Route::post('logo', [PracticeSettingsController::class, 'updateLogo'])->name('logo.update');
+        Route::post('dlu-rules', [PracticeSettingsController::class, 'storeDluRule'])->name('dlu-rules.store');
+        Route::patch('dlu-rules/{dluRule}', [PracticeSettingsController::class, 'updateDluRule'])->name('dlu-rules.update');
+        Route::post('label-format', [PracticeSettingsController::class, 'updateLabelFormat'])->name('label-format.update');
+        Route::get('label-format/sample', [PracticeSettingsController::class, 'sampleLabelFormat'])->name('label-format.sample');
+        Route::patch('alerts', [PracticeSettingsController::class, 'updateAlertSettings'])->name('alerts.update');
+        Route::post('alerts/preview-near-expiry', [PracticeSettingsController::class, 'previewNearExpiryImpact'])->name('alerts.preview-near-expiry');
+        Route::put('digest-subscriptions', [PracticeSettingsController::class, 'updateDigestSubscriptions'])->name('digest-subscriptions.update');
     });
 
     Route::prefix('suppliers')->name('suppliers.')->group(function () {

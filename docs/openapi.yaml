@@ -1435,13 +1435,13 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ApiErrorEnvelope'
-        401:
+        422:
           description: 'SteriQore API error envelope.'
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ApiErrorEnvelope'
-        422:
+        401:
           description: 'SteriQore API error envelope.'
           content:
             application/json:
@@ -1461,6 +1461,7 @@ paths:
           schema:
             type: string
       requestBody:
+        required: true
         content:
           application/json:
             schema:
@@ -1478,6 +1479,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ApiErrorEnvelope'
+        422:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
         404:
           description: 'SteriQore API error envelope.'
           content:
@@ -1485,12 +1492,6 @@ paths:
               schema:
                 $ref: '#/components/schemas/ApiErrorEnvelope'
         401:
-          description: 'SteriQore API error envelope.'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiErrorEnvelope'
-        422:
           description: 'SteriQore API error envelope.'
           content:
             application/json:
@@ -3829,10 +3830,14 @@ components:
         shelf_life_days:
           type: integer
           minimum: 1
+        reason:
+          type: string
+          maxLength: 1000
       required:
         - packaging_type
         - storage_condition
         - shelf_life_days
+        - reason
       title: CreateDluRuleRequest
     CreateInvitationRequest:
       type: object
@@ -4436,6 +4441,11 @@ components:
         shelf_life_days:
           type: integer
           minimum: 1
+        reason:
+          type: string
+          maxLength: 1000
+      required:
+        - reason
       title: UpdateDluRuleRequest
     UpdateProductRequest:
       type: object

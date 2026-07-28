@@ -203,6 +203,7 @@ export async function createDemoDluRule(
             packaging_type: packagingType,
             storage_condition: storageCondition,
             shelf_life_days: shelfLifeDays,
+            reason: 'E2E fixture setup.',
         },
     });
 

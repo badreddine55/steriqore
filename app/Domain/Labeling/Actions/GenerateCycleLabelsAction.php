@@ -62,6 +62,10 @@ class GenerateCycleLabelsAction
                     'sterilized_at' => $sterilizedAt,
                     'use_by_date' => $useByDate,
                     'print_counter' => 0,
+                    // UI-28: which DLU rule *version* computed this — the
+                    // durable link a dossier reads, replacing the old
+                    // dlu_rule_id-in-audit-JSON-only approach below.
+                    'dlu_rule_version_id' => $rule->current_version_id,
                 ])
             );
 
@@ -71,7 +75,7 @@ class GenerateCycleLabelsAction
                 action: 'labels.generated',
                 subjectType: Cycle::class,
                 subjectId: $cycle->id,
-                newValues: ['count' => $labels->count(), 'dlu_rule_id' => $rule->id],
+                newValues: ['count' => $labels->count(), 'dlu_rule_id' => $rule->id, 'dlu_rule_version_id' => $rule->current_version_id],
                 request: $this->request,
             );
 

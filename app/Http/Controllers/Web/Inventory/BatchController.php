@@ -3,10 +3,11 @@
 namespace App\Http\Controllers\Web\Inventory;
 
 use App\Domain\Catalog\Models\Product;
-use App\Domain\Inventory\Actions\DetectAlertsAction;
 use App\Domain\Inventory\Data\BatchListEntryData;
+use App\Domain\Inventory\Models\AlertSettings;
 use App\Domain\Inventory\Models\Batch;
 use App\Domain\Purchasing\Models\Supplier;
+use App\Domain\Tenancy\Models\Tenant;
 use App\Http\Controllers\Controller;
 use App\Support\Data\OptionData;
 use Illuminate\Http\Request;
@@ -29,17 +30,19 @@ class BatchController extends Controller
     {
         $this->authorize('viewAny', Batch::class);
 
+        $nearExpiryDays = AlertSettings::forTenant(Tenant::current())->near_expiry_days;
+
         $batches = QueryBuilder::for(Batch::class)
             ->allowedFilters(
                 AllowedFilter::exact('product_id'),
                 AllowedFilter::exact('supplier_id'),
                 AllowedFilter::exact('status'),
-                AllowedFilter::callback('expiry', function ($query, $value): void {
+                AllowedFilter::callback('expiry', function ($query, $value) use ($nearExpiryDays): void {
                     match ($value) {
                         'expired' => $query->whereNotNull('expiry_date')->where('expiry_date', '<', now()->toDateString()),
                         'near_expiry' => $query->whereNotNull('expiry_date')
                             ->where('expiry_date', '>=', now()->toDateString())
-                            ->where('expiry_date', '<=', now()->addDays(DetectAlertsAction::NEAR_EXPIRY_DAYS)->toDateString()),
+                            ->where('expiry_date', '<=', now()->addDays($nearExpiryDays)->toDateString()),
                         default => null,
                     };
                 }),

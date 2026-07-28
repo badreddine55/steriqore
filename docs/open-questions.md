@@ -119,6 +119,12 @@ so a later edit to the rule never rewrites already-printed evidence.
 **Needs confirmation:** what packaging/storage categories and day counts
 this practice (and, longer-term, a shipped "EN 868 defaults" starter set)
 should actually use.
+**UI-28 (2026-07-28):** the DLU rule table now has a settings-page editor,
+but still seeds nothing — inventing concrete day counts here would still
+mean inventing a compliance figure, exactly this question's original
+reasoning. The section shows a persistent banner instead: shelf-life
+values are unverified until a dental professional signs them off, and no
+defaults are pre-filled. Still open.
 
 ## OQ-7 — Control tests: attached to a production cycle, or their own
 daily log?
@@ -153,11 +159,16 @@ built without inventing a compliance rule.
 **Context:** Nothing in the brief specifies how many days before a batch's
 expiry (DLU-adjacent, but this is the *stock* expiry alert, not the label
 DLU rule) a near-expiry alert should fire.
-**Default implemented:** 30 days (`DetectAlertsAction::NEAR_EXPIRY_DAYS`),
+**Default implemented:** 30 days (`DetectAlertsAction::DEFAULT_NEAR_EXPIRY_DAYS`),
 hardcoded, not yet per-tenant configurable.
 **Needs confirmation:** is 30 days right, and should this eventually be a
 per-tenant setting (packaging/storage-dependent, like the DLU rule table
 CLAUDE.md describes for labels) rather than a single constant?
+**Resolved by UI-28 (2026-07-28):** it's now a real per-tenant setting
+(`AlertSettings.near_expiry_days`, Practice Settings > Alerts &
+Notifications), 30 days is still the default for a tenant that's never
+changed it. The "is 30 days right" question itself is still open — a
+practice can now answer it for themselves.
 
 ## OQ-5 — Audit log "UI viewer" is API-only; the web app has no tenant
 resolution yet

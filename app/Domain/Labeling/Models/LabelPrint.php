@@ -20,6 +20,7 @@ use Illuminate\Support\Carbon;
  * @property int $sequence
  * @property string|null $reason
  * @property Carbon $printed_at
+ * @property string|null $label_format_version_id
  */
 class LabelPrint extends Model
 {
@@ -28,7 +29,10 @@ class LabelPrint extends Model
 
     public const UPDATED_AT = null;
 
-    protected $fillable = ['tenant_id', 'label_id', 'printed_by_user_id', 'sequence', 'reason', 'printed_at'];
+    protected $fillable = [
+        'tenant_id', 'label_id', 'printed_by_user_id', 'sequence', 'reason',
+        'printed_at', 'label_format_version_id',
+    ];
 
     protected function casts(): array
     {
@@ -52,5 +56,17 @@ class LabelPrint extends Model
     public function printedBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'printed_by_user_id');
+    }
+
+    /**
+     * Which label-format version rendered this specific physical print
+     * (UI-28) — a print-time concern, so it's recorded per print event
+     * here, not frozen once on the Label itself.
+     *
+     * @return BelongsTo<LabelFormatVersion, $this>
+     */
+    public function labelFormatVersion(): BelongsTo
+    {
+        return $this->belongsTo(LabelFormatVersion::class);
     }
 }

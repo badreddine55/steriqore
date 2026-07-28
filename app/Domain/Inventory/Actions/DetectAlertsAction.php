@@ -7,6 +7,7 @@ use App\Domain\Inventory\Enums\AlertSeverity;
 use App\Domain\Inventory\Enums\AlertState;
 use App\Domain\Inventory\Enums\AlertType;
 use App\Domain\Inventory\Models\Alert;
+use App\Domain\Inventory\Models\AlertSettings;
 use App\Domain\Inventory\Models\Batch;
 use App\Domain\Tenancy\Models\Tenant;
 use Illuminate\Support\Facades\DB;
@@ -18,13 +19,15 @@ use Illuminate\Support\Facades\DB;
  * soon as its condition stops being true (restock above threshold, batch
  * fully consumed), rather than leaving stale alerts around.
  *
- * DECISION NEEDED: the near-expiry window (30 days) isn't specified
- * anywhere in the brief — see docs/open-questions.md.
+ * The near-expiry window was originally a hardcoded DECISION NEEDED
+ * default (docs/open-questions.md, OQ-6) — UI-28 makes it a real
+ * per-tenant setting (AlertSettings::near_expiry_days); DEFAULT_NEAR_EXPIRY_DAYS
+ * is only the column's own default for a tenant that's never saved one.
  */
 class DetectAlertsAction
 {
-    /** Also the threshold the batches list (UI-15) uses for its "expiring soon" filter — one source of truth. */
-    public const int NEAR_EXPIRY_DAYS = 30;
+    /** AlertSettings.near_expiry_days migration default — also the batches list's (UI-15) fallback. */
+    public const int DEFAULT_NEAR_EXPIRY_DAYS = 30;
 
     /**
      * @return array{low_stock: int, near_expiry: int, expired: int}
@@ -32,6 +35,7 @@ class DetectAlertsAction
     public function execute(Tenant $tenant): array
     {
         $opened = ['low_stock' => 0, 'near_expiry' => 0, 'expired' => 0];
+        $nearExpiryDays = AlertSettings::forTenant($tenant)->near_expiry_days;
 
         $stockByProduct = DB::table('stock_levels')
             ->join('batches', 'batches.id', '=', 'stock_levels.batch_id')
@@ -63,7 +67,7 @@ class DetectAlertsAction
         Batch::where('tenant_id', $tenant->id)
             ->whereIn('id', $batchIdsWithStock)
             ->whereNotNull('expiry_date')
-            ->each(function (Batch $batch) use ($tenant, &$opened) {
+            ->each(function (Batch $batch) use ($tenant, $nearExpiryDays, &$opened) {
                 if ($batch->expiry_date->isPast()) {
                     $created = $this->openAlert(
                         $tenant, AlertType::Expired, AlertSeverity::Critical, Batch::class, $batch->id,
@@ -71,7 +75,7 @@ class DetectAlertsAction
                     );
                     $opened['expired'] += $created ? 1 : 0;
                     $this->resolveIfOpen($tenant, AlertType::NearExpiry, Batch::class, $batch->id);
-                } elseif ($batch->expiry_date->lte(now()->addDays(self::NEAR_EXPIRY_DAYS))) {
+                } elseif ($batch->expiry_date->lte(now()->addDays($nearExpiryDays))) {
                     $created = $this->openAlert(
                         $tenant, AlertType::NearExpiry, AlertSeverity::Warning, Batch::class, $batch->id,
                         "Batch \"{$batch->batch_number}\" expires on {$batch->expiry_date->toDateString()}.",

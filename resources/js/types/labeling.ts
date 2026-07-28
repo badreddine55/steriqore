@@ -18,6 +18,10 @@ export type DluRule = {
     packaging_type: string;
     storage_condition: string;
     shelf_life_days: number;
+    last_updated_at: string | null;
+    last_updated_by: string | null;
+    last_reason: string | null;
+    existing_labels_count: number;
 };
 
 /** Mirrors App\Domain\Labeling\Data\LabelListEntryData exactly. */
