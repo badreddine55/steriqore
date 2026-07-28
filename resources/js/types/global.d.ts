@@ -1,4 +1,5 @@
-import type { Auth, Site, Tenant } from '@/types/auth';
+import type { Auth, Tenant } from '@/types/auth';
+import type { Site } from '@/types/tenancy';
 
 declare module 'react' {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars

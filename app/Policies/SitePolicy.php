@@ -19,4 +19,19 @@ class SitePolicy
         // permission is still required for the ones that can.
         return $user->can('sites.view');
     }
+
+    public function create(User $user): bool
+    {
+        return $user->can('sites.manage');
+    }
+
+    public function update(User $user, Site $site): bool
+    {
+        return $user->can('sites.manage');
+    }
+
+    public function delete(User $user, Site $site): bool
+    {
+        return $user->can('sites.manage');
+    }
 }

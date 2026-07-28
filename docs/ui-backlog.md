@@ -72,7 +72,7 @@ loads every session.
 | UI-24 | Quarantine | Done | |
 | UI-25 | Audit log viewer | Done | Old/new value diffing, filter by actor/action/subject/period |
 | UI-26 | Team — users, invitations, roles, disable (never delete) | Done | |
-| UI-27 | Sites, rooms, storage locations (Settings) | **Next** | |
+| UI-27 | Sites, rooms, storage locations (Settings) | Done | Built the Tenancy domain layer (Actions/Policies/DTOs) from scratch — see item detail |
 | UI-28 | — | Queued — brief pending | |
 | UI-29 | — | Queued — brief pending | |
 | UI-30 | — | Queued — brief pending | |
@@ -267,30 +267,50 @@ before. Disabling revokes tokens for that tenant only; the account itself
 is never deleted (invariant #6).
 
 ### UI-27 — Sites, rooms, storage locations (Settings)
-**Next.** Domain: Tenancy (S1-ANA-01). The three-level hierarchy the whole
-app hangs off: tenant → sites → rooms → storage_locations — devices attach
-to a site, products have a default storage location, batches live in one,
-stock movements record a from/to location, the shell's site switcher reads
-from it. Admin/owner only.
+Domain: Tenancy (S1-ANA-01). Unlike every prior UI-XX item, almost none of
+the domain layer existed yet — only the `Site`/`Room`/`StorageLocation`
+models, one read-only `SiteData`/`SitesController::index`, and a
+view-only `SitePolicy`. Built from scratch: `sites.manage` permission;
+`CreateSiteAction`/`UpdateSiteAction`/`ArchiveSiteAction` (+ the Room and
+StorageLocation equivalents); `RoomData`/`StorageLocationData`;
+`RoomPolicy`/`StorageLocationPolicy`; `Http/Requests/Api/V1/Tenancy/*`;
+Web `SiteController`/`RoomController`/`StorageLocationController`.
 
-- Sites list + detail: create, rename, archive; show what a site currently
-  holds (rooms, devices, active batches) so archiving's consequence is
-  visible.
-- Rooms nested under a site.
-- Storage locations nested under a room — the level stock actually sits
-  at, needs to be quick to add several in a row.
-- Tree / master-detail layout, not three disconnected CRUD tables.
+Archive semantics reuse Laravel's `SoftDeletes` (matching the
+Product/Supplier/Patient precedent) rather than a bespoke `archived_at`
+column — a new migration backfills `deleted_at` + RLS onto
+`sites`/`rooms`/`storage_locations`, which predated both conventions.
+Every relation from another domain into these three (`Device::site()`,
+`Product::defaultLocation()`, `StockLevel::location()`,
+`StockMovement::location()`, plus the internal `Room::site()` /
+`StorageLocation::site()`/`room()`/`parent()`) got `->withTrashed()` so
+archived rows keep resolving on historical evidence (invariant #6) —
+found and fixed proactively this time, having hit the exact same class of
+bug twice already in UI-19/UI-21.
 
-Rules: never hard-delete (archive instead — hidden from pickers, still
-resolvable on every past record); if removal is attempted on something
-referenced, show what references it and offer archive instead; archiving
-a site cascades visibly to its rooms/locations (state the count before
-confirming, same pattern as UI-23's blast radius); names unique per parent,
-scoped by tenant; every mutation audited with actor + reason; cross-tenant
-403/404; moving a location between rooms is allowed, moving a room between
-sites with stock history is NOT (flag if this assumption is wrong).
+Site show page: a tree of rooms, each showing its storage locations,
+with add/edit/archive at every level, plus rooms/devices/active-batches
+summary cards. Archiving a site or room cascades visibly to its children
+(the count doubles as the blast-radius preview, already loaded — no
+separate preview endpoint needed, unlike UI-23). Every archive requires a
+reason.
 
-Remove the "Soon" badge on Sites when done.
+Two rules implemented exactly as specified, both worth a second look:
+moving a room to a different site is refused (409) once any of its
+storage locations has ever recorded a stock movement; moving a storage
+location to a different room is allowed but was scoped to rooms of the
+**same site only** — a deliberate narrowing from a literal reading of the
+brief (which didn't say same-site), since letting a single site's page
+relocate stock to a completely different practice read as an unrequested,
+confusing capability. Flagged for confirmation.
+
+The persistent demo/dev tenant predates the new `sites.manage` permission
+and needed a one-time backfill (`SeedTenantRolesAction::execute()` inside
+`TenantContext::run`) directly against the shared dev Postgres instance —
+both host and the app container already point at the same database, so
+this didn't need repeating per-environment.
+
+Removed the "Soon" badge on Sites.
 
 ### UI-28 — Queued
 Brief pending.

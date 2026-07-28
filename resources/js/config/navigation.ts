@@ -38,6 +38,7 @@ import { edit as editProfile } from '@/routes/profile';
 import purchaseOrderRoutes from '@/routes/purchase-orders';
 import quarantineRoutes from '@/routes/quarantine';
 import { edit as editSecurity } from '@/routes/security';
+import siteRoutes from '@/routes/sites';
 import stockRoutes from '@/routes/stock';
 import supplierRoutes from '@/routes/suppliers';
 import team from '@/routes/team';
@@ -180,10 +181,9 @@ export const navGroups: NavGroup[] = [
             },
             {
                 title: 'Sites',
-                href: '/sites',
+                href: siteRoutes.index(),
                 icon: Building2,
                 permission: 'sites.view',
-                comingSoon: true,
             },
             { title: 'Profile', href: editProfile(), icon: UserCircle },
             { title: 'Security', href: editSecurity(), icon: KeyRound },

@@ -6,6 +6,8 @@ use App\Support\Concerns\BelongsToTenant;
 use App\Support\Concerns\HasUuidv7;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Carbon;
 
 /**
  * @property string $id
@@ -13,11 +15,13 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property string $name
  * @property string $timezone
  * @property bool $is_primary
+ * @property Carbon|null $deleted_at
  */
 class Site extends Model
 {
     use BelongsToTenant;
     use HasUuidv7;
+    use SoftDeletes;
 
     protected $fillable = [
         'tenant_id', 'name', 'address_line1', 'address_line2',

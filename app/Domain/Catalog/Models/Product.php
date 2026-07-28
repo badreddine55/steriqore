@@ -53,6 +53,6 @@ class Product extends Model
      */
     public function defaultLocation(): BelongsTo
     {
-        return $this->belongsTo(StorageLocation::class, 'default_location_id');
+        return $this->belongsTo(StorageLocation::class, 'default_location_id')->withTrashed();
     }
 }

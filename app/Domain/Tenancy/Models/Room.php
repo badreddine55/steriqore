@@ -7,6 +7,8 @@ use App\Support\Concerns\HasUuidv7;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Carbon;
 
 /**
  * @property string $id
@@ -14,11 +16,13 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property string $site_id
  * @property string $name
  * @property string|null $kind
+ * @property Carbon|null $deleted_at
  */
 class Room extends Model
 {
     use BelongsToTenant;
     use HasUuidv7;
+    use SoftDeletes;
 
     protected $fillable = ['tenant_id', 'site_id', 'name', 'kind'];
 
@@ -27,7 +31,7 @@ class Room extends Model
      */
     public function site(): BelongsTo
     {
-        return $this->belongsTo(Site::class);
+        return $this->belongsTo(Site::class)->withTrashed();
     }
 
     /**

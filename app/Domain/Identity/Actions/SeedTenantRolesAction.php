@@ -22,6 +22,7 @@ class SeedTenantRolesAction
         'invitations.revoke',
         'memberships.disable',
         'sites.view',
+        'sites.manage',
         'audit.view',
         'products.view',
         'products.manage',

@@ -46,6 +46,6 @@ class StockLevel extends Model
      */
     public function location(): BelongsTo
     {
-        return $this->belongsTo(StorageLocation::class);
+        return $this->belongsTo(StorageLocation::class)->withTrashed();
     }
 }

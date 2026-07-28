@@ -53,7 +53,7 @@ class Device extends Model
      */
     public function site(): BelongsTo
     {
-        return $this->belongsTo(Site::class);
+        return $this->belongsTo(Site::class)->withTrashed();
     }
 
     /**

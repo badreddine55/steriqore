@@ -20,7 +20,9 @@ use App\Domain\Purchasing\Models\PurchaseOrder;
 use App\Domain\Purchasing\Models\Supplier;
 use App\Domain\Reporting\Models\DataExportRequest;
 use App\Domain\Sterilization\Models\Cycle;
+use App\Domain\Tenancy\Models\Room;
 use App\Domain\Tenancy\Models\Site;
+use App\Domain\Tenancy\Models\StorageLocation;
 use App\Domain\Traceability\Models\LabelUsage;
 use App\Domain\Traceability\Models\Patient;
 use App\Models\User;
@@ -39,9 +41,11 @@ use App\Policies\PatientPolicy;
 use App\Policies\ProductCategoryPolicy;
 use App\Policies\ProductPolicy;
 use App\Policies\PurchaseOrderPolicy;
+use App\Policies\RoomPolicy;
 use App\Policies\SitePolicy;
 use App\Policies\StockLevelPolicy;
 use App\Policies\StockMovementPolicy;
+use App\Policies\StorageLocationPolicy;
 use App\Policies\SupplierPolicy;
 use App\Policies\TenantUserPolicy;
 use App\Support\Api\ScrambleErrorEnvelope;
@@ -84,6 +88,8 @@ class AppServiceProvider extends ServiceProvider
         // auto-discovery: our models live under App\Domain\..., not
         // App\Models, so the convention-based guess isn't guaranteed.
         Gate::policy(Site::class, SitePolicy::class);
+        Gate::policy(Room::class, RoomPolicy::class);
+        Gate::policy(StorageLocation::class, StorageLocationPolicy::class);
         Gate::policy(Invitation::class, InvitationPolicy::class);
         Gate::policy(TenantUser::class, TenantUserPolicy::class);
         Gate::policy(AuditEvent::class, AuditEventPolicy::class);

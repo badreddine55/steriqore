@@ -22,13 +22,6 @@ export type Tenant = {
     slug: string;
 };
 
-export type Site = {
-    id: string;
-    name: string;
-    timezone: string;
-    is_primary: boolean;
-};
-
 /* @chisel-passkeys */
 export type Passkey = {
     id: number;

@@ -24,6 +24,9 @@ use App\Http\Controllers\Web\Sterilization\CycleAttachmentController;
 use App\Http\Controllers\Web\Sterilization\CycleController;
 use App\Http\Controllers\Web\Sterilization\CycleControlTestController;
 use App\Http\Controllers\Web\Sterilization\CycleItemController;
+use App\Http\Controllers\Web\Tenancy\RoomController;
+use App\Http\Controllers\Web\Tenancy\SiteController;
+use App\Http\Controllers\Web\Tenancy\StorageLocationController;
 use App\Http\Controllers\Web\Tenancy\SwitchSiteController;
 use App\Http\Controllers\Web\Tenancy\SwitchTenantController;
 use App\Http\Controllers\Web\Traceability\EvidenceSearchController;
@@ -121,6 +124,28 @@ Route::middleware(['auth', 'verified', 'tenant.web'])->group(function () {
         Route::post('invitations', [TeamController::class, 'storeInvitation'])->name('invitations.store');
         Route::delete('invitations/{invitation}', [TeamController::class, 'revokeInvitation'])->name('invitations.revoke');
         Route::delete('members/{tenantUser}', [TeamController::class, 'disableMember'])->name('members.disable');
+    });
+
+    Route::prefix('sites')->name('sites.')->group(function () {
+        Route::get('/', [SiteController::class, 'index'])->name('index');
+        Route::post('/', [SiteController::class, 'store'])->name('store');
+        Route::get('{site}', [SiteController::class, 'show'])->name('show');
+        Route::patch('{site}', [SiteController::class, 'update'])->name('update');
+        Route::delete('{site}', [SiteController::class, 'archive'])->name('archive');
+
+        Route::post('{site}/rooms', [RoomController::class, 'store'])->name('rooms.store');
+    });
+
+    Route::prefix('rooms')->name('rooms.')->group(function () {
+        Route::patch('{room}', [RoomController::class, 'update'])->name('update');
+        Route::delete('{room}', [RoomController::class, 'archive'])->name('archive');
+
+        Route::post('{room}/storage-locations', [StorageLocationController::class, 'store'])->name('storage-locations.store');
+    });
+
+    Route::prefix('storage-locations')->name('storage-locations.')->group(function () {
+        Route::patch('{storageLocation}', [StorageLocationController::class, 'update'])->name('update');
+        Route::delete('{storageLocation}', [StorageLocationController::class, 'archive'])->name('archive');
     });
 
     Route::prefix('suppliers')->name('suppliers.')->group(function () {

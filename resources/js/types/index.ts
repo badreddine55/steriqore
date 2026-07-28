@@ -10,5 +10,6 @@ export type * from './pagination';
 export type * from './purchasing';
 export type * from './sterilization';
 export type * from './support';
+export type * from './tenancy';
 export type * from './traceability';
 export type * from './ui';
