@@ -7,6 +7,7 @@ use App\Domain\Inventory\Enums\AlertState;
 use App\Domain\Inventory\Models\Alert;
 use App\Models\User;
 use App\Support\Api\ApiException;
+use App\Support\Dashboard\DashboardCache;
 use Illuminate\Http\Request;
 
 /**
@@ -38,6 +39,8 @@ class ResolveAlertAction
             subjectId: $alert->id,
             request: $this->request,
         );
+
+        DashboardCache::forget($alert->tenant);
 
         return $alert;
     }

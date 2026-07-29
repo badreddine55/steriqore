@@ -2,6 +2,7 @@
 
 namespace App\Domain\Sterilization\Models;
 
+use App\Domain\Compliance\Models\NonConformity;
 use App\Domain\Equipment\Models\Device;
 use App\Domain\Equipment\Models\DeviceProgram;
 use App\Domain\Sterilization\Enums\CycleStatus;
@@ -12,6 +13,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Support\Carbon;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
@@ -99,5 +101,18 @@ class Cycle extends Model implements HasMedia
     public function release(): HasOne
     {
         return $this->hasOne(CycleRelease::class);
+    }
+
+    /**
+     * Standard Eloquent morph convention (subject_type/subject_id) matches
+     * exactly what RaiseNonConformityAction already writes via
+     * `$subject::class` — the dashboard's "rejected cycle with no
+     * non-conformity yet" card is the first reader of this inverse.
+     *
+     * @return MorphMany<NonConformity, $this>
+     */
+    public function nonConformities(): MorphMany
+    {
+        return $this->morphMany(NonConformity::class, 'subject');
     }
 }

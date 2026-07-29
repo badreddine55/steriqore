@@ -1,7 +1,7 @@
 import type { StatusMeta, StatusTone } from '@/lib/status';
 import { cn } from '@/lib/utils';
 
-const TONE_CLASSES: Record<StatusTone, string> = {
+export const TONE_CLASSES: Record<StatusTone, string> = {
     draft: 'bg-status-draft-bg text-status-draft-fg',
     pending: 'bg-status-pending-bg text-status-pending-fg',
     success: 'bg-status-success-bg text-status-success-fg',

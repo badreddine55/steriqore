@@ -9,6 +9,7 @@ use App\Domain\Labeling\Enums\LabelStatus;
 use App\Domain\Labeling\Models\Label;
 use App\Domain\Sterilization\Models\Cycle;
 use App\Models\User;
+use App\Support\Dashboard\DashboardCache;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -84,6 +85,8 @@ class RaiseNonConformityAction
                 newValues: ['subject_type' => $subject::class, 'subject_id' => $subject->id],
                 request: $this->request,
             );
+
+            DashboardCache::forget($subject->tenant);
 
             return $nonConformity;
         });

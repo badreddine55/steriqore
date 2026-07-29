@@ -34,7 +34,14 @@ class NonConformityController extends Controller
         $this->authorize('viewAny', NonConformity::class);
 
         $nonConformities = QueryBuilder::for(NonConformity::class)
-            ->allowedFilters(AllowedFilter::exact('subject_type'))
+            ->allowedFilters(
+                AllowedFilter::exact('subject_type'),
+                // UI-30's "open non-conformities & recalls" dashboard card
+                // shares this exact predicate with the list.
+                AllowedFilter::callback('resolved', function ($query, $value): void {
+                    $value ? $query->whereNotNull('resolved_at') : $query->whereNull('resolved_at');
+                }),
+            )
             ->defaultSort('-raised_at')
             ->allowedSorts('raised_at')
             ->cursorPaginate(perPage: 25)

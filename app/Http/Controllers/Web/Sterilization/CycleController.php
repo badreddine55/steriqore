@@ -65,6 +65,13 @@ class CycleController extends Controller
                 AllowedFilter::callback('to', function ($query, $value): void {
                     $query->where('started_at', '<=', $value);
                 }),
+                // UI-30's dashboard card and this list share this exact
+                // predicate — whichever changes, the other must too.
+                AllowedFilter::callback('missing_non_conformity', function ($query, $value): void {
+                    if ($value) {
+                        $query->whereDoesntHave('nonConformities');
+                    }
+                }),
             )
             ->allowedSorts('cycle_number', 'created_at')
             ->defaultSort('-created_at')

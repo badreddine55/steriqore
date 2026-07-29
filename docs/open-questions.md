@@ -169,6 +169,12 @@ standalone daily log independent of any specific production cycle, and
 what the actual required test frequency/type-per-device-kind rules are —
 that second answer is also what `missing_test` needs before it can be
 built without inventing a compliance rule.
+**UI-30 addendum, 2026-07-29:** the dashboard's attention queue would have
+included "control tests overdue or due today" — skipped for the same
+reason (`AlertSettings.control_test_frequency_days`/
+`control_test_overdue_tolerance_days` are still stored but never read by
+any detection logic), per explicit user decision, same precedent as UI-17
+(inventory counts).
 
 ## OQ-6 — Near-expiry alert window
 **Raised:** S2-ANA-05 (Alert engine), 2026-07-28

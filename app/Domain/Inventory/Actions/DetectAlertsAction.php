@@ -10,6 +10,7 @@ use App\Domain\Inventory\Models\Alert;
 use App\Domain\Inventory\Models\AlertSettings;
 use App\Domain\Inventory\Models\Batch;
 use App\Domain\Tenancy\Models\Tenant;
+use App\Support\Dashboard\DashboardCache;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -85,6 +86,8 @@ class DetectAlertsAction
                     $this->resolveIfOpen($tenant, AlertType::NearExpiry, Batch::class, $batch->id);
                 }
             });
+
+        DashboardCache::forget($tenant);
 
         return $opened;
     }

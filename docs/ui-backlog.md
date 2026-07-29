@@ -75,7 +75,7 @@ loads every session.
 | UI-27 | Sites, rooms, storage locations (Settings) | Done | Built the Tenancy domain layer (Actions/Policies/DTOs) from scratch — see item detail |
 | UI-28 | Practice settings (identity, label format, DLU rule table, alerts & notifications) | Done | New versioned-settings pattern added — see item detail |
 | UI-29 | Data export (GDPR portability / offboarding) | Done | Backend gaps closed as part of the item — see item detail |
-| UI-30 | — | Queued — brief pending | |
+| UI-30 | Dashboard (attention queue, today at a glance, new-practice checklist) | Done | "Control tests overdue" card skipped (OQ-7) — see item detail |
 | UI-31 | — | Queued — brief pending | |
 
 ## Item detail
@@ -448,8 +448,78 @@ instead, with a regression test.
 
 Removed the "Soon" badge on Data export.
 
-### UI-30 — Queued
-Brief pending.
+### UI-30 — Dashboard
+Domain: read-only rollup across Sterilization/Inventory/Compliance, no new
+domain logic. Replaces the starter-kit's four `PlaceholderPattern` cards
+(deleted entirely, along with the now-unused component file).
+
+**Every count reuses the same query its target list filters with, not a
+re-implemented aggregate** — the core rule the brief insisted on. Three
+list screens gained a small, mechanical filter callback purely so the
+dashboard card and the list it links to share one predicate: `CycleController`
+got `missing_non_conformity` (paired with a new `Cycle::nonConformities()`
+morphMany — Eloquent's default `subject_type`/`subject_id` convention
+already matches what `RaiseNonConformityAction` writes, so no migration was
+needed), `NonConformityController` got `resolved`, and `LabelController` got
+`overdue` (checks `use_by_date` directly rather than `status`, since label
+expiry is lazy — nothing flips a label to `Expired` until the next scan
+attempt, confirmed by research before writing this). The three Alert-backed
+cards (batches expired-in-stock, near-expiry, low-stock) needed no changes
+at all — `AlertController`'s `type`/`state` filters already existed.
+
+**Step-2 stop, resolved by explicit decision:** "control tests overdue or
+due today" was in the brief's attention-queue list, but no backend concept
+of "overdue" exists anywhere (OQ-7) — `AlertSettings`'s frequency/tolerance
+columns are stored, never read, and building detection here would mean
+inventing the regulatory rule OQ-7 already flags as undecided. Skipped
+by user choice, same precedent as UI-17.
+
+**Caching**: the first cache-invalidation-on-domain-event pattern in this
+app. Tenant-wide facts (attention counts, today's cycles, onboarding state)
+are cached 60s under a tenant-scoped key (`App\Support\Dashboard\DashboardCache`,
+a standalone helper so Sterilization/Inventory/Compliance Actions can
+depend on it without a dependency back into the Reporting domain that owns
+the dashboard). Explicitly forgotten by the six Actions that could change
+what it shows: `ReleaseCycleAction`, `RaiseNonConformityAction`,
+`ResolveNonConformityAction`, `RecordStockMovementAction`,
+`DetectAlertsAction`, `ResolveAlertAction`. Per-viewer personalization
+(which cards a role's permissions allow, their own recent procedures) is
+applied AFTER the cache read, never inside it, so one cache entry serves
+every role — never a per-user cache key.
+
+**Isolation, not just a ceiling**: each attention card's query and both
+"today's cycles"/"recent procedures" are their own try/catch — a broken
+query in one domain marks just that one card `error: true` (its own error
+state) instead of throwing and blanking the whole page. A dedicated Pest
+test proves the "no N+1" requirement literally: two tenants with 1 vs. 5
+cycles today cost the exact same query count, not two counts that merely
+look small.
+
+**Role-aware composition**: one card set, one API response — reordering
+("a releaser leads with cycles awaiting release," "a stock_manager leads
+with stock and expiry") happens client-side only, keyed off `auth.role`
+(already globally shared by `HandleInertiaRequests`), so there's exactly
+one dashboard, not four. A practitioner's own recent procedures is a fifth
+section, filtered server-side to `practitioner_id = current user` — never
+anyone else's.
+
+**Bug found while syncing to the real container, fixed before commit**: the
+attention-queue tiles were originally the entire card wrapped in a `<Link>`,
+whose accessible name was the card's own label ("Cycles awaiting release",
+"15 Products below their low-stock threshold", ...). Since every one of
+those labels contains a plain nav-item word (Cycles/Products/Labels/...),
+`getByRole('link', { name: 'Cycles' })` on `/dashboard` started matching
+both the sidebar nav link and the new dashboard card, breaking several
+already-passing e2e specs that do exactly that lookup right after login
+(login lands on `/dashboard`). Fixed by scoping the actual link down to a
+small "View" affordance with its own generic accessible name (a
+`data-testid` on the tile handles this spec's own targeting) — the whole
+tile no longer doubles as the link, but the label text and click-through
+both still work.
+
+Removed the "Soon" badge — Dashboard was already the top nav item, not a
+"Soon" stub, so nothing to remove there; the placeholder content itself is
+what's gone.
 
 ### UI-31 — Queued
 Brief pending.

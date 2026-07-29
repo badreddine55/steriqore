@@ -45,6 +45,16 @@ class LabelController extends Controller
                 AllowedFilter::callback('device_id', function ($query, $value): void {
                     $query->whereHas('cycleItem.cycle', fn ($q) => $q->where('device_id', $value));
                 }),
+                // Expiry is lazy (ResolveLabelScanAction flips status to
+                // Expired only the first time a past-DLU label is scanned)
+                // — status can't be trusted here, so this checks use_by_date
+                // directly, same predicate UI-30's dashboard card uses.
+                AllowedFilter::callback('overdue', function ($query, $value): void {
+                    if ($value) {
+                        $query->whereIn('status', [LabelStatus::Created, LabelStatus::Printed])
+                            ->where('use_by_date', '<', now()->toDateString());
+                    }
+                }),
             )
             ->allowedSorts('use_by_date', 'created_at')
             ->defaultSort('-created_at')

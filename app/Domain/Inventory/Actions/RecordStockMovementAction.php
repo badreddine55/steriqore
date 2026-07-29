@@ -8,6 +8,7 @@ use App\Domain\Inventory\Models\StockMovement;
 use App\Domain\Tenancy\Models\StorageLocation;
 use App\Domain\Tenancy\Models\Tenant;
 use App\Models\User;
+use App\Support\Dashboard\DashboardCache;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -52,6 +53,8 @@ class RecordStockMovementAction
                 ON CONFLICT (tenant_id, batch_id, location_id)
                 DO UPDATE SET quantity = stock_levels.quantity + excluded.quantity, updated_at = now()
                 SQL, [$tenant->id, $batch->id, $location->id, $qty]);
+
+            DashboardCache::forget($tenant);
 
             return $movement;
         });

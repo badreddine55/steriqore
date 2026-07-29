@@ -9,6 +9,7 @@ use App\Domain\Sterilization\Models\Cycle;
 use App\Domain\Sterilization\Models\CycleRelease;
 use App\Models\User;
 use App\Support\Api\ApiException;
+use App\Support\Dashboard\DashboardCache;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -56,6 +57,8 @@ class ReleaseCycleAction
                 reason: $reason,
                 request: $this->request,
             );
+
+            DashboardCache::forget($cycle->tenant);
 
             return $release;
         });

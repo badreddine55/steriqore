@@ -4,6 +4,7 @@ use App\Http\Controllers\Web\Catalog\ProductCategoryController;
 use App\Http\Controllers\Web\Catalog\ProductController;
 use App\Http\Controllers\Web\Compliance\AuditEventController;
 use App\Http\Controllers\Web\Compliance\NonConformityController;
+use App\Http\Controllers\Web\DashboardController;
 use App\Http\Controllers\Web\Equipment\DeviceController;
 use App\Http\Controllers\Web\Equipment\DeviceProgramController;
 use App\Http\Controllers\Web\Equipment\MaintenanceRecordController;
@@ -39,7 +40,7 @@ use Illuminate\Support\Facades\Route;
 Route::inertia('/', 'welcome')->name('home');
 
 Route::middleware(['auth', 'verified', 'tenant.web'])->group(function () {
-    Route::inertia('dashboard', 'dashboard')->name('dashboard');
+    Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
     Route::post('tenant/switch', [SwitchTenantController::class, 'store'])->name('tenant.switch');
     Route::post('site/switch', [SwitchSiteController::class, 'store'])->name('site.switch');

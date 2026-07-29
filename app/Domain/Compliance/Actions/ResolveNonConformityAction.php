@@ -5,6 +5,7 @@ namespace App\Domain\Compliance\Actions;
 use App\Domain\Compliance\Models\NonConformity;
 use App\Models\User;
 use App\Support\Api\ApiException;
+use App\Support\Dashboard\DashboardCache;
 use Illuminate\Http\Request;
 
 /**
@@ -42,6 +43,8 @@ class ResolveNonConformityAction
             reason: $resolution,
             request: $this->request,
         );
+
+        DashboardCache::forget($nonConformity->tenant);
 
         return $nonConformity;
     }
