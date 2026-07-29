@@ -7,9 +7,9 @@ import { mintDemoApiToken } from './support/demo';
  * and RecordControlTestAction (failed_cycle) — never by a web form — so
  * this fixture is built by receiving stock below a threshold, then
  * calling the real detection endpoint, exactly as the daily scheduled job
- * would. There's no API to create a storage location (same known gap as
- * UI-14/15/16), so this reuses whichever location the demo tenant's prior
- * stock already sits at.
+ * would. Reuses whichever storage location the demo tenant's prior stock
+ * already sits at (CreateStorageLocationAction exists, UI-27, but there's
+ * no need to create a second location just for this fixture).
  */
 test.describe('Alerts (UI-18)', () => {
     test('detect a low-stock alert via the API, resolve it from the web inbox', async ({

@@ -76,7 +76,7 @@ loads every session.
 | UI-28 | Practice settings (identity, label format, DLU rule table, alerts & notifications) | Done | New versioned-settings pattern added — see item detail |
 | UI-29 | Data export (GDPR portability / offboarding) | Done | Backend gaps closed as part of the item — see item detail |
 | UI-30 | Dashboard (attention queue, today at a glance, new-practice checklist) | Done | "Control tests overdue" card skipped (OQ-7) — see item detail |
-| UI-31 | — | Queued — brief pending | |
+| UI-31 | End-to-end acceptance (Playwright, §10 demo journey) | Done | Two real gaps flagged (invite-accept, security-event logging on REC-01) — see item detail |
 
 ## Item detail
 
@@ -521,5 +521,97 @@ Removed the "Soon" badge — Dashboard was already the top nav item, not a
 "Soon" stub, so nothing to remove there; the placeholder content itself is
 what's gone.
 
-### UI-31 — Queued
-Brief pending.
+### UI-31 — End-to-end acceptance (Playwright)
+Domain: none — no application code (one pre-existing, unrelated bug fixed
+and committed separately, see below). `e2e/acceptance/journey.spec.ts`
+drives the full §10 demo journey from `docs/00-BUILD-BRIEF.md` — register a
+practice, invite an admin and a practitioner with different roles, site +
+storage location, supplier + product, purchase order, receive a batch,
+device + program, prepare a load, run and release a cycle (as the admin,
+in their own real browser session), print and reprint a label, scan it via
+the v1 API exactly as mobile would, issue stock, link the label to a
+procedure (as the practitioner, real web fallback screen), trigger a
+near-expiry alert, read the audit log, export the evidence dossier and
+assert the rendered PDF's text contains the cycle number, device, operator,
+releaser, DLU, and label id the UI showed — plus REC-01 (cross-tenant
+403/404), REC-02 (idempotent receipt), REC-03 (label generation blocked on
+a rejected cycle), REC-05 (reprint reason required), REC-06 (a disabled
+user's release keeps their name on the audit trail), and a recalled-label
+scan returning `LABEL_RECALLED`. `e2e/acceptance/volume.spec.ts` is
+REC-09, kept separate per the brief: seeds `steriqore:seed-pilot-volume`
+(3,000 cycles, ~30,000 labels/usages) into its own tenant, then times a
+real evidence-search query at that volume (asserted under 2s, not logged).
+Wired into CI (`.github/workflows/tests.yml`) as `e2e-acceptance`, its own
+job with its own Docker stack — separate from the existing `ci` job, which
+still doesn't run any Playwright suite at all (pre-existing, out of scope
+here). `npm run e2e:acceptance` runs it locally in one command
+(`docs/deployment.md` documents this).
+
+**Two real, permanent gaps found and documented, not built around:**
+registering a practice (`/register` is Fortify's own screen — it creates a
+bare `User`, never a `Tenant`; real registration only exists at `POST
+/api/v1/tenants`) and accepting an invitation (`/accept-invitation` 404s;
+no such route is registered anywhere, and `Invitation.token` is
+deliberately hidden from every API response) both have no web screen at
+all. Both journey steps are driven through the API instead — the same
+treatment the brief already prescribes for genuinely mobile-only steps —
+and a new Mailpit-reading helper (`e2e/acceptance/support/mailpit.ts`)
+reads the real, queued invitation email to get the accept token, since
+there's no other legitimate way to obtain it. Separately, REC-01's "a
+security event written" isn't backed by anything: no code anywhere writes
+an audit event (or any other log) when a cross-tenant lookup is refused —
+`TenantScope`'s 404 is silent. The test asserts refusal and no-leak (both
+real) and stops there; the missing security-event logging is a genuine
+product gap for a future item, not something to fabricate here.
+
+**One smaller, narrower gap, worked around rather than blocking on:**
+`steriqore:seed-pilot-volume` (used by REC-09) creates its one user via a
+raw DB insert and never calls `SeedTenantRolesAction` or `assignRole()` —
+every other tenant-creation path in the app seeds roles; this one doesn't,
+so its user has zero permissions and can't reach any permission-gated
+screen as shipped. `volume.spec.ts` assigns the owner role itself after
+seeding, the same way Pest tests already build their own fixtures directly
+— fixture setup for a test-only command, not an application fix. Worth a
+one-line fix to the command itself in a later item.
+
+**A stale comment corrected in passing**: `e2e/goods-receipts.spec.ts` and
+`e2e/alerts.spec.ts` both carried a docblock claiming "no API to create a
+storage location" as an open gap — true when UI-14 was built, false since
+UI-27 shipped `CreateStorageLocationAction` and a real web route. Updated
+both to describe what's actually there.
+
+**Found and fixed while writing the spec** (test-code bugs in my own
+draft, not product bugs — listed since they were real, silent-failure risks
+until caught): the storage-location dialog's "Finish" button only closes
+the dialog — the actual submit is "Add and add another", which I'd skipped
+entirely, so the journey silently proceeded with zero storage locations
+until the receipt step surfaced it; a cycle id read via `page.url()`
+immediately after a click, before the navigation it triggers had actually
+resolved (a real race, worth calling out precisely because the brief
+explicitly warns against exactly this class of bug); and `StockLevelData`
+carries `batch_id`, not `batch_number` — my first draft filtered a list
+that could never match.
+
+**Also found while running the suite, unrelated to UI-31 itself, fixed and
+committed separately**: `HandleInertiaRequests::share()` tried to resolve
+tenant-scoped Spatie permissions on Scramble's `/docs/api` route too (still
+inside the `web` middleware group despite not being an Inertia page),
+hitting RLS-protected permission tables with no tenant bound and crashing
+the API docs UI for any logged-in user. Found uncommitted, already fixed
+and tested, while investigating an unrelated CI question — committed on
+its own with its own message, not folded into this item.
+
+**Environmental note, not a code issue**: registering many tenants back to
+back locally (re-running this suite, or running it alongside REC-09's
+pilot-volume seed) can leave spatie/laravel-permission's cache stale for
+*other* tenants sharing the same running container, including the shared
+`demo` tenant every other `e2e/*.spec.ts` file depends on — surfaced here
+as the existing suite briefly 403ing on `/team` after a heavy local run,
+fixed by `php artisan permission:cache-reset`. Documented in
+`docs/deployment.md`; can't happen in CI, where the acceptance job owns its
+own Docker stack per run. Separately, the shared `demo` tenant itself has
+simply accumulated a lot of rows over many sessions of re-running the
+existing suite against it (117 products, 97 suppliers at time of writing)
+— unrelated to this item (the acceptance suite never touches `demo`), but
+worth noting as the likely cause if `e2e/*.spec.ts` specs feel slower than
+they used to.

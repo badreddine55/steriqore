@@ -21,6 +21,19 @@ export default defineConfig({
         {
             name: 'chromium',
             use: { ...devices['Desktop Chrome'] },
+            testIgnore: '**/acceptance/**',
+        },
+        // UI-31 — the full §10 demo-journey acceptance suite. Kept out of
+        // the default `chromium` project (and out of `npm run e2e`'s
+        // day-to-day loop) since it registers its own fresh tenant, sends
+        // real mail through Mailpit, and is slow by design; run it
+        // explicitly via `npm run e2e:acceptance`. NO retries, ever — a
+        // flaky acceptance test is a failing one, never papered over.
+        {
+            name: 'acceptance',
+            testDir: './e2e/acceptance',
+            retries: 0,
+            use: { ...devices['Desktop Chrome'], video: 'retain-on-failure' },
         },
     ],
 });

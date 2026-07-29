@@ -2,13 +2,11 @@ import { expect, test } from '@playwright/test';
 import { loginAsDemoOwner } from './support/auth';
 
 /**
- * StorageLocation has no Action/API/Web route anywhere yet (flagged and
- * confirmed with the product owner while building this screen — real
- * location management is a separate, later item). A single location was
- * seeded once directly against the demo tenant's database so this spec has
- * something real to receive into; the receive form itself shows an honest
- * "no storage locations configured yet" empty state when none exist, which
- * is what a genuinely fresh tenant sees today.
+ * Receives into whichever storage location the shared demo tenant already
+ * has (seeded once via the real Sites/Rooms/Storage locations screen,
+ * UI-27 — CreateStorageLocationAction has existed since then). A genuinely
+ * fresh tenant with none yet sees an honest "no storage locations
+ * configured yet" empty state on this same form.
  */
 test.describe('Goods receipts (UI-14)', () => {
     test('order a purchase order, then partially receive it with a batch, expiry, and discrepancy reason', async ({

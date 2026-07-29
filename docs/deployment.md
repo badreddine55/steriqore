@@ -81,6 +81,52 @@ Notable groups:
 ./steriqore.sh art migrate   # run artisan inside the container
 ```
 
+## Running the E2E acceptance suite
+
+UI-31's acceptance journey (`e2e/acceptance/`) is a separate Playwright
+project from the day-to-day `npm run e2e` suite — it drives the full §10
+demo journey (register a practice → staff it → purchase → sterilize →
+label → trace → alert → audit → export) plus the REC-01/02/03/05/06
+negative paths, against the real Docker stack: Postgres, Redis, MinIO,
+Mailpit, and Horizon actually processing queued jobs. It registers its own
+fresh tenant(s) with a unique slug per run — it never touches the shared
+`demo` tenant the rest of `e2e/` uses, so it has no ordering dependence on
+anything else and is safe to run repeatedly.
+
+```bash
+./steriqore.sh up            # bring up the real stack first
+npm run e2e:acceptance       # journey + negative paths (~40s)
+```
+
+`e2e/acceptance/volume.spec.ts` (REC-09) is kept separate again inside the
+same project — it seeds a much larger, slower fixture
+(`steriqore:seed-pilot-volume`: 3,000 cycles, ~30,000 labels/usages) via
+the running container, then times an actual evidence-search query against
+it. Both files run together under `npm run e2e:acceptance`; run just the
+journey with `npx playwright test --project=acceptance e2e/acceptance/journey.spec.ts`
+if you don't want to wait on the volume seed.
+
+No clock-freeze exists in this app (confirmed — there's no
+`Carbon::setTestNow` anywhere), so every date-sensitive step in the
+journey computes its dates relative to the run's own `Date.now()` rather
+than a hardcoded date, the same idiom `e2e/device-maintenance.spec.ts`
+already uses.
+
+**Known interaction with a long-lived local stack**: registering many
+tenants in quick succession (e.g. re-running the acceptance suite several
+times back to back, or alongside REC-09's pilot-volume seed) can leave
+spatie/laravel-permission's cache stale for *other*, pre-existing tenants
+sharing the same running container — including the `demo` tenant the rest
+of `e2e/` depends on. If an unrelated `e2e/*.spec.ts` run starts failing
+with 403s right after running the acceptance suite locally, clear it:
+
+```bash
+./steriqore.sh art permission:cache-reset
+```
+
+This can't happen in CI, where the acceptance job builds and tears down
+its own Docker stack per run.
+
 ## Deploying to staging (once infrastructure exists)
 
 ```bash
