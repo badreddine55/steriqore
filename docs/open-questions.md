@@ -5,6 +5,22 @@ question was flagged instead of guessed, per `CLAUDE.md`. Newest on top.
 
 ---
 
+## OQ-13 — Data export rate limit and archive retention window
+**Raised:** S7 UI queue, UI-29, 2026-07-29.
+**Context:** The brief calls for "one running export per tenant, and a sane
+cap per week" and a download link that "regenerates on demand," but doesn't
+pick the actual weekly number or how long a completed archive should stay
+downloadable before it's reclaimed from the `backups` disk.
+**Default implemented:** `RequestDataExportAction::WEEKLY_LIMIT` = 5 requests
+per tenant per rolling 7 days (429 `EXPORT_WEEKLY_LIMIT_REACHED` past that);
+`GenerateDataExportJob::RETENTION_DAYS` = 7 days after completion, after which
+the new `data-exports:expire` scheduled command (daily at 04:30) deletes the
+S3 object and flips the row to `expired`. Both are named constants, not
+scattered literals, so either number can move without an audit of call sites.
+**Needs confirmation:** are 5/week and a 7-day retention window right for
+pilot practices doing a real GDPR export or an offboarding, or should either
+be larger/smaller?
+
 ## OQ-12 — Inventory counts: no backend at all yet (UI-17 skipped)
 **Raised:** S7 UI queue, UI-17, 2026-07-27.
 **Context:** Unlike every other UI-XX item so far, `inventory_counts` has no

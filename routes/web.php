@@ -19,6 +19,7 @@ use App\Http\Controllers\Web\Purchasing\GoodsReceiptController;
 use App\Http\Controllers\Web\Purchasing\PurchaseOrderController;
 use App\Http\Controllers\Web\Purchasing\SupplierController;
 use App\Http\Controllers\Web\Purchasing\SupplierProductController;
+use App\Http\Controllers\Web\Reporting\DataExportRequestController;
 use App\Http\Controllers\Web\Sterilization\ControlTestController;
 use App\Http\Controllers\Web\Sterilization\CycleAttachmentController;
 use App\Http\Controllers\Web\Sterilization\CycleController;
@@ -160,6 +161,12 @@ Route::middleware(['auth', 'verified', 'tenant.web'])->group(function () {
         Route::patch('alerts', [PracticeSettingsController::class, 'updateAlertSettings'])->name('alerts.update');
         Route::post('alerts/preview-near-expiry', [PracticeSettingsController::class, 'previewNearExpiryImpact'])->name('alerts.preview-near-expiry');
         Route::put('digest-subscriptions', [PracticeSettingsController::class, 'updateDigestSubscriptions'])->name('digest-subscriptions.update');
+    });
+
+    Route::prefix('data-exports')->name('data-exports.')->group(function () {
+        Route::get('/', [DataExportRequestController::class, 'index'])->name('index');
+        Route::post('/', [DataExportRequestController::class, 'store'])->name('store');
+        Route::post('{dataExportRequest}/download', [DataExportRequestController::class, 'download'])->name('download');
     });
 
     Route::prefix('suppliers')->name('suppliers.')->group(function () {

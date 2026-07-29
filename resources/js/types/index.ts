@@ -9,6 +9,7 @@ export type * from './navigation';
 export type * from './pagination';
 export type * from './practice-settings';
 export type * from './purchasing';
+export type * from './reporting';
 export type * from './sterilization';
 export type * from './support';
 export type * from './tenancy';

@@ -39,6 +39,13 @@ use ZipArchive;
  * would never actually be observable. The tenant_id itself is learned via
  * a raw 'pgsql_admin' scalar read (RLS-bypassing, not a scoped model)
  * since nothing is bound as "the current tenant" yet at that point.
+ *
+ * UI-29 added the manifest (per-table row counts, file count, total size)
+ * so the ready-state screen can show the user what they're about to
+ * download, and expires_at so a scheduled command (ExpireDataExports) can
+ * delete the S3 object and mark the row Expired without a human involved.
+ * RETENTION_DAYS is a DECISION NEEDED default (docs/open-questions.md),
+ * not specified by the brief.
  */
 class GenerateDataExportJob implements ShouldQueue
 {
@@ -46,6 +53,8 @@ class GenerateDataExportJob implements ShouldQueue
     use InteractsWithQueue;
     use Queueable;
     use SerializesModels;
+
+    public const int RETENTION_DAYS = 7;
 
     public function __construct(public readonly string $dataExportRequestId) {}
 
@@ -72,13 +81,14 @@ class GenerateDataExportJob implements ShouldQueue
         $zipPath = null;
 
         try {
-            $this->dumpTables($tenantId, $workDir);
-            $this->copyMediaFiles($tenantId, "{$workDir}/files");
+            $tableManifest = $this->dumpTables($tenantId, $workDir);
+            $fileCount = $this->copyMediaFiles($tenantId, "{$workDir}/files");
 
             $zipPath = storage_path("app/data-exports/{$this->dataExportRequestId}.zip");
             $this->zipDirectory($workDir, $zipPath);
 
             $diskPath = "data-exports/{$tenantId}/{$this->dataExportRequestId}.zip";
+            $sizeBytes = filesize($zipPath);
             $stream = fopen($zipPath, 'r');
             if ($stream === false) {
                 throw new RuntimeException("Could not open generated export archive at {$zipPath}.");
@@ -86,11 +96,16 @@ class GenerateDataExportJob implements ShouldQueue
             Storage::disk('backups')->put($diskPath, $stream);
             fclose($stream);
 
-            TenantContext::run($tenant, function () use ($diskPath) {
+            TenantContext::run($tenant, function () use ($diskPath, $tableManifest, $fileCount, $sizeBytes) {
                 DataExportRequest::findOrFail($this->dataExportRequestId)->update([
                     'status' => DataExportStatus::Completed,
                     'file_path' => $diskPath,
                     'completed_at' => now(),
+                    'table_manifest' => $tableManifest,
+                    'record_count' => array_sum($tableManifest),
+                    'file_count' => $fileCount,
+                    'size_bytes' => $sizeBytes !== false ? $sizeBytes : null,
+                    'expires_at' => now()->addDays(self::RETENTION_DAYS),
                 ]);
             });
         } catch (Throwable $e) {
@@ -107,30 +122,42 @@ class GenerateDataExportJob implements ShouldQueue
         }
     }
 
-    private function dumpTables(string $tenantId, string $workDir): void
+    /**
+     * @return array<string, int> table name => row count
+     */
+    private function dumpTables(string $tenantId, string $workDir): array
     {
         $tables = DB::connection('pgsql_admin')->select(<<<'SQL'
             select table_name from information_schema.columns
             where column_name = 'tenant_id' and table_schema = 'public'
             SQL);
 
+        $manifest = [];
+
         foreach ($tables as $row) {
             $rows = DB::connection('pgsql_admin')->table($row->table_name)->where('tenant_id', $tenantId)->get();
             file_put_contents("{$workDir}/{$row->table_name}.json", $rows->toJson(JSON_PRETTY_PRINT));
+            $manifest[$row->table_name] = $rows->count();
         }
+
+        return $manifest;
     }
 
-    private function copyMediaFiles(string $tenantId, string $filesDir): void
+    private function copyMediaFiles(string $tenantId, string $filesDir): int
     {
         $mediaRows = DB::connection('pgsql_admin')->table('media')->where('tenant_id', $tenantId)->get();
+        $copied = 0;
 
         foreach ($mediaRows as $media) {
             $diskPath = "{$media->id}/{$media->file_name}";
 
             if (Storage::disk('media')->exists($diskPath)) {
                 file_put_contents("{$filesDir}/{$media->file_name}", Storage::disk('media')->get($diskPath));
+                $copied++;
             }
         }
+
+        return $copied;
     }
 
     private function zipDirectory(string $sourceDir, string $zipPath): void

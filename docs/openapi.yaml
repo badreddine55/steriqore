@@ -962,6 +962,29 @@ paths:
               schema:
                 $ref: '#/components/schemas/ApiErrorEnvelope'
   /v1/data-export-requests:
+    get:
+      operationId: v1.data-export-requests.index
+      tags:
+        - DataExportRequest
+      responses:
+        200:
+          description: '`CursorPaginatedDataCollection`'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CursorPaginatedDataCollection'
+        403:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+        401:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
     post:
       operationId: v1.data-export-requests.store
       tags:
@@ -1005,6 +1028,52 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DataExportRequestData'
+        403:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+        404:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+        401:
+          description: 'SteriQore API error envelope.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorEnvelope'
+  '/v1/data-export-requests/{dataExportRequest}/download':
+    post:
+      operationId: v1.data-export-requests.download
+      tags:
+        - DataExportRequest
+      parameters:
+        -
+          name: dataExportRequest
+          in: path
+          required: true
+          description: 'The data export request ID'
+          schema:
+            type: string
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  download_url:
+                    type: string
+                  url_expires_at:
+                    type: string
+                required:
+                  - download_url
+                  - url_expires_at
         403:
           description: 'SteriQore API error envelope.'
           content:

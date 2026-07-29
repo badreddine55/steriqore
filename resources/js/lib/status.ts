@@ -117,12 +117,13 @@ export const purchaseOrderStatus: Record<string, StatusMeta> = {
     cancelled: meta('danger', 'Cancelled'),
 };
 
-/** Data export request: pending -> processing -> completed | failed */
+/** Data export request: pending -> processing -> completed | failed | expired */
 export const dataExportStatus: Record<string, StatusMeta> = {
-    pending: meta('draft', 'Pending'),
-    processing: meta('active', 'Processing'),
-    completed: meta('success', 'Completed'),
+    pending: meta('pending', 'Queued'),
+    processing: meta('active', 'Running'),
+    completed: meta('success', 'Ready'),
     failed: meta('danger', 'Failed'),
+    expired: meta('expired', 'Expired'),
 };
 
 /** Alert severity: info | warning | critical */

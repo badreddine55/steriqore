@@ -16,6 +16,10 @@ Schedule::command('alerts:detect')->hourly();
 // is enough to catch both; it just skips a subscription until it's due.
 Schedule::command('digests:send')->dailyAt('07:00');
 
+// UI-29: reclaims the S3 object once a completed export passes its
+// retention window (GenerateDataExportJob::RETENTION_DAYS).
+Schedule::command('data-exports:expire')->dailyAt('04:30');
+
 // REC-10 ("restore PG + S3 backup"): the database dump (spatie/laravel
 // -backup) and the media-disk mirror (steriqore:backup-media) are two
 // halves of the same nightly backup — both write to the 'backups' disk.

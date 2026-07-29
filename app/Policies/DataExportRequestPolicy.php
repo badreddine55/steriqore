@@ -27,4 +27,9 @@ class DataExportRequestPolicy
     {
         return $user->can('data_exports.manage');
     }
+
+    public function download(User $user, DataExportRequest $request): bool
+    {
+        return $user->can('data_exports.manage');
+    }
 }

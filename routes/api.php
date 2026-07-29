@@ -218,11 +218,15 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
         Route::get('evidence-search', [EvidenceSearchController::class, 'index'])->name('evidence-search.index');
         Route::get('evidence-search/export', [EvidenceExportController::class, 'index'])->name('evidence-search.export');
 
+        Route::get('data-export-requests', [DataExportRequestController::class, 'index'])
+            ->name('data-export-requests.index');
         Route::post('data-export-requests', [DataExportRequestController::class, 'store'])
             ->middleware('idempotent')
             ->name('data-export-requests.store');
         Route::get('data-export-requests/{dataExportRequest}', [DataExportRequestController::class, 'show'])
             ->name('data-export-requests.show');
+        Route::post('data-export-requests/{dataExportRequest}/download', [DataExportRequestController::class, 'download'])
+            ->name('data-export-requests.download');
 
         Route::get('non-conformities', [NonConformityController::class, 'index'])->name('non-conformities.index');
         Route::post('non-conformities', [NonConformityController::class, 'store'])

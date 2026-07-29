@@ -2,16 +2,14 @@
 
 namespace App\Console\Commands;
 
+use App\Domain\Identity\Actions\ResolveTenantUsersWithRoleAction;
 use App\Domain\Inventory\Enums\AlertState;
 use App\Domain\Inventory\Mail\DigestMail;
 use App\Domain\Inventory\Models\Alert;
 use App\Domain\Inventory\Models\AlertSettings;
 use App\Domain\Inventory\Models\DigestSubscription;
 use App\Domain\Tenancy\Models\Tenant;
-use App\Models\User;
 use Illuminate\Console\Command;
-use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 
 /**
@@ -27,6 +25,11 @@ class SendDigests extends Command
     protected $signature = 'digests:send';
 
     protected $description = 'Send the alerts digest to every due, subscribed role in every tenant';
+
+    public function __construct(private ResolveTenantUsersWithRoleAction $resolveUsersWithRole)
+    {
+        parent::__construct();
+    }
 
     public function handle(): int
     {
@@ -50,7 +53,7 @@ class SendDigests extends Command
                         return;
                     }
 
-                    $recipients = $this->usersWithRole($tenant, $subscription->role);
+                    $recipients = $this->resolveUsersWithRole->execute($tenant, $subscription->role);
 
                     foreach ($recipients as $recipient) {
                         Mail::to($recipient->email)->queue(new DigestMail($recipient, $tenant, $openAlerts));
@@ -76,19 +79,5 @@ class SendDigests extends Command
             'weekly' => $subscription->last_sent_at->lt(now()->subWeek()),
             default => $subscription->last_sent_at->lt(now()->subDay()),
         };
-    }
-
-    /**
-     * @return Collection<int, User>
-     */
-    private function usersWithRole(Tenant $tenant, string $role)
-    {
-        $userIds = DB::table('model_has_roles')
-            ->join('roles', 'roles.id', '=', 'model_has_roles.role_id')
-            ->where('model_has_roles.tenant_id', $tenant->id)
-            ->where('roles.name', $role)
-            ->pluck('model_has_roles.model_uuid');
-
-        return User::whereIn('id', $userIds)->get();
     }
 }

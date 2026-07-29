@@ -74,7 +74,7 @@ loads every session.
 | UI-26 | Team — users, invitations, roles, disable (never delete) | Done | |
 | UI-27 | Sites, rooms, storage locations (Settings) | Done | Built the Tenancy domain layer (Actions/Policies/DTOs) from scratch — see item detail |
 | UI-28 | Practice settings (identity, label format, DLU rule table, alerts & notifications) | Done | New versioned-settings pattern added — see item detail |
-| UI-29 | — | Queued — brief pending | |
+| UI-29 | Data export (GDPR portability / offboarding) | Done | Backend gaps closed as part of the item — see item detail |
 | UI-30 | — | Queued — brief pending | |
 | UI-31 | — | Queued — brief pending | |
 
@@ -378,8 +378,75 @@ names it as evidence-affecting, but it isn't one of the four Screens and
 no existing "cycle numbering scheme" concept was found to version.
 Flagging rather than guessing at what that would even mean.
 
-### UI-29 — Queued
-Brief pending.
+### UI-29 — Data export
+Domain: Reporting/Compliance. The tenant-facing screen over the S6
+account-wide export (`RequestDataExportAction`, `GenerateDataExportJob`,
+`data_export_requests`) — every table, every attached file, zipped to the
+`backups` disk. This was a genuine step-2 stop: research (14 questions via
+an Explore agent) found the S6 backend didn't actually match the brief —
+no list endpoint, no rate limiting, no manifest/size/count/expiry tracking,
+a presigned URL embedded directly in the polled response (violates the
+brief's own "never render a stored presigned URL" rule), no download audit
+event, no owner-notification email. User chose "build it all now" rather
+than scope the screen down to what already existed.
+
+**Backend gaps closed**: a migration added `size_bytes`, `record_count`,
+`file_count`, `table_manifest` (JSON), and `expires_at` to
+`data_export_requests`; the `DataExportStatus` enum gained `Expired` (kept
+the existing `pending/processing/completed/failed` wire values — renaming to
+the brief's `queued/running/ready/expired` wording would have been a
+breaking change to the mobile contract for no real benefit; the web UI maps
+to friendlier labels itself). `GenerateDataExportJob` now computes the
+manifest (per-table row counts via the same `information_schema` scan that
+already found the tables), file count, zip size, and `expires_at`
+(`RETENTION_DAYS`, OQ-13). `RequestDataExportAction` gained real rate
+limiting — one in-flight export per tenant (409 `EXPORT_ALREADY_RUNNING`)
+and a weekly cap (429 `EXPORT_WEEKLY_LIMIT_REACHED`, OQ-13) — and now emails
+every owner via a new `DataExportRequestedMail` (Resend, matching
+`DigestMail`'s pattern) whenever an export is requested, including when the
+requester is an owner themselves — the out-of-band control that makes a
+compromised account's export visible outside the audit log. The
+role-resolution query `SendDigests` had inlined was extracted into a shared
+`ResolveTenantUsersWithRoleAction` rather than duplicated.
+
+**The presigned-URL rule**: `DataExportRequestData` no longer carries a
+`download_url` field at all — a new `GenerateDataExportDownloadUrlAction`
+mints a fresh 30-minute presigned URL only when the dedicated download
+action is hit, and audits `data_export.downloaded` at that exact moment
+(distinct from `data_export.requested`). Both the API (`POST
+/api/v1/data-export-requests/{id}/download`) and the new Web controller's
+`download()` action share this Action; neither ever returns or stores the
+URL anywhere else. A new `data-exports:expire` scheduled command (daily,
+OQ-13) deletes the S3 object and flips the row to `expired` once
+`expires_at` passes, so the history screen stops offering a dead download
+button.
+
+**Screen**: one page under Settings (`data-exports.manage`, owner/admin
+only) — a request card (explains contents, disabled with a stated reason
+while one is already running), a history table (status badge, size,
+expiry), a manifest dialog for the ready state (per-table row counts, file
+count, total size), and an inline "Request again" on a failed row. The page
+polls via `router.reload()` while an export is queued/running — this is the
+first "generate then poll" pattern in the app (confirmed via research: no
+prior precedent existed to reuse). Verified against the real container, not
+just Storage fakes: a live request went through the actual Horizon worker,
+dumped 41 tables, uploaded to MinIO, and the download action minted a real,
+working presigned URL — the same manual-verification approach already
+established for backup/restore and Browsershot PDF rendering, since the
+job's DB-dump path reads through a separate connection Pest's transaction
+wrapping can't reach.
+
+**Bug found and fixed while verifying manually**: the new
+`data-exports:expire` command initially followed `DetectAlerts`/
+`SendDigests`'s existing `$tenant->makeCurrent()`-only pattern and silently
+expired nothing — `data_export_requests` has a Postgres RLS policy (unlike
+the tables those two commands touch), and `makeCurrent()` alone satisfies
+Eloquent's `TenantScope` but never sets the `app.tenant_id` RLS session
+variable, so the query failed closed at the database level. Fixed by using
+`TenantContext::run()` (the same helper the request middleware uses)
+instead, with a regression test.
+
+Removed the "Soon" badge on Data export.
 
 ### UI-30 — Queued
 Brief pending.

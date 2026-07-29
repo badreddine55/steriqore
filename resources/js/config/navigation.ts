@@ -4,6 +4,7 @@ import {
     Building2,
     ClipboardCheck,
     ClipboardList,
+    Download,
     FlaskConical,
     KeyRound,
     LayoutGrid,
@@ -29,6 +30,7 @@ import auditLogRoutes from '@/routes/audit-log';
 import batchRoutes from '@/routes/batches';
 import controlTests from '@/routes/control-tests';
 import cycles from '@/routes/cycles';
+import dataExportRoutes from '@/routes/data-exports';
 import devices from '@/routes/devices';
 import evidenceSearchRoutes from '@/routes/evidence-search';
 import labels from '@/routes/labels';
@@ -192,6 +194,12 @@ export const navGroups: NavGroup[] = [
                 href: practiceSettings.index(),
                 icon: Settings,
                 permission: 'practice_settings.manage',
+            },
+            {
+                title: 'Data export',
+                href: dataExportRoutes.index(),
+                icon: Download,
+                permission: 'data_exports.manage',
             },
             { title: 'Profile', href: editProfile(), icon: UserCircle },
             { title: 'Security', href: editSecurity(), icon: KeyRound },
