@@ -76,7 +76,7 @@ loads every session.
 | UI-28 | Practice settings (identity, label format, DLU rule table, alerts & notifications) | Done | New versioned-settings pattern added — see item detail |
 | UI-29 | Data export (GDPR portability / offboarding) | Done | Backend gaps closed as part of the item — see item detail |
 | UI-30 | Dashboard (attention queue, today at a glance, new-practice checklist) | Done | "Control tests overdue" card skipped (OQ-7) — see item detail |
-| UI-31 | End-to-end acceptance (Playwright, §10 demo journey) | Done | Two real gaps flagged (invite-accept, security-event logging on REC-01) — see item detail |
+| UI-31 | End-to-end acceptance (Playwright, §10 demo journey) | Done | One real gap remains (invite-accept); REC-01's security-event gap has since been closed — see item detail |
 
 ## Item detail
 
@@ -557,12 +557,26 @@ all. Both journey steps are driven through the API instead — the same
 treatment the brief already prescribes for genuinely mobile-only steps —
 and a new Mailpit-reading helper (`e2e/acceptance/support/mailpit.ts`)
 reads the real, queued invitation email to get the accept token, since
-there's no other legitimate way to obtain it. Separately, REC-01's "a
-security event written" isn't backed by anything: no code anywhere writes
-an audit event (or any other log) when a cross-tenant lookup is refused —
-`TenantScope`'s 404 is silent. The test asserts refusal and no-leak (both
-real) and stops there; the missing security-event logging is a genuine
-product gap for a future item, not something to fabricate here.
+there's no other legitimate way to obtain it.
+
+**Update (2026-07-29): REC-01's security-event gap is now closed.** The
+paragraph above originally flagged that "a security event written" wasn't
+backed by anything — `TenantScope`'s 404 was silent, nothing logged a
+cross-tenant lookup anywhere. A dedicated `security_events` channel now
+exists precisely for this (`App\Domain\Compliance\Models\SecurityEvent`,
+`App\Support\Security\SecurityEventRenderer` — see that class's own
+docblock), deliberately separate from `audit_events`: a cross-tenant probe
+belongs to the operator, not to either practice, and the table has RLS
+enabled with zero permissive policies (default-deny for the app's own DB
+role in both directions) plus no tenant_id ownership column, since a
+single row can legitimately reference two different tenants. It records
+every authorization failure, genuine cross-tenant resolution attempt, and
+RLS policy rejection — actor, tenant claimed vs. actual, route, subject,
+ip, request_id, timestamp. `journey.spec.ts`'s REC-01 test now asserts the
+event exists (via a tinker-based read, the same escape hatch
+`volume.spec.ts` already uses, since the table is unreachable from the
+app/API surface by design) rather than stopping at the 403/404 and no-leak
+checks.
 
 **One smaller, narrower gap, worked around rather than blocking on:**
 `steriqore:seed-pilot-volume` (used by REC-09) creates its one user via a

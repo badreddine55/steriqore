@@ -7,6 +7,7 @@ use App\Http\Middleware\HandleAppearance;
 use App\Http\Middleware\HandleInertiaRequests;
 use App\Http\Middleware\Web\SetCurrentTenant as SetCurrentTenantWeb;
 use App\Support\Api\ApiExceptionRenderer;
+use App\Support\Security\SecurityEventRenderer;
 use App\Support\Web\ApiExceptionWebRenderer;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -62,6 +63,14 @@ return Application::configure(basePath: dirname(__DIR__))
             fn (Request $request) => $request->is('api/*') || $request->expectsJson(),
         );
 
+        // Registered first and deliberately: every render() callback below
+        // sees the exception in registration order, and the loop stops at
+        // the first one that returns a non-null response
+        // (Handler::renderViaCallbacks) — this one always returns null, but
+        // if it were registered after ApiExceptionRenderer/
+        // ApiExceptionWebRenderer, most exceptions would already have a
+        // response by the time it runs and it would simply never fire.
+        SecurityEventRenderer::register($exceptions);
         ApiExceptionRenderer::register($exceptions);
         ApiExceptionWebRenderer::register($exceptions);
 

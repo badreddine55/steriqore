@@ -1,7 +1,44 @@
+import { execFile } from 'node:child_process';
+import { promisify } from 'node:util';
 import { expect, test } from '@playwright/test';
 import type { APIRequestContext, Page } from '@playwright/test';
 import { PDFParse } from 'pdf-parse';
 import { extractInvitationToken, waitForMailTo } from './support/mailpit';
+
+const execFileAsync = promisify(execFile);
+
+/**
+ * security_events is deliberately unreachable from the app/API surface
+ * (RLS with no policy for the app role — see the migration's docblock), so
+ * the only way to confirm a row was written is the same escape hatch
+ * volume.spec.ts already uses for pilot-volume fixture setup: tinker
+ * against the real container, through the RLS-bypassing admin connection.
+ */
+async function countSecurityEvents(
+    type: string,
+    subjectId: string,
+): Promise<number> {
+    const script = `
+        echo App\\Domain\\Compliance\\Models\\SecurityEvent::query()
+            ->where('type', '${type}')
+            ->where('subject_id', '${subjectId}')
+            ->count();
+    `.replace(/\n\s*/g, ' ');
+
+    const { stdout } = await execFileAsync('docker', [
+        'compose',
+        'exec',
+        '-T',
+        'app',
+        'php',
+        'artisan',
+        'tinker',
+        '--execute',
+        script,
+    ]);
+
+    return Number(stdout.trim().split('\n').pop());
+}
 
 /**
  * UI-31 — the §10 demo journey (docs/00-BUILD-BRIEF.md), driven end to end
@@ -643,13 +680,16 @@ test.describe('End-to-end acceptance journey (UI-31, brief §10)', () => {
         expect(response?.status()).toBe(404);
         await expect(page.getByText(foreignCycleId)).toHaveCount(0);
 
-        // NOTE: the brief also expects "a security event written" — no
-        // such logging exists anywhere in the app today (confirmed:
-        // nothing writes to audit_events, or anywhere else, on a blocked
-        // cross-tenant lookup; TenantScope's 404 is silent). Refusal and
-        // no-leak are both real and asserted above; the security-log gap
-        // is genuine and is flagged in docs/ui-backlog.md, not built here
-        // (this ticket writes no application code).
+        // The refusal above is silent to the caller by design (a 404 that
+        // looks identical to a genuinely missing id) — but it must not be
+        // silent to the operator. SecurityEventRenderer records a
+        // cross_tenant_resolution_attempt row (actor, tenant claimed vs
+        // actual, route, subject id, ip, request_id) precisely because
+        // Owner A's id genuinely resolves in practice B, which is what
+        // makes this a probe rather than 404 noise from a typo'd id.
+        await expect
+            .poll(() => countSecurityEvents('cross_tenant_resolution_attempt', foreignCycleId))
+            .toBeGreaterThan(0);
     });
 
     // ---------------------------------------------------------------
