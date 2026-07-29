@@ -52,6 +52,29 @@ class HandleInertiaRequests extends Middleware
      */
     public function share(Request $request): array
     {
+        // Scramble's /docs/api UI is a Blade page on the `web` middleware
+        // group, so this middleware still runs — but it is not an Inertia
+        // page and must not resolve tenant-scoped Spatie permissions here.
+        // Those queries hit RLS-protected permission tables without
+        // Web\SetCurrentTenant having bound app.tenant_id, which crashes
+        // the docs UI for logged-in users.
+        if ($request->routeIs('scramble.*')) {
+            return [
+                ...parent::share($request),
+                'name' => config('app.name'),
+                'auth' => [
+                    'user' => null,
+                    'permissions' => [],
+                    'role' => null,
+                ],
+                'tenant' => null,
+                'tenants' => [],
+                'sites' => [],
+                'currentSiteId' => null,
+                'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
+            ];
+        }
+
         $user = $request->user();
 
         $tenant = null;
