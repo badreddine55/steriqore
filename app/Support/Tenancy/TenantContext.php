@@ -24,7 +24,9 @@ class TenantContext
     public static function run(Tenant $tenant, Closure $callback): mixed
     {
         $tenant->makeCurrent();
-        app(PermissionRegistrar::class)->setPermissionsTeamId($tenant->id);
+        $registrar = app(PermissionRegistrar::class);
+        $registrar->setPermissionsTeamId($tenant->id);
+        $registrar->forgetCachedPermissions();
 
         try {
             return DB::transaction(function () use ($tenant, $callback) {
@@ -34,7 +36,8 @@ class TenantContext
             });
         } finally {
             Tenant::forgetCurrent();
-            app(PermissionRegistrar::class)->setPermissionsTeamId(null);
+            $registrar->setPermissionsTeamId(null);
+            $registrar->forgetCachedPermissions();
         }
     }
 }

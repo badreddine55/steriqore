@@ -15,4 +15,5 @@ enum TenantRole: string
     case Releaser = 'releaser';
     case Practitioner = 'practitioner';
     case Viewer = 'viewer';
+    case Reception = 'reception';
 }

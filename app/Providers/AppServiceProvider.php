@@ -16,6 +16,8 @@ use App\Domain\Inventory\Models\StockLevel;
 use App\Domain\Inventory\Models\StockMovement;
 use App\Domain\Labeling\Models\DluRule;
 use App\Domain\Labeling\Models\Label;
+use App\Domain\Prosthetics\Models\Laboratory;
+use App\Domain\Prosthetics\Models\ProstheticCase;
 use App\Domain\Purchasing\Models\PurchaseOrder;
 use App\Domain\Purchasing\Models\Supplier;
 use App\Domain\Reporting\Models\DataExportRequest;
@@ -36,10 +38,12 @@ use App\Policies\DluRulePolicy;
 use App\Policies\InvitationPolicy;
 use App\Policies\LabelPolicy;
 use App\Policies\LabelUsagePolicy;
+use App\Policies\LaboratoryPolicy;
 use App\Policies\NonConformityPolicy;
 use App\Policies\PatientPolicy;
 use App\Policies\ProductCategoryPolicy;
 use App\Policies\ProductPolicy;
+use App\Policies\ProstheticCasePolicy;
 use App\Policies\PurchaseOrderPolicy;
 use App\Policies\RoomPolicy;
 use App\Policies\SitePolicy;
@@ -48,6 +52,7 @@ use App\Policies\StockMovementPolicy;
 use App\Policies\StorageLocationPolicy;
 use App\Policies\SupplierPolicy;
 use App\Policies\TenantUserPolicy;
+use App\Policies\UserPolicy;
 use App\Support\Api\ScrambleErrorEnvelope;
 use Carbon\CarbonImmutable;
 use Dedoc\Scramble\Scramble;
@@ -109,6 +114,9 @@ class AppServiceProvider extends ServiceProvider
         Gate::policy(LabelUsage::class, LabelUsagePolicy::class);
         Gate::policy(NonConformity::class, NonConformityPolicy::class);
         Gate::policy(DataExportRequest::class, DataExportRequestPolicy::class);
+        Gate::policy(ProstheticCase::class, ProstheticCasePolicy::class);
+        Gate::policy(Laboratory::class, LaboratoryPolicy::class);
+        Gate::policy(User::class, UserPolicy::class);
     }
 
     /**

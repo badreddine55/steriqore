@@ -26,6 +26,9 @@ export default defineConfig({
         tailwindcss(),
         wayfinder({
             formVariants: true,
+            command:
+                process.env.WAYFINDER_COMMAND ||
+                'docker compose exec -T app php artisan wayfinder:generate',
         }),
     ],
 });

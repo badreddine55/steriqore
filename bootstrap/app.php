@@ -41,6 +41,8 @@ return Application::configure(basePath: dirname(__DIR__))
             'idempotent' => EnsureIdempotency::class,
             'tenant' => SetCurrentTenant::class,
             'tenant.web' => SetCurrentTenantWeb::class,
+            'not_patient_portal' => \App\Http\Middleware\Api\EnsureNotPatientPortal::class,
+            'patient_portal' => \App\Http\Middleware\Api\EnsurePatientPortal::class,
         ]);
 
         // Without this, Laravel's default middleware priority runs

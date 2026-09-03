@@ -22,19 +22,49 @@ class CreatePatientAction
         private Request $request,
     ) {}
 
-    public function execute(Tenant $tenant, User $actor): Patient
+    /**
+     * @param array<string, mixed> $data
+     */
+    public function execute(Tenant $tenant, User $actor, array $data = []): Patient
     {
-        return DB::transaction(function () use ($tenant, $actor) {
+        return DB::transaction(function () use ($tenant, $actor, $data) {
             DB::table('tenants')->where('id', $tenant->id)->lockForUpdate()->first();
 
             $nextNumber = (int) Patient::withTrashed()->where('tenant_id', $tenant->id)
                 ->selectRaw('max(cast(substring(reference from 5) as integer)) as max_number')
                 ->value('max_number') + 1;
 
-            $patient = Patient::create([
+            $attributes = [
                 'tenant_id' => $tenant->id,
                 'reference' => 'PAT-'.str_pad((string) $nextNumber, 6, '0', STR_PAD_LEFT),
-            ]);
+            ];
+
+            if (!empty($data['first_name'])) {
+                $attributes['first_name'] = trim((string) $data['first_name']);
+            }
+            if (!empty($data['last_name'])) {
+                $attributes['last_name'] = trim((string) $data['last_name']);
+            }
+            if (!empty($data['birth_date'])) {
+                $attributes['birth_date'] = $data['birth_date'];
+            }
+            if (!empty($data['email'])) {
+                $attributes['email'] = trim((string) $data['email']);
+            }
+            if (!empty($data['phone'])) {
+                $attributes['phone'] = trim((string) $data['phone']);
+            }
+            if (!empty($data['nir'])) {
+                $attributes['nir'] = trim((string) $data['nir']);
+            }
+            if (!empty($data['notes'])) {
+                $attributes['notes'] = trim((string) $data['notes']);
+            }
+            if (isset($data['allergies']) && is_array($data['allergies'])) {
+                $attributes['allergies'] = $data['allergies'];
+            }
+
+            $patient = Patient::create($attributes);
 
             $this->recordAuditEvent->execute(
                 tenant: $tenant,
@@ -42,7 +72,11 @@ class CreatePatientAction
                 action: 'patient.created',
                 subjectType: Patient::class,
                 subjectId: $patient->id,
-                newValues: ['reference' => $patient->reference],
+                newValues: [
+                    'reference' => $patient->reference,
+                    'first_name' => $patient->first_name,
+                    'last_name' => $patient->last_name,
+                ],
                 request: $this->request,
             );
 

@@ -38,6 +38,13 @@ class SetCurrentTenant
 
         abort_if($tenant === null, 401);
 
-        return TenantContext::run($tenant, fn () => $next($request));
+        return TenantContext::run($tenant, function () use ($request, $next) {
+            if ($user = $request->user()) {
+                $user->unsetRelation('roles');
+                $user->unsetRelation('permissions');
+            }
+
+            return $next($request);
+        });
     }
 }

@@ -13,7 +13,16 @@ use App\Http\Controllers\Api\V1\Equipment\MaintenanceRecordController;
 use App\Http\Controllers\Api\V1\Identity\AcceptInvitationController;
 use App\Http\Controllers\Api\V1\Identity\InvitationController;
 use App\Http\Controllers\Api\V1\Identity\MemberController;
+use App\Http\Controllers\Api\V1\Identity\PatientPortalAccountController;
+use App\Http\Controllers\Api\V1\Identity\PatientPortalDossierController;
+use App\Http\Controllers\Api\V1\Identity\PatientPortalEvidenceController;
+use App\Http\Controllers\Api\V1\Identity\PatientPortalLoginController;
+use App\Http\Controllers\Api\V1\Identity\PatientPortalLogoutController;
+use App\Http\Controllers\Api\V1\Identity\PatientPortalMeController;
+use App\Http\Controllers\Api\V1\Identity\PatientPortalPasswordController;
+use App\Http\Controllers\Api\V1\Identity\PatientPortalProstheticCasesController;
 use App\Http\Controllers\Api\V1\Identity\RegisterTenantController;
+use App\Http\Controllers\Api\V1\Identity\UserController;
 use App\Http\Controllers\Api\V1\Inventory\AlertController;
 use App\Http\Controllers\Api\V1\Inventory\StockLevelController;
 use App\Http\Controllers\Api\V1\Inventory\StockMovementController;
@@ -34,6 +43,9 @@ use App\Http\Controllers\Api\V1\Sterilization\CycleAttachmentController;
 use App\Http\Controllers\Api\V1\Sterilization\CycleController;
 use App\Http\Controllers\Api\V1\Sterilization\CycleItemController;
 use App\Http\Controllers\Api\V1\Sterilization\CycleReleaseController;
+use App\Http\Controllers\Api\V1\Prosthetics\LaboratoryController;
+use App\Http\Controllers\Api\V1\Prosthetics\ProstheticCaseController;
+use App\Http\Controllers\Api\V1\Prosthetics\ProstheticDashboardController;
 use App\Http\Controllers\Api\V1\Traceability\EvidenceSearchController;
 use App\Http\Controllers\Api\V1\Traceability\LabelUsageController;
 use App\Http\Controllers\Api\V1\Traceability\PatientController;
@@ -44,12 +56,19 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
         Route::post('tenants', RegisterTenantController::class)->middleware('idempotent')->name('tenants.register');
         Route::post('auth/login', LoginController::class)->middleware('idempotent')->name('auth.login');
         Route::post('invitations/accept', AcceptInvitationController::class)->middleware('idempotent')->name('invitations.accept');
+        Route::post('patient-portal/login', PatientPortalLoginController::class)->middleware('idempotent')->name('patient-portal.login');
     });
 
-    Route::middleware(['auth:sanctum', 'tenant', 'throttle:api'])->group(function () {
+    Route::middleware(['auth:sanctum', 'tenant', 'not_patient_portal', 'throttle:api'])->group(function () {
         Route::delete('auth/logout', LogoutController::class)->name('auth.logout');
         Route::delete('auth/tokens', LogoutEverywhereController::class)->name('auth.logout-everywhere');
         Route::get('me', MeController::class)->name('me');
+
+        Route::get('users', [UserController::class, 'index'])->name('users.index');
+        Route::post('users', [UserController::class, 'store'])->name('users.store');
+        Route::get('users/{user}', [UserController::class, 'show'])->name('users.show');
+        Route::put('users/{user}', [UserController::class, 'update'])->name('users.update');
+        Route::patch('users/{user}', [UserController::class, 'update'])->name('users.patch');
 
         Route::get('sites', [SitesController::class, 'index'])->name('sites.index');
 
@@ -214,6 +233,27 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
             ->name('patients.store');
         Route::get('patients/{patient}', [PatientController::class, 'show'])->name('patients.show');
         Route::delete('patients/{patient}', [PatientController::class, 'destroy'])->name('patients.destroy');
+        Route::post('patients/{patient}/portal-account', PatientPortalAccountController::class)
+            ->middleware('idempotent')
+            ->name('patients.portal-account');
+
+        Route::get('laboratories', [LaboratoryController::class, 'index'])->name('laboratories.index');
+
+        Route::get('prosthetic-cases/dashboard', ProstheticDashboardController::class)->name('prosthetic-cases.dashboard');
+        Route::get('prosthetic-cases/waiting-placement', [ProstheticCaseController::class, 'waitingPlacement'])->name('prosthetic-cases.waiting-placement');
+        Route::get('prosthetic-cases', [ProstheticCaseController::class, 'index'])->name('prosthetic-cases.index');
+        Route::post('prosthetic-cases', [ProstheticCaseController::class, 'store'])
+            ->middleware('idempotent')
+            ->name('prosthetic-cases.store');
+        Route::get('prosthetic-cases/{id}', [ProstheticCaseController::class, 'show'])->name('prosthetic-cases.show');
+        Route::patch('prosthetic-cases/{id}', [ProstheticCaseController::class, 'update'])
+            ->middleware('idempotent')
+            ->name('prosthetic-cases.update');
+        Route::post('prosthetic-cases/{id}/status', [ProstheticCaseController::class, 'changeStatus'])
+            ->middleware('idempotent')
+            ->name('prosthetic-cases.status');
+        Route::get('prosthetic-cases/{id}/history', [ProstheticCaseController::class, 'history'])->name('prosthetic-cases.history');
+        Route::delete('prosthetic-cases/{id}', [ProstheticCaseController::class, 'destroy'])->name('prosthetic-cases.destroy');
 
         Route::get('evidence-search', [EvidenceSearchController::class, 'index'])->name('evidence-search.index');
         Route::get('evidence-search/export', [EvidenceExportController::class, 'index'])->name('evidence-search.export');
@@ -236,5 +276,14 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
         Route::post('non-conformities/{nonConformity}/resolve', [NonConformityController::class, 'resolve'])
             ->middleware('idempotent')
             ->name('non-conformities.resolve');
+    });
+
+    Route::middleware(['auth:sanctum', 'tenant', 'patient_portal', 'throttle:api'])->prefix('patient-portal')->name('patient-portal.')->group(function () {
+        Route::delete('logout', PatientPortalLogoutController::class)->name('logout');
+        Route::get('me', PatientPortalMeController::class)->name('me');
+        Route::patch('me/password', PatientPortalPasswordController::class)->middleware('idempotent')->name('me.password');
+        Route::get('evidence', PatientPortalEvidenceController::class)->name('evidence');
+        Route::get('cases', PatientPortalProstheticCasesController::class)->name('cases');
+        Route::get('usage/{labelUsage}/dossier', PatientPortalDossierController::class)->name('dossier');
     });
 });

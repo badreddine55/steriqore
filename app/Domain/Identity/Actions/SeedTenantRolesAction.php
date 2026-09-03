@@ -50,6 +50,10 @@ class SeedTenantRolesAction
         'non_conformities.manage',
         'data_exports.manage',
         'practice_settings.manage',
+        'prosthetics.view',
+        'prosthetics.create',
+        'prosthetics.update_status',
+        'prosthetics.update_financials',
     ];
 
     /**
@@ -78,18 +82,20 @@ class SeedTenantRolesAction
             'devices.view', 'devices.manage', 'cycles.view', 'cycles.manage',
             'labels.view', 'labels.manage', 'patients.view', 'usages.view',
             'non_conformities.view',
+            'prosthetics.view', 'prosthetics.create', 'prosthetics.update_status',
         ],
         // releaser is the only role besides owner/admin with cycles.release
         // and non_conformities.manage — they're already the compliance
         // gatekeeper for releasing/rejecting a cycle, so raising/resolving
         // a non-conformity (the same "is this evidence trustworthy?"
         // judgment call, after the fact) sits with the same role.
-        'releaser' => ['sites.view', 'products.view', 'suppliers.view', 'purchasing.view', 'inventory.view', 'alerts.view', 'devices.view', 'cycles.view', 'cycles.release', 'labels.view', 'patients.view', 'usages.view', 'non_conformities.view', 'non_conformities.manage'],
+        'releaser' => ['sites.view', 'products.view', 'suppliers.view', 'purchasing.view', 'inventory.view', 'alerts.view', 'devices.view', 'cycles.view', 'cycles.release', 'labels.view', 'patients.view', 'usages.view', 'non_conformities.view', 'non_conformities.manage', 'prosthetics.view'],
         // practitioner is the only non-owner/admin role with patients.manage
         // and usages.manage — they're the one creating a pseudonym and
         // recording label->procedure->patient while treating a patient.
-        'practitioner' => ['sites.view', 'products.view', 'suppliers.view', 'purchasing.view', 'inventory.view', 'alerts.view', 'devices.view', 'cycles.view', 'labels.view', 'patients.view', 'patients.manage', 'usages.view', 'usages.manage', 'non_conformities.view'],
-        'viewer' => ['sites.view', 'products.view', 'suppliers.view', 'purchasing.view', 'inventory.view', 'alerts.view', 'devices.view', 'cycles.view', 'labels.view', 'patients.view', 'usages.view', 'non_conformities.view'],
+        'practitioner' => ['sites.view', 'products.view', 'suppliers.view', 'purchasing.view', 'inventory.view', 'alerts.view', 'devices.view', 'cycles.view', 'labels.view', 'patients.view', 'patients.manage', 'usages.view', 'usages.manage', 'non_conformities.view', 'prosthetics.view', 'prosthetics.create', 'prosthetics.update_status'],
+        'viewer' => ['sites.view', 'products.view', 'suppliers.view', 'purchasing.view', 'inventory.view', 'alerts.view', 'devices.view', 'cycles.view', 'labels.view', 'patients.view', 'usages.view', 'non_conformities.view', 'prosthetics.view'],
+        'reception' => ['sites.view', 'patients.view', 'prosthetics.view', 'prosthetics.update_status', 'prosthetics.update_financials'],
     ];
 
     public function execute(Tenant $tenant): void

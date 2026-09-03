@@ -26,4 +26,18 @@ class PatientPolicy
     {
         return $user->can('patients.manage');
     }
+
+    /**
+     * Determine whether the user can provision a portal account for the patient.
+     */
+    public function createPortalAccount(User $user, Patient $patient): bool
+    {
+        $tenantId = \App\Domain\Tenancy\Models\Tenant::current()?->id;
+
+        if (! $tenantId || $patient->tenant_id !== $tenantId) {
+            return false;
+        }
+
+        return $user->hasRole(['owner', 'admin']);
+    }
 }

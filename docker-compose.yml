@@ -12,7 +12,7 @@
 #   Mailpit Web:    8035  → 8025
 #   MinIO API:      9023  → 9000
 #   MinIO Console:  9024  → 9001
-#   Steriqore App:  8010  → 8000
+#   Steriqore App:  8000  → 8000
 # =============================================================================
 
 services:
@@ -24,7 +24,7 @@ services:
     container_name: steriqore-app
     restart: unless-stopped
     ports:
-      - '8010:8000'
+      - '8000:8000'
     develop:
       watch:
         # Sync PHP / config and restart Octane so changes apply without a full rebuild
@@ -72,7 +72,7 @@ services:
     environment:
       - APP_ENV=local
       - APP_DEBUG=true
-      - APP_URL=http://localhost:8010
+      - APP_URL=${APP_URL:-http://localhost:8000}
       - OCTANE_SERVER=frankenphp
       - DB_CONNECTION=pgsql
       - DB_HOST=postgres
@@ -109,6 +109,13 @@ services:
       - FILESYSTEM_DISK=s3
     volumes:
       - app-storage:/app/storage
+      - ./app:/app/app
+      - ./bootstrap:/app/bootstrap
+      - ./config:/app/config
+      - ./database:/app/database
+      - ./routes:/app/routes
+      - ./resources:/app/resources
+      - ./public:/app/public
     depends_on:
       postgres:
         condition: service_healthy

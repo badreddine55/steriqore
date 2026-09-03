@@ -43,8 +43,8 @@ require_docker() {
 print_urls() {
   echo
   green "Steriqore is running:"
-  echo "  App:          http://localhost:8010"
-  echo "  Horizon:      http://localhost:8010/horizon"
+  echo "  App:          http://localhost:8000"
+  echo "  Horizon:      http://localhost:8000/horizon"
   echo "  Mailpit:      http://localhost:8035"
   echo "  MinIO API:    http://localhost:9023"
   echo "  MinIO UI:     http://localhost:9024  (minioadmin / minioadmin)"

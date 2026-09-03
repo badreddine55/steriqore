@@ -24,8 +24,14 @@ class PatientController extends Controller
         $this->authorize('viewAny', Patient::class);
 
         $patients = QueryBuilder::for(Patient::class)
-            ->allowedFilters(AllowedFilter::partial('reference'))
-            ->allowedSorts('reference', 'created_at')
+            ->allowedFilters(
+                AllowedFilter::partial('reference'),
+                AllowedFilter::partial('first_name'),
+                AllowedFilter::partial('last_name'),
+                AllowedFilter::partial('email'),
+                AllowedFilter::partial('phone')
+            )
+            ->allowedSorts('reference', 'first_name', 'last_name', 'created_at')
             ->defaultSort('-created_at')
             ->cursorPaginate(perPage: (int) $request->integer('limit', 20));
 
@@ -36,7 +42,20 @@ class PatientController extends Controller
     {
         $this->authorize('create', Patient::class);
 
-        return PatientData::fromModel($action->execute(Tenant::current(), $request->user()));
+        $validated = $request->validate([
+            'first_name' => ['nullable', 'string', 'max:255'],
+            'last_name' => ['nullable', 'string', 'max:255'],
+            'birth_date' => ['nullable', 'date'],
+            'email' => ['nullable', 'email', 'max:255'],
+            'phone' => ['nullable', 'string', 'max:50'],
+            'nir' => ['nullable', 'string', 'max:50'],
+            'notes' => ['nullable', 'string', 'max:2000'],
+            'allergies' => ['nullable', 'array'],
+        ]);
+
+        $tenant = Tenant::current() ?? $request->user()?->tenants()->first();
+
+        return PatientData::fromModel($action->execute($tenant, $request->user(), $validated));
     }
 
     public function show(Patient $patient): PatientData
